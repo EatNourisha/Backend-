@@ -10,7 +10,7 @@ RUN yarn build
 #
 FROM node:16-alpine3.14
 LABEL AUTHOR github.com/famuyiwadayo
-WORKDIR /app
+WORKDIR /usr/src/app
 COPY package.json package.json
 COPY tsconfig.json tsconfig.json
 
