@@ -1,24 +1,14 @@
-# FROM node:16-alpine3.14 AS build
-# LABEL AUTHOR github.com/famuyiwadayo
-# WORKDIR /usr/src/app
-# COPY ./ ./
-# RUN yarn install
-# RUN yarn build
-
-FROM jarredsumner/bun:edge AS build
+FROM node:16-alpine3.14 AS build
 LABEL AUTHOR github.com/famuyiwadayo
-WORKDIR /app
-# COPY package.json package.json
-# COPY bun.lockb bun.lockb
+WORKDIR /usr/src/app
 COPY ./ ./
-RUN bun install
-RUN bun run build
-# COPY . .
+RUN yarn install
+RUN yarn build
 
 # Build Stage 2
 # This build takes the production build from staging build
 #
-FROM jarredsumner/bun:edge
+FROM node:16-alpine3.14
 LABEL AUTHOR github.com/famuyiwadayo
 WORKDIR /app
 COPY package.json package.json
