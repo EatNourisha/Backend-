@@ -11,14 +11,14 @@ RUN yarn build
 FROM node:16-alpine3.14
 LABEL AUTHOR github.com/famuyiwadayo
 WORKDIR /usr/src/app
-COPY package.json package.json
-COPY tsconfig.json tsconfig.json
+COPY package.json ./
+COPY tsconfig.json ./
 
 # enabled next line if you want the .env to be built with the images
 # note that when doing a CI/CD with githib, the command will fail.
 # COPY .env ./ 
 
-COPY --from=build /node_modules ./node_modules
-COPY --from=build /app/dist ./dist
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/dist ./dist
 EXPOSE 8080
-CMD bun run start
+CMD yarn start
