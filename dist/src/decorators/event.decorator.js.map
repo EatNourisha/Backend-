@@ -1,0 +1,1 @@
+{"version":3,"file":"event.decorator.js","sourceRoot":"","sources":["../../../src/decorators/event.decorator.ts"],"names":[],"mappings":";;;AAAA,kCAA2D;AAI3D,SAAgB,QAAQ,CAAC,GAA6B;IACpD,OAAO,UAAU,CAAM,EAAE,EAAU,EAAE,UAA8B;QACjE,mBAAY,CAAC,QAAQ,CAAC,GAAG,EAAE,UAAU,CAAC,KAAK,CAAC,CAAC;IAE/C,CAAC,CAAC;AACJ,CAAC;AALD,4BAKC"}
