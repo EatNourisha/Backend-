@@ -54,7 +54,8 @@ export class AuthService {
   }
 
   public async requestEmailVerification(customer_id: string): Promise<{ message: string }> {
-    await new AuthVerificationService().requestEmailVerification(customer_id, AuthVerificationReason.ACCOUNT_VERIFICATION);
+    const result = await new AuthVerificationService().requestEmailVerification(customer_id, AuthVerificationReason.ACCOUNT_VERIFICATION);
+    if (config.isTesting) return result;
     return { message: "Verification code sent" };
   }
 
@@ -79,7 +80,8 @@ export class AuthService {
   async requestResetPasswordToken(email: string) {
     const acc = await customer.findOne({ email }).select("_id").lean().exec();
     if (!acc) throw createError("Customer not found", 404);
-    await new AuthVerificationService().requestResetPassword(acc._id);
+    const result = await new AuthVerificationService().requestResetPassword(acc._id);
+    if (config.isTesting) return result;
     return { message: "Reset link has been sent to your email" };
   }
 

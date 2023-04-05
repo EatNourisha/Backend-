@@ -16,6 +16,8 @@ const config = {
   VERIFY_ME_KEY: process.env.VERIFY_ME_KEY as string,
   PAYSTACK_AUTHORIZATION: process.env.PAYSTACK_AUTHORIZATION as string,
   APPRUVE_KEY: process.env.APPRUVE_KEY as string,
+
+  isTesting: true,
 };
 
 export default config;

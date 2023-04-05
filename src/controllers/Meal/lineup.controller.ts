@@ -18,7 +18,7 @@ export class MealLineupController {
   async updateLineup(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, user, params } = req;
-      const data = await service.updateLineup(user.sub, body, user.roles, Boolean(params?.dryRun));
+      const data = await service.updateLineup(params.id, body, user.roles, Boolean(params?.dryRun));
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

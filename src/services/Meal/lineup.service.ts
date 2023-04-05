@@ -26,7 +26,7 @@ export class MealLineupService {
       .findByIdAndUpdate(lineup_id, { ...omit(dto, ["customer"]) }, { new: true })
       .lean<MealLineup>()
       .exec();
-    if (!_lineup && dryRun) throw createError("Customer's weekly lineup does not exist", 404);
+    if (!_lineup && !dryRun) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup;
   }
 
