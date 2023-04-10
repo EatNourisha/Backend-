@@ -24,6 +24,14 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.MEAL,
         scopes: [PermissionScope.READ],
       },
+      {
+        name: AvailableResource.PLAN,
+        scopes: [PermissionScope.READ],
+      },
+      {
+        name: AvailableResource.SUBSCRIPTION,
+        scopes: [PermissionScope.CANCEL, PermissionScope.READ],
+      },
     ],
   },
   superadmin: {
@@ -38,6 +46,14 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.MEAL,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.PLAN,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.SUBSCRIPTION,
         scopes: [PermissionScope.ALL],
       },
     ],

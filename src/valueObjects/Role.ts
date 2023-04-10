@@ -12,6 +12,7 @@ export enum PermissionScope {
   DISABLE = "disable",
   ENABLE = "enable",
   VERIFY = "verify",
+  CANCEL = "cancel",
   REQUEST = "request",
   APPROVE = "approve",
   REJECT = "reject",
@@ -24,6 +25,8 @@ export enum PermissionScope {
 export enum AvailableResource {
   ROLE = "role",
   MEAL = "meal",
+  PLAN = "plan",
   CUSTOMER = "customer",
   NOTIFICATION = "notification",
+  SUBSCRIPTION = "subscription",
 }

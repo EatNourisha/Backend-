@@ -7,3 +7,9 @@ export * from "./authVerification.service";
 
 export * from "./Meal/meal.service";
 export * from "./Meal/lineup.service";
+
+export * from "./Billing/plan.service";
+export * from "./Billing/card.service";
+export * from "./Billing/billing.service";
+export * from "./Billing/transaction.service";
+export * from "./Billing/subscription.service";

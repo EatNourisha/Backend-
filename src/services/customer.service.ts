@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import { nanoid } from "nanoid";
 import { ChangePasswordDto, CustomerDto, ResetPasswordDto, SetDeliveryDayDto, UpdateCustomerDto, VerifyEmailDto } from "../interfaces";
 import { NourishaBus } from "../libs";
@@ -10,9 +11,12 @@ import { RoleService } from "./role.service";
 import isEmpty from "lodash/isEmpty";
 import difference from "lodash/difference";
 import { AuthVerificationService } from "./authVerification.service";
+import config from "../config";
+import { join } from "lodash";
 
 export class CustomerService {
   private authVerificationService = new AuthVerificationService();
+  private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({
@@ -25,8 +29,10 @@ export class CustomerService {
 
     await Promise.allSettled([
       PasswordService.addPassword(acc._id!, input.password),
+      this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
       roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
     ]);
+
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
@@ -46,6 +52,21 @@ export class CustomerService {
       .exec();
     if (!_customer) throw createError(`Customer not found`, 404);
     return _customer;
+  }
+
+  async getActiveSubscription(customer_id: string, roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.CUSTOMER], roles, AvailableResource.CUSTOMER, [PermissionScope.READ]);
+    const cus = await customer
+      .findById(customer_id)
+      .select(["first_name", "subscription"])
+      .populate("subscription")
+      .lean<Customer>()
+      .exec();
+
+    if (!cus) throw createError("Customer does not exist", 404);
+    if (!cus?.subscription) return { message: "No active subscription found" };
+
+    return cus?.subscription;
   }
 
   static async removeDeprecatedCustomerRoles(customer_id: string, roles: string[]) {
@@ -72,12 +93,17 @@ export class CustomerService {
     ];
     await Promise.allSettled(toRun);
 
-    let data = await customer.findById(id).lean().exec();
+    let data = await customer.findById(id).lean<Customer>().exec();
     if (!data) throw createError(`Not found`, 404);
+
+    if (!data?.stripe_id) {
+      data = await this.attachStripeId(data?._id!, data?.email, join([data?.first_name, data?.last_name], " "));
+    }
+
     if (!data?.ref_code)
       data = await customer
         .findByIdAndUpdate(id, { ref_code: nanoid(12) }, { new: true })
-        .lean()
+        .lean<Customer>()
         .exec();
 
     return data;
@@ -93,6 +119,16 @@ export class CustomerService {
     const res = await RoleService.getRoleById(role);
     const acc = (await customer.findOneAndUpdate({ _id: id }, { primary_role: res.slug }, { new: true }).lean().exec()) as Customer;
     if (!acc) throw createError("Customer not found", 404);
+    return acc;
+  }
+
+  async attachStripeId(id: string, email: string, name: string) {
+    const cons = await this.stripe.customers.create({
+      email,
+      name,
+    });
+
+    const acc = await customer.findByIdAndUpdate(id, { stripe_id: cons.id }, { new: true }).lean<Customer>().exec();
     return acc;
   }
 

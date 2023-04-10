@@ -3,6 +3,7 @@ import { getModelForClass, index, modelOptions, prop, Ref } from "@typegoose/typ
 import { Gender } from "../valueObjects";
 import BaseEntity from "./base";
 import { Role } from "./role";
+import { Subscription } from "./subscription";
 
 export class AccountControl {
   @prop({ default: false })
@@ -66,6 +67,9 @@ export class Customer extends BaseEntity {
   @prop({ type: () => Address, _id: false })
   address: Address;
 
+  @prop()
+  stripe_id: string;
+
   @prop({ ref: () => Role })
   roles?: Ref<Role>[];
 
@@ -80,6 +84,9 @@ export class Customer extends BaseEntity {
 
   @prop({ enum: DeliveryDay })
   delivery_day: DeliveryDay;
+
+  @prop({ ref: () => Subscription })
+  subscription: Ref<Subscription>;
 }
 
 export default getModelForClass(Customer);

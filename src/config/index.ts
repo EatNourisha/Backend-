@@ -13,9 +13,10 @@ const config = {
   CMC_PRO_API_KEY: "16d9c3b6-4d24-4d36-8b57-3842702aca1b",
   paystackCallbackUrl: "",
   ANNUAL_PERCENTAGE_RATE: 3.2,
-  VERIFY_ME_KEY: process.env.VERIFY_ME_KEY as string,
-  PAYSTACK_AUTHORIZATION: process.env.PAYSTACK_AUTHORIZATION as string,
-  APPRUVE_KEY: process.env.APPRUVE_KEY as string,
+
+  STRIPE_PUBLISH_KEY: process.env.STRIPE_PUBLISH_KEY as string,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
+  ENDPOINT_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
 
   isTesting: true,
 };

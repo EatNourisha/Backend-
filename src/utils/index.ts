@@ -15,3 +15,5 @@ export { default as stripUpdateFields } from "./stripUpdateFields";
 export { default as rnd } from "./rnd";
 
 export { default as log } from "./log";
+
+export * from "./epochToCurrentTime";
