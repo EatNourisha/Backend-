@@ -8,6 +8,7 @@ export * from "./Meal/lineup.controller";
 export * from "./Billing/plan.controller";
 export * from "./Billing/card.controller";
 export * from "./Billing/billing.controller";
+export * from "./Preference/allergy.controller";
 export * from "./Billing/transaction.controller";
 export * from "./Billing/subscription.controller";
 export * from "./Preference/notification.controller";

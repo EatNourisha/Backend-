@@ -56,6 +56,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.SUBSCRIPTION,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.ALLERGY,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };

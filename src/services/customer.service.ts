@@ -171,7 +171,12 @@ export class CustomerService {
     if (!cus) throw createError(`Customer not found`, 404);
 
     const allergies = difference(cus?.preference?.allergies ?? [], dto.allergies ?? []);
-    cus = await customer.findByIdAndUpdate(id, { preference: { allergies } }, { new: true }).lean<Customer>().exec();
+
+    console.log("Allergies to remove", allergies);
+    cus = await customer
+      .findByIdAndUpdate(id, { preference: { $set: { allergies } } }, { new: true })
+      .lean<Customer>()
+      .exec();
     return cus;
   }
 
