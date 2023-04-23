@@ -13,3 +13,4 @@ export * from "./Billing/card.service";
 export * from "./Billing/billing.service";
 export * from "./Billing/transaction.service";
 export * from "./Billing/subscription.service";
+export * from "./Preference/notification.service";

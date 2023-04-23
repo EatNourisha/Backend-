@@ -31,3 +31,7 @@ export class ResetPasswordDto {
 export class SetDeliveryDayDto {
   delivery_day: DeliveryDay;
 }
+
+export class AddCustomerAllergiesDto {
+  allergies: string[];
+}

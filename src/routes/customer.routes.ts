@@ -18,11 +18,13 @@ router.get("/me", authGuard, controller.getCurrentUserCustomer); // ✅
 router.put("/me", authGuard, controller.updateCustomer); // ✅
 router.put("/password", authGuard, controller.changePassword); // ✅
 router.put("/delivery", authGuard, controller.setDeliveryDay); // ✅
+router.put("/allergies", authGuard, controller.addCustomerAllergy); // ✅
 // router.put("/:id/disable", authGuard, controller.disableCustomer); // ✅
 // router.put("/:id/enable", authGuard, controller.enableCustomer); // ✅
 // router.put("/:id/primaryRole", authGuard, controller.updatePrimaryRole); // ✅
 
 // DELETE
 router.delete("/:id", authGuard, controller.deleteCustomer); // ✅
+router.delete("/allergies", authGuard, controller.removeCustomerAllergy); // ✅
 
 export default router;

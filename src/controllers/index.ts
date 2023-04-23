@@ -10,3 +10,4 @@ export * from "./Billing/card.controller";
 export * from "./Billing/billing.controller";
 export * from "./Billing/transaction.controller";
 export * from "./Billing/subscription.controller";
+export * from "./Preference/notification.controller";

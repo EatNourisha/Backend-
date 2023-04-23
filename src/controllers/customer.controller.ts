@@ -54,6 +54,26 @@ export class CustomerController {
     }
   }
 
+  async addCustomerAllergy(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sub: id, roles } = req.user;
+      const result = await service.addCustomerAllergies(id, req.body, roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async removeCustomerAllergy(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { sub: id, roles } = req.user;
+      const result = await service.removeCustomerAllergies(id, req.body, roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { sub, roles } = req.user;

@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { lineup, MealLineup, MealPack } from "../../models";
+import { customer, lineup, MealLineup, MealPack } from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -16,6 +16,7 @@ export class MealLineupService {
     if (await MealLineupService.checkLineupExists(customer_id)) throw createError("Customer's weekly lineup already exist", 400);
 
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id }).exec();
     return _lineup;
   }
 
@@ -33,7 +34,11 @@ export class MealLineupService {
   async getCurrentCustomersLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((pop) => ({
+      path: pop,
+      populate: ["breakfast", "lunch", "dinner"],
+    }));
+
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup;
@@ -58,11 +63,14 @@ export class MealLineupService {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    let pops = ["monday", "tuesday", "wednesday", "thursday", "friday"];
     const day_of_week_index = getDay(new Date());
-    const _intersect = intersection(intersection(days, pops), Array.from(days).splice(day_of_week_index + 1));
-
-    const _lineup = await lineup.findOne({ customer: customer_id }).populate(_intersect).lean<MealLineup>().exec();
+    let _intersect = intersection(intersection(days, pops), Array.from(days).splice(day_of_week_index + 1));
+    pops = pops.map((pop) => ({
+      path: pop,
+      populate: ["breakfast", "lunch", "dinner"],
+    })) as any[];
+    const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
 
     return pick(_lineup, _intersect) as any;

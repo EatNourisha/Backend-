@@ -8,3 +8,5 @@ export * from "./dtos/customer.dto";
 export * from "./dtos/meal.dto";
 
 export * from "./dtos/billing.dto";
+
+export * from "./dtos/allergy.dto";

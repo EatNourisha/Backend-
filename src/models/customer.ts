@@ -4,6 +4,8 @@ import { Gender } from "../valueObjects";
 import BaseEntity from "./base";
 import { Role } from "./role";
 import { Subscription } from "./subscription";
+import { Allergy } from "./allergy";
+import { MealLineup } from "./mealLineup";
 
 export class AccountControl {
   @prop({ default: false })
@@ -32,6 +34,11 @@ export enum DeliveryDay {
   FRIDAY = "friday",
   SATURDAY = "saturday",
   SUNDAY = "sunday",
+}
+
+export class CustomerPreference {
+  @prop({ ref: () => "Allergy" })
+  allergies: Ref<Allergy>[];
 }
 
 @index({ "$**": "text" }) // to make the $text.$search work.
@@ -87,6 +94,12 @@ export class Customer extends BaseEntity {
 
   @prop({ ref: () => Subscription })
   subscription: Ref<Subscription>;
+
+  @prop({ ref: () => MealLineup })
+  lineup: Ref<MealLineup>;
+
+  @prop({ type: () => CustomerPreference, _id: false })
+  preference: CustomerPreference;
 }
 
 export default getModelForClass(Customer);

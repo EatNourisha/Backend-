@@ -26,6 +26,7 @@ export enum AvailableResource {
   ROLE = "role",
   MEAL = "meal",
   PLAN = "plan",
+  ALLERGY = "allergy",
   CUSTOMER = "customer",
   NOTIFICATION = "notification",
   SUBSCRIPTION = "subscription",

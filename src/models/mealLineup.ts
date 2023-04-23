@@ -5,25 +5,36 @@ import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { MealPack } from "./mealPack";
 
+export class DayMeals {
+  @prop({ ref: () => MealPack })
+  breakfast: Ref<MealPack>;
+
+  @prop({ ref: () => MealPack })
+  lunch: Ref<MealPack>;
+
+  @prop({ ref: () => MealPack })
+  dinner: Ref<MealPack>;
+}
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class MealLineup extends BaseEntity {
-  @prop({ ref: () => Customer })
+  @prop({ ref: () => "Customer" })
   customer: Ref<Customer>;
 
-  @prop({ ref: () => MealPack })
-  monday: Ref<MealPack>;
+  @prop({ type: () => DayMeals, _id: false })
+  monday: DayMeals;
 
-  @prop({ ref: () => MealPack })
-  tuesday: Ref<MealPack>;
+  @prop({ type: () => DayMeals, _id: false })
+  tuesday: DayMeals;
 
-  @prop({ ref: () => MealPack })
-  wednesday: Ref<MealPack>;
+  @prop({ type: () => DayMeals, _id: false })
+  wednesday: DayMeals;
 
-  @prop({ ref: () => MealPack })
-  thursday: Ref<MealPack>;
+  @prop({ type: () => DayMeals, _id: false })
+  thursday: DayMeals;
 
-  @prop({ ref: () => MealPack })
-  friday: Ref<MealPack>;
+  @prop({ type: () => DayMeals, _id: false })
+  friday: DayMeals;
 }
 
 export default getModelForClass(MealLineup);

@@ -12,6 +12,7 @@ import CustomerRouter from "./customer.routes";
 import BillingRouter from "./Billing/billing.routes";
 import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
+import NotificationRouter from "./Preference/notification.routes";
 
 import { sendResponse } from "../utils";
 // import config from "../config";
@@ -33,6 +34,7 @@ routes.use("/billings", BillingRouter);
 routes.use("/customers", CustomerRouter);
 routes.use("/transactions", TransactionRouter);
 routes.use("/subscriptions", SubscriptionRouter);
+routes.use("/notifications", NotificationRouter);
 // routes.use("/transactions", TransactionRouter);
 // routes.use("/notifications", NotificationRouter);
 

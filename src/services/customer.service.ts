@@ -1,6 +1,14 @@
 import Stripe from "stripe";
 import { nanoid } from "nanoid";
-import { ChangePasswordDto, CustomerDto, ResetPasswordDto, SetDeliveryDayDto, UpdateCustomerDto, VerifyEmailDto } from "../interfaces";
+import {
+  AddCustomerAllergiesDto,
+  ChangePasswordDto,
+  CustomerDto,
+  ResetPasswordDto,
+  SetDeliveryDayDto,
+  UpdateCustomerDto,
+  VerifyEmailDto,
+} from "../interfaces";
 import { NourishaBus } from "../libs";
 import { customer, Customer, DeliveryDay } from "../models";
 import { createError, removeForcedInputs, validateFields } from "../utils";
@@ -12,7 +20,7 @@ import isEmpty from "lodash/isEmpty";
 import difference from "lodash/difference";
 import { AuthVerificationService } from "./authVerification.service";
 import config from "../config";
-import { join } from "lodash";
+import { join, uniq } from "lodash";
 
 export class CustomerService {
   private authVerificationService = new AuthVerificationService();
@@ -143,6 +151,28 @@ export class CustomerService {
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
     return data;
+  }
+
+  async addCustomerAllergies(id: string, dto: AddCustomerAllergiesDto, roles: string[]) {
+    validateFields(dto, ["allergies"]);
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    let cus = await customer.findById(id).select("preference").lean<Customer>().exec();
+    if (!cus) throw createError(`Customer not found`, 404);
+
+    const allergies = uniq([...(cus?.preference?.allergies ?? []), ...(dto.allergies ?? [])]);
+    cus = await customer.findByIdAndUpdate(id, { preference: { allergies } }, { new: true }).lean<Customer>().exec();
+    return cus;
+  }
+
+  async removeCustomerAllergies(id: string, dto: AddCustomerAllergiesDto, roles: string[]) {
+    validateFields(dto, ["allergies"]);
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    let cus = await customer.findById(id).select("preference").lean<Customer>().exec();
+    if (!cus) throw createError(`Customer not found`, 404);
+
+    const allergies = difference(cus?.preference?.allergies ?? [], dto.allergies ?? []);
+    cus = await customer.findByIdAndUpdate(id, { preference: { allergies } }, { new: true }).lean<Customer>().exec();
+    return cus;
   }
 
   async changePassword(customer_id: string, input: ChangePasswordDto, roles: string[]): Promise<Customer> {
