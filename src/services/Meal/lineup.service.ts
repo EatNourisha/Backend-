@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { customer, lineup, MealLineup, MealPack } from "../../models";
+import { customer, DayMeals, lineup, MealLineup, MealPack } from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -51,7 +51,10 @@ export class MealLineupService {
     const day_of_week_index = getDay(new Date());
     const today = days[day_of_week_index];
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((pop) => ({
+      path: pop,
+      populate: ["breakfast", "lunch", "dinner"],
+    }));
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
     if (!_lineup[today]) throw createError("You've got no meal today", 404);
@@ -59,21 +62,25 @@ export class MealLineupService {
     return _lineup[today];
   }
 
-  async getUpcomingLineup(customer_id: string, roles: string[]): Promise<Record<string, MealPack>> {
+  async getUpcomingLineup(customer_id: string, roles: string[]): Promise<{ day: string; data: DayMeals }[]> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     let pops = ["monday", "tuesday", "wednesday", "thursday", "friday"];
     const day_of_week_index = getDay(new Date());
     let _intersect = intersection(intersection(days, pops), Array.from(days).splice(day_of_week_index + 1));
+
     pops = pops.map((pop) => ({
       path: pop,
       populate: ["breakfast", "lunch", "dinner"],
     })) as any[];
+
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
 
-    return pick(_lineup, _intersect) as any;
+    const result = pick(_lineup, _intersect);
+    const transform = Object.keys(result).map((key) => ({ day: key, data: result[key] }));
+    return transform;
   }
 
   static async checkLineupExists(customer_id: string): Promise<boolean> {

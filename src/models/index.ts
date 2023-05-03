@@ -8,7 +8,7 @@ export { default as authVerification, AuthVerification } from "./authVerificatio
 
 export { default as meal, Meal } from "./meal";
 export { default as mealPack, MealPack } from "./mealPack";
-export { default as lineup, MealLineup } from "./mealLineup";
+export { default as lineup, MealLineup, DayMeals } from "./mealLineup";
 
 export { default as plan, Plan } from "./plan";
 export { default as card, Card } from "./card";
