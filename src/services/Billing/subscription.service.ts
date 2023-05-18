@@ -45,4 +45,10 @@ export class SubscriptionService {
     const count = await subscription.countDocuments({ stripe_id: id }).lean<number>().exec();
     return count > 0;
   }
+
+  static async getSub(customer_id: string) {
+    const sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
+    if (!sub) return null;
+    return sub;
+  }
 }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../../middlewares";
+import { authGuard, subscriptionGuard } from "../../middlewares";
 import { MealLineupController } from "../../controllers";
 
 const router = Router();
@@ -9,7 +9,7 @@ router.get("/me", authGuard, controller.getCurrentCustomersLineup);
 router.get("/today", authGuard, controller.getTodaysLineup);
 router.get("/upcoming", authGuard, controller.getUpcomingLineup);
 
-router.post("/", authGuard, controller.createLineup);
-router.put("/:id", authGuard, controller.updateLineup);
+router.post("/", authGuard, subscriptionGuard, controller.createLineup);
+router.put("/:id", authGuard, subscriptionGuard, controller.updateLineup);
 
 export default router;
