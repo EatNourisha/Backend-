@@ -39,6 +39,12 @@ export enum DeliveryDay {
 export class CustomerPreference {
   @prop({ ref: () => "Allergy" })
   allergies: Ref<Allergy>[];
+
+  @prop({ default: false, select: false })
+  is_lineup_locked: boolean;
+
+  @prop()
+  next_lineup_change_exp: number;
 }
 
 @index({ "$**": "text" }) // to make the $text.$search work.

@@ -30,7 +30,7 @@ export class CustomerService {
     let acc = (await customer.create({
       ...input,
       control: { enabled: true },
-      ref_code: nanoid(12),
+      ref_code: nanoid(5),
       roles: roles ?? [],
       is_email_verified: false,
     })) as Customer;
@@ -110,7 +110,7 @@ export class CustomerService {
 
     if (!data?.ref_code)
       data = await customer
-        .findByIdAndUpdate(id, { ref_code: nanoid(12) }, { new: true })
+        .findByIdAndUpdate(id, { ref_code: nanoid(5) }, { new: true })
         .lean<Customer>()
         .exec();
 
