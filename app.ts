@@ -46,6 +46,12 @@ app.get("/", (_, res) =>
   })
 );
 
+app.get("/health", (_, res) =>
+  res.status(200).json({
+    message: "The app is healthy",
+  })
+);
+
 // catch 404 and forward to error handler
 app.use(catchRequest);
 app.use(handleError);
