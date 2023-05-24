@@ -24,7 +24,7 @@ jobs:
     - name: Installing NPM
       run: yarn install
       
-    - run: npm ci
+    - run: yarn install --frozen-lockfile
     
     - name: Generate deployment package
       run: zip -r nourisha-stage.zip * -x "**node_modules**"
