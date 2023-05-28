@@ -23,6 +23,9 @@ jobs:
 
     - name: Installing NPM
       run: yarn install
+
+    - name: yarn build
+      run: yarn build
       
     - run: yarn install --frozen-lockfile
     
