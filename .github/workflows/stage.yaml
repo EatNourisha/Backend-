@@ -27,12 +27,10 @@ jobs:
     - name: yarn build
       run: yarn build
       
-    - run: |
-        yarn install --frozen-lockfile
-        cp -r node_modules/ ./dist/
+    - run: yarn install --frozen-lockfile
     
     - name: Generate deployment package
-      run: zip -r nourisha-stage.zip *
+      run: zip -r nourisha-stage.zip * -x "**node_modules**"
       
     - name: Get timestamp
       uses: gerred/actions/current-time@master
