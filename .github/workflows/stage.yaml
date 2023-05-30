@@ -27,7 +27,9 @@ jobs:
     - name: yarn build
       run: yarn build
       
-    - run: yarn install --frozen-lockfile
+    - run: |
+        yarn install --frozen-lockfile
+        cp -r node_modules/ ./dist/
     
     - name: Generate deployment package
       run: zip -r nourisha-stage.zip *
