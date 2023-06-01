@@ -7,7 +7,8 @@
     "test:unit": "ENV_FILE=.env.test jest",
     "build": "rimraf dist && tsc && yarn copy-files",
     "copy-files": "copyfiles -u 1 src/**/*.html dist/src",
-    "start": "cross-env NODE_ENV=production node dist/app.js",
+    "start": "node dist/app.js",
+    "start:env": "cross-env NODE_ENV=production node dist/app.js",
     "container:deploy": "chmod +x ./deploy.sh && ./deploy.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
