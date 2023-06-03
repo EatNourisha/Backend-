@@ -30,7 +30,7 @@ jobs:
     - run: yarn install --frozen-lockfile
     
     - name: Generate deployment package
-      run: zip -r theeatnourisha-dev.zip *
+      run: zip -r theeatnourisha-stage.zip *
       
     - name: Get timestamp
       uses: gerred/actions/current-time@master
@@ -51,10 +51,10 @@ jobs:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: Theeatnourisha
-        environment_name: Theeatnourisha-dev
+        environment_name: Theeatnourisha-stage
         region: eu-west-2
-        version_label: "theeatnourisha-dev-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
-        deployment_package: theeatnourisha-dev.zip
+        version_label: "theeatnourisha-stage-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+        deployment_package: theeatnourisha-stage.zip
 
     - name: Deployed successfully!
       run: echo App deployed to ELB
