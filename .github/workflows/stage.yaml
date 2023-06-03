@@ -32,7 +32,7 @@ jobs:
     - name: Generate deployment package
       run: |
         mv node_modules dist/
-        zip -r nourisha-stage.zip dist/
+        zip -r nourisha-dev.zip dist/
       
     - name: Get timestamp
       uses: gerred/actions/current-time@master
@@ -53,10 +53,10 @@ jobs:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: Nourisha
-        environment_name: Nourisha-Env
+        environment_name: Nourisha-dev
         region: eu-west-2
-        version_label: "nourisha-stage-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
-        deployment_package: nourisha-stage.zip
+        version_label: "nourisha-dev-${{ steps.format-time.outputs.replaced }}" #Using timestamp for the versions
+        deployment_package: nourisha-dev.zip
 
     - name: Deployed successfully!
       run: echo App deployed to ELB
