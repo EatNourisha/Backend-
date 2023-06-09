@@ -3,33 +3,17 @@ name: Build and Push Docker Image
 on:
   push:
     tags:
-      - stage-*
+      - prod-*
     branches:
-      - develop
+      - master
 
 jobs:
-  build-and-push-to-stage:
+  build-and-push-to-prod:
     runs-on: ubuntu-20.04
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and tag the Docker image
-      run: docker build .
-        --tag eatnourisha/eatnourisha-backend:${{ github.sha }}
-        --tag eatnourisha/eatnourisha-backend:latest
-
-    - name: Push the tagged Docker image
-      run: |
-        docker push eatnourisha/eatnourisha-backend:${{ github.sha }}
-        docker push eatnourisha/eatnourisha-backend:latest
 
     - name: clone the deployment scripts repository
       uses: actions/checkout@v2
@@ -41,13 +25,13 @@ jobs:
     - name: update image tag
       uses: mikefarah/yq@master
       with:
-        cmd: yq eval -i '.image.tag = "${{ github.sha }}"' 'helm-charts/apps/eatnourisha-backend/stage.values.yaml'
+        cmd: yq eval -i '.image.tag = "${{ github.sha }}"' 'helm-charts/apps/eatnourisha-backend/prod.values.yaml'
         
     - name: commit changes to image tag
       run: |
         git config user.email "${{ github.event.sender.email }}"
         git config user.name "${{ github.event.sender.login }}"
-        git add helm-charts/apps/eatnourisha-backend/stage.values.yaml
+        git add helm-charts/apps/eatnourisha-backend/prod.values.yaml
         git commit -m "update image tag to ${{ github.sha }}"
         git remote -v
         git push
@@ -59,7 +43,7 @@ jobs:
         ./get_helm.sh
 
     - name: run helm lint
-      run: helm lint ./helm-charts/apps/eatnourisha-backend/ --values=./helm-charts/apps/eatnourisha-backend/stage.values.yaml
+      run: helm lint ./helm-charts/apps/eatnourisha-backend/ --values=./helm-charts/apps/eatnourisha-backend/prod.values.yaml
 
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
@@ -75,7 +59,7 @@ jobs:
         GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
 
     - name: Deploy
-      run: helm upgrade eatnourisha-backend-stage ./helm-charts/apps/eatnourisha-backend/ --install --wait --atomic --timeout 600s --namespace=eatnourisha-backend-stage --create-namespace --set=app.name=eatnourisha-backend-stage --values=./helm-charts/apps/eatnourisha-backend/stage.values.yaml,./helm-charts/apps/eatnourisha-backend/stage.secrets.yaml
+      run: helm upgrade eatnourisha-backend ./helm-charts/apps/eatnourisha-backend/ --install --wait --atomic --timeout 600s --namespace=eatnourisha-backend --create-namespace --set=app.name=eatnourisha-backend --values=./helm-charts/apps/eatnourisha-backend/prod.values.yaml,./helm-charts/apps/eatnourisha-backend/prod.secrets.yaml
 
     - name: Verify deployment
-      run: kubectl rollout status deployment/eatnourisha-backend-stage -n eatnourisha-backend-stage
+      run: kubectl rollout status deployment/eatnourisha-backend -n eatnourisha-backend
