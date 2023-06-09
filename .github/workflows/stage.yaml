@@ -17,8 +17,8 @@ jobs:
 
     - name: Build and tag the Docker image
       run: docker build .
-        --tag eatnourisha/eatnourisha-backend:${{ github.sha }}
-        --tag eatnourisha/eatnourisha-backend:latest
+        --tag registry.digitalocean.com/eathnourisha/eatnourisha-backend:${{ github.sha }}
+        --tag registry.digitalocean.com/eathnourisha/eatnourisha-backend:latest
 
     - name: Install doctl
       uses: digitalocean/action-doctl@v2
@@ -30,8 +30,8 @@ jobs:
 
     - name: Push the tagged Docker image
       run: |
-        docker push eatnourisha/eatnourisha-backend:${{ github.sha }}
-        docker push eatnourisha/eatnourisha-backend:latest
+        docker push registry.digitalocean.com/eathnourisha/eatnourisha-backend:${{ github.sha }}
+        docker push registry.digitalocean.com/eathnourisha/eatnourisha-backend:latest
 
     - name: clone the deployment scripts repository
       uses: actions/checkout@v2
