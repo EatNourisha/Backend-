@@ -15,6 +15,26 @@ export class MealController {
     }
   }
 
+  async updateMealPack(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, user, params } = req;
+      const data = await service.updateMealPack(params.id, body, user.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+  
+  async deleteMealPack(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {  user, params } = req;
+      const data = await service.deleteMealPack(params.id, user.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async createMealPack(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, user } = req;

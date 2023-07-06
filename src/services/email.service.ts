@@ -2,12 +2,18 @@
 
 import sgMail from "@sendgrid/mail";
 
+import FormData from 'form-data';
+import Mailgun from 'mailgun.js'
+
 import * as fs from "fs";
 import * as path from "path";
 import * as hbs from "handlebars";
 
 import config from "../config";
 import { createError } from "../utils";
+
+const mailgun = new Mailgun(FormData);
+const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
 
 // Configure API key authorization: api-key
 // const apiInstance = new ContactsApi();
@@ -16,27 +22,29 @@ import { createError } from "../utils";
 sgMail.setApiKey(config.SENDGRID_KEY);
 
 export enum Template {
-  VERIFICATION = "/emails/verification.html", // {name: '', link: ''}
+  VERIFICATION = "/emails/verification.html", // {name: '', link: '', code: ''}
   RESET_PASSWORD = "/emails/resetPassword.html",
-  ADMIN_INVITE = "/emails/adminRegistrationRequest.html", // needs {link: '', name: ''};
-
-  // TODO: Test and implement sending the emails
-  GUARANTOR_INVITE = "/emails/guarantorsInvite.html", // needs {link: '', name: '', driver_name: ''}; ❌Tested, ✅ Sent
-  GUARANTOR_REJECTION = "/emails/guarantorRejected.html", // needs {guarantor_name: '', name: ''};  ❌Tested, ✅ Sent
-  GUARANTOR_VERFICATION = "/emails/guarantorVerified.html", // needs {guarantor_name: '', name: ''}; ❌Tested, ✅ Sent
-  INITIAL_PAYMENT = "/emails/initialPayment.html", // needs {amount: '', name: ''}; ❌Tested, ✅ Sent
-  WEEKLY_PAYMENT = "/emails/weeklyPayment.html", // needs {amount: '', name: ''}; ❌Tested, ✅ Sent
-  LOAN_REQUEST = "/emails/loanRequest.html", // needs {name: ''}; ❌Tested, ✅ Sent
-  LOAN_REJECTED = "/emails/loanRejected.html", // needs {name: ''}; ❌Tested, ✅ Sent
-  LOAN_REPAYMENT = "/emails/loanRepayment.html", // needs {amount: '', name: ''}; ❌Tested, ✅ Sent
-  SERVICE_SCHEDULE = "/emails/serviceSchedule.html", // needs {date: '', name: '', location: ''}; ❌Tested, ✅ Sent
-  APPLICATION_APPROVED = "/emails/applicationApproved.html", // needs {name: ''}; ❌Tested, ✅ Sent
-  APPLICATION_REJECTED = "/emails/applicationRejected.html", // needs {name: ''}; ❌Tested, ✅ Sent
-  APPLICATION_UNDER_REVIEW = "/emails/applicationUnderReview.html", // needs {name: ''}; ❌Tested, ✅ Sent
+  WELCOME = "/emails/welcome.html", // {name: ''}
 }
 
-export default class EmailService {
+
+type SendViaType = "sendgrid" | "mailgun";
+
+export class EmailService {
   static async sendEmail(subject: string, email: string, _template: Template, data: any) {
+    const via: SendViaType =  'mailgun';
+    
+    switch (via) {
+      case 'sendgrid' as any:
+        return await this.sendEmail_sendgrid(subject, email, _template, data)
+      case 'mailgun' as any:
+        return await this.sendEmail_mailgun(subject, email, _template, data)
+      default:
+        break;
+    }
+  }
+
+  static async sendEmail_sendgrid(subject: string, email: string, _template: Template, data: any) {
     const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
 
     // console.log("sendEmail", config.SENDGRID_KEY, email);
@@ -58,5 +66,41 @@ export default class EmailService {
       console.log(error);
       throw createError(error.message, 500);
     }
+  }
+
+  static async sendEmail_mailgun(subject: string, email: string, _template: Template, data: any) {
+    const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
+    const template = hbs.compile(html),
+      htmlToSend = template(data);
+
+    let result: any;
+
+    try {
+      result = await mg.messages.create('eatnourisha.com', {
+        from: "Eat Nourisha <help@eatnourisha.com>",
+        to: [email],
+        subject,
+        html: htmlToSend
+      })
+
+    } catch (error) {
+        console.error("[MAILGUN::ERROR]", error)
+    }
+
+    return result;
+  }
+
+  static async sendMailgunTestEmail() {
+    const result = await mg.messages.create('sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org', {
+      from: "Excited User <mailgun@sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org>",
+      to: ["famuyiwadayodaniel@gmail.com"],
+      subject: "Hello, Testing Mailgun",
+      text: "Testing some Mailgun awesomeness!",
+      html: "<h1>Testing some Mailgun awesomeness!</h1>"
+    })
+
+    console.log("Mailgun Test", result)
+
+    return result
   }
 }

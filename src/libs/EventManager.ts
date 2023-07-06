@@ -18,6 +18,8 @@ export default class EventManager extends Map<keyof NourishaEventTypes, (arg: an
   }
 
   static subscribeEvents() {
+    if(this.store.size < 1) return;
+    
     this.store.forEach((func, key) => {
       NourishaBus.on(key, func);
     });

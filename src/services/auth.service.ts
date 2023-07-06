@@ -4,7 +4,7 @@ import { sign, verify } from "jsonwebtoken";
 import { createError, getUpdateOptions, setExpiration, validateFields } from "../utils";
 import { AuthPayload, Auth, loginDto, registerDto, ResetPasswordDto, ChangePasswordDto } from "../interfaces";
 import { authToken, authVerification, Customer, customer } from "../models";
-import { CustomerService, RoleService, PasswordService, AuthVerificationService } from "../services";
+import { CustomerService, RoleService, PasswordService, AuthVerificationService, EmailService, Template } from "../services";
 import config from "../config";
 import { AuthVerificationReason, AvailableRole } from "../valueObjects";
 import { NourishaBus } from "../libs";
@@ -64,6 +64,12 @@ export class AuthService {
     const payload = AuthService.transformUserToPayload(acc);
     const { token, expiration } = await this.addToken(payload, device_id);
     payload.exp = expiration;
+
+    // send email here.
+    await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
+      name: `${acc?.first_name}`,
+    });
+
     return { payload, token };
   }
 

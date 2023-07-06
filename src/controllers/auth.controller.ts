@@ -79,4 +79,17 @@ export class AuthController {
       sendError(error, next);
     }
   }
+
+
+  // Admin
+  async adminLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = req.body;
+      const deviceId = req.headers["device-id"] as string;
+      const data = await service.login(body, deviceId, true);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

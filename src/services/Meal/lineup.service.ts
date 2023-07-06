@@ -2,12 +2,14 @@ import { CreateLineupDto } from "../../interfaces";
 import { Customer, customer, DayMeals, lineup, MealLineup, MealPack } from "../../models";
 import { createError, setExpiration, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
-import { AvailableResource, PermissionScope } from "../../valueObjects";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { format, getDay } from "date-fns";
 
 import omit from "lodash/omit";
 import pick from "lodash/pick";
 import intersection from "lodash/intersection";
+import { NourishaBus } from "../../libs";
+import LineupEventListener from "../../listeners/lineup.listener";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
@@ -18,6 +20,8 @@ export class MealLineupService {
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id }).exec();
     await MealLineupService.lockLineupChange(customer_id);
+
+    await NourishaBus.emit('lineup:created', {owner: customer_id, lineup: _lineup});
     return _lineup;
   }
 
@@ -37,6 +41,8 @@ export class MealLineupService {
       .exec();
     if (!_lineup && !dryRun) throw createError("Customer's weekly lineup does not exist", 404);
     await MealLineupService.lockLineupChange(customer_id);
+
+    await NourishaBus.emit('lineup:updated', {owner: customer_id, lineup: _lineup});
     return _lineup;
   }
 
@@ -121,4 +127,28 @@ export class MealLineupService {
     if (!update && !dryRun) throw createError("Unable to lock lineup changes", 400);
     return;
   }
+
+  // Admin
+  async getLineupById(customer_id: string, roles: string[], silent = false): Promise<MealLineup | null> {
+     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((pop) => ({
+      path: pop,
+      populate: ["breakfast", "lunch", "dinner"],
+    }));
+
+    console.log("Silent", silent)
+
+    const _lineup = await lineup.findOne({customer: customer_id}).populate(pops).lean<MealLineup>().exec();
+    if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
+    return _lineup ?? {};
+  }
+
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new LineupEventListener();
+  }
+
 }

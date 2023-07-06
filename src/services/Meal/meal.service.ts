@@ -27,6 +27,22 @@ export class MealService {
     return _meal_pack;
   }
 
+  async updateMealPack(id: string, dto: Partial<CreateMealPackDto>, roles: string[]): Promise<MealPack> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    const mlp = await mealPack.findByIdAndUpdate(id, {...dto}, {new: true}).lean<MealPack>().exec();
+    if (!mlp) throw createError("Meal pack does not exist", 400);
+    return mlp;
+  }
+
+  async deleteMealPack(id: string, roles: string[]): Promise<MealPack> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.DELETE, PermissionScope.ALL]);
+
+    const mlp = await mealPack.findByIdAndDelete(id).lean<MealPack>().exec();
+    if (!mlp) throw createError("Meal pack does not exist", 400);
+    return mlp;
+  }
+
   async getMeals(roles: string[], filters?: IPaginationFilter): Promise<PaginatedDocument<Meal[]>> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
