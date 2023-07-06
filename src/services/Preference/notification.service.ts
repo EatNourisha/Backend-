@@ -1,8 +1,24 @@
 import { IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Notification, NotificationStatus, notification } from "../../models";
+import { FCMToken, Notification, NotificationStatus, fcmToken, notification } from "../../models";
 import { RoleService } from "../role.service";
-import { createError, paginate } from "../../utils";
+import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
+
+
+import sdk from 'firebase-admin'
+
+const service_account = require('../../../nourisha-c326f-firebase-adminsdk-tze7h-860614c18b.json');
+const admin = sdk.initializeApp({
+  credential: sdk.credential.cert(service_account)
+})
+
+interface NotifyDto {
+  tag: string;
+  ticker: string;
+  title: string;
+  content: string;
+}
+
 
 export class NotificationService {
   async getCurrentUserNotifications(
@@ -21,5 +37,95 @@ export class NotificationService {
     const note = await notification.findOneAndUpdate({ _id: id, customer: customer_id }, { status: "read" }).lean<Notification>().exec();
     if (!note) throw createError("Notification does not exist", 404);
     return note;
+  }
+
+  async updateFCMToken(customer_id: string, dto: {token: string; deviceId: string}, roles: string[]) {
+    validateFields(dto, ['token', 'deviceId']);
+    await RoleService.hasPermission(roles, AvailableResource.NOTIFICATION, [PermissionScope.READ, PermissionScope.ALL]);
+    const device_token = await fcmToken.findOneAndUpdate({customer: customer_id}, {...dto}, getUpdateOptions()).lean<FCMToken>().exec();
+    return device_token;
+  }
+
+  static async notify(customer_id: string, dto: NotifyDto) {
+    validateFields(dto, ['tag', 'content', 'title', 'ticker']);
+    const tokens = await NotificationService.getCustomerDeviceTokens(customer_id);
+    if(!tokens) return null;
+
+    const [response, note] = await Promise.all([
+      admin.messaging().sendEachForMulticast({ tokens, ...this.pushNotificationConfig(dto)}), 
+      notification.create({customer: customer_id, ...dto})
+    ]);
+
+    if(!!response && response.failureCount > 0) {
+      const possible_error_codes = ['messaging/registration-token-not-registered', 'messaging/mismatched-credential', 'messaging/invalid-registration-token']
+      let failed_tokens: string[] = [];
+      response.responses.forEach((res, idx) => {
+        if(!!res.error && possible_error_codes.includes(res.error.code)) {
+          failed_tokens.push(tokens[idx]);
+        }
+      })
+      if(failed_tokens.length > 0) await this.removeFailedDeviceTokens(failed_tokens);
+    }
+
+    return note;
+  }
+
+
+  static async getCustomerDeviceTokens(customer_id: string): Promise<string[] | null> {
+    const fcm = await fcmToken.findOne({customer: customer_id}).lean<FCMToken[]>().exec();
+    if(!fcm || fcm?.length < 1) return null;
+    return fcm.map(each => each.token);
+  }
+
+  static async removeFailedDeviceTokens(failed_tokens: string[]) {
+    const result = await fcmToken.deleteMany({token: {$in: failed_tokens}}).lean().exec().catch(err => console.log("Error removing failed fcm tokens", err));
+    return result;
+  }
+
+  static async pushNotificationConfig(dto: NotifyDto) {
+    return  {
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            mutableContent: true,
+            contentAvailable: true,
+          },
+        },
+        headers: {
+          'apns-priority': '5',
+          'apns-push-type': 'alert',
+        }
+      },
+      android: {
+        priority: "high",
+        data: {
+          event: dto.tag,
+          body: JSON.stringify(dto),
+        },
+        notification: {
+          color: '#FE7E00',
+          icon: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png',
+          channelId: "",
+          defaultSound: true,
+          defaultVibrateTimings: true,
+          notificationCount: 0,
+          visibility: 'public',
+          ticker: dto.ticker,
+          title: dto.title,
+          body: dto.content,
+          priority: 'max',
+        }
+      },
+      data: {
+        event: dto.tag,
+        body: JSON.stringify(dto),
+      },
+      notification: {
+        title: dto.title,
+        body: dto.content,
+        imageUrl: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png'
+      }
+    }
   }
 }

@@ -24,4 +24,16 @@ export class SubscriptionController {
       sendError(error, next);
     }
   }
+
+
+  // Admin
+  async getSubscriptions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const data = await service.getSubscriptions(user.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

@@ -199,7 +199,8 @@ export class BillingHooks {
       next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
     });
 
-    await transaction.updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id });
+
+    await transaction.updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id }).exec();
 
     console.log("Subscription data", { _plan, _card, sub });
 

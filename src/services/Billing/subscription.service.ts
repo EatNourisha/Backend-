@@ -1,10 +1,12 @@
 import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
-import { CreateSubscriptionDto } from "../../interfaces";
+import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
 import { Customer, Subscription, customer, subscription } from "../../models";
-import { createError, getUpdateOptions } from "../../utils";
-import { AvailableResource, PermissionScope } from "../../valueObjects";
+import { createError, getUpdateOptions, paginate } from "../../utils";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
+import { NourishaBus } from "../../libs";
+import SubscriptionEventListener from "../../listeners/subscription.listener";
 
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -18,7 +20,10 @@ export class SubscriptionService {
     // if (already_exist && dryRun) return;
     // if (already_exist && !dryRun) throw createError("Subscription already exist", 404);
 
-    const _sub = await subscription.findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions());
+    const _sub = await subscription.findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions()).lean<Subscription>().exec();
+    await customer.updateOne({_id: cus?._id}, {subscription: _sub?._id}).lean<Customer>().exec();
+
+    await NourishaBus.emit('subscription:updated', {owner: cus, subscription: _sub});
     return _sub;
   }
 
@@ -38,7 +43,9 @@ export class SubscriptionService {
       prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
-    return await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
+    const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
+    await NourishaBus.emit('subscription:cancelled', {owner: customer_id, subscription: sub});
+    return update;
   }
 
   static async checkSubscriptionExists(id: string) {
@@ -50,5 +57,30 @@ export class SubscriptionService {
     const sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
     if (!sub) return null;
     return sub;
+  }
+
+  // Admin
+
+  async getSubscriptions(roles: string[], filters?: IPaginationFilter & {status: string}): Promise<PaginatedDocument<Subscription[]>> {
+     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+     
+     let queries: {$and?: any[]} = {};
+     const statuses = String(filters?.status ?? "").split(",");
+
+     if(!!filters?.status) {
+      queries = { ...queries, $and: [...(queries?.$and ?? [])] };
+      queries.$and!.push({
+        status: { $in: statuses },
+      });
+     }
+
+    return paginate('subscription', queries, filters, {populate: ['customer', 'plan']});
+  }
+
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new SubscriptionEventListener();
   }
 }

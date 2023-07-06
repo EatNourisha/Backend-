@@ -7,6 +7,7 @@ import { logRequests, catchRequest, handleError, compressor } from "./src/middle
 import config from "./src/config";
 import Routes from "./src/routes";
 import SystemService from "./src/services/system.service";
+import { EventManager } from "./src/libs";
 
 declare global {
   namespace Express {
@@ -62,7 +63,7 @@ app.use(handleError);
     mongoose.set("strictQuery", true);
     await mongoose.connect(config.DB_URI, {});
     new SystemService().ensureSystemServices();
-    // EventManager.subscribeEvents();
+    EventManager.subscribeEvents();
 
     console.log(`\n🐕‍🦺 db connected on localhost:${config.PORT}`);
   } catch (error) {
@@ -74,19 +75,19 @@ app.use(handleError);
     // app.use(Sentry.Handlers.errorHandler());
     process.on("uncaughtException", async (error) => {
       console.log("An Uncaught exception has occurred", error);
-      //   EventManager.unsubscribeEvents();
+        EventManager.unsubscribeEvents();
       process.exit(0);
     });
 
     process.on("SIGINT", async () => {
       console.log("A SIG-INT has occurred");
-      //   EventManager.unsubscribeEvents();
+        EventManager.unsubscribeEvents();
       process.exit(0);
     });
 
     process.on("SIGTERM", async () => {
       console.log("A SIG-TERM has occurred");
-      //   EventManager.unsubscribeEvents();
+        EventManager.unsubscribeEvents();
       process.exit(0);
     });
     console.log(`🚀 ${config.NAME} service::v${config.VERSION} listening on http://localhost:${config.PORT}`);

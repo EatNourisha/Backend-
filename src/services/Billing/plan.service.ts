@@ -1,17 +1,17 @@
 import { Stripe } from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
-import { CreatePlanDto } from "../../interfaces";
-import { AvailableResource, PermissionScope } from "../../valueObjects";
+import { CreatePlanDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { plan, Plan } from "../../models";
-import { createError, createSlug, validateFields } from "../../utils";
+import { createError, createSlug, paginate, validateFields } from "../../utils";
 import { SubscriptionInterval } from "../../models/plan";
 
 export class PlanService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
   async createPlan(dto: CreatePlanDto, roles: string[]) {
-    validateFields(dto, ["name", "description", "perks", "amount", "currency", "name", "subscription_interval"]);
+    validateFields(dto, ["name", "description", "perks", "amount", "currency", "subscription_interval"]);
 
     const supportedIntervals = Object.values(SubscriptionInterval);
     if (!supportedIntervals.includes(dto.subscription_interval)) throw createError(`Support interval are ${supportedIntervals.join(", ")}`);
@@ -48,7 +48,7 @@ export class PlanService {
     if (!_plan) throw createError("Plan does not exist", 404);
 
     let price: Stripe.Response<Stripe.Price> | null = null;
-    if (!!dto?.amount) {
+    if (!!dto?.amount && dto?.amount !== _plan?.amount) {
       [price] = await Promise.all([
         this.stripe.prices.create({
           currency: "gbp",
@@ -79,9 +79,28 @@ export class PlanService {
     return _plan;
   }
 
-  async getPlans(roles: string[]) {
+
+
+  async getPlanById(id: string, roles: string[]): Promise<Plan> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.ALL]);
+
+    const _plan = await plan.findById(id).lean<Plan>().exec();
+    if(!_plan) throw createError("Plan not found", 404);
+    return _plan;
+  }
+
+  async getPlans(roles: string[], filters?: IPaginationFilter): Promise<PaginatedDocument<Plan[]>> {
     await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
-    return await plan.find();
+    const queries: any = {};
+    return paginate('plan', queries, filters);
+  }
+
+  async deletePlan(id: string, roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.DELETE, PermissionScope.ALL]);
+
+     const _plan = await plan.findByIdAndDelete(id).lean<Plan>().exec();
+    if(!_plan) throw createError("Plan not found", 404);
+    return _plan;
   }
 
   static async checkPlanExists(key: keyof Plan, value: string): Promise<boolean> {

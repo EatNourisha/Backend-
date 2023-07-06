@@ -53,4 +53,16 @@ export class MealLineupController {
       sendError(error, next);
     }
   }
+
+  // Admin
+  async getLineupById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, params, query } = req;
+      console.log('getLineup', query)
+      const data = await service.getLineupById(params.id, user.roles, !!query?.silent);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

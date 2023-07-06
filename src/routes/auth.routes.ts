@@ -13,4 +13,7 @@ router.post("/register", deviceGuard, controller.registerCustomerAccount);
 router.post("/request/reset", deviceGuard, controller.requestResetPasswordToken);
 router.get("/request/email", authGuard, controller.requestEmailVerification);
 
+
+router.post("/admin/login", deviceGuard, controller.adminLogin);
+
 export default router;

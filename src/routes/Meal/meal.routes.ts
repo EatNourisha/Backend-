@@ -5,13 +5,15 @@ import { MealController } from "../../controllers";
 const router = Router();
 const controller = new MealController();
 
-router.post("/", authGuard, controller.createMeal);
+// router.post("/", authGuard, controller.createMeal);
 router.post("/pack", authGuard, controller.createMealPack);
+router.put("/pack/:id", authGuard, controller.updateMealPack);
+router.delete("/pack/:id", authGuard, controller.deleteMealPack);
 
-router.get("/", authGuard, controller.getMeals);
+// router.get("/", authGuard, controller.getMeals);
 router.get("/pack", authGuard, controller.getMealPacks);
 
 router.get("/pack/:id", authGuard, controller.getMealPackById);
-router.get("/:id", authGuard, controller.getMealById);
+// router.get("/:id", authGuard, controller.getMealById);
 
 export default router;
