@@ -29,7 +29,11 @@ export class SubscriptionService {
 
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
-    const sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
+    const [sub] = await Promise.all([
+      subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec(),
+      new SubscriptionService().reconcileSubscription(customer_id)
+    ]);
+
     if (!sub) return null;
     return sub;
   }
@@ -82,5 +86,11 @@ export class SubscriptionService {
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {
     new SubscriptionEventListener();
+  }
+
+  async reconcileSubscription(customer_id: string) {
+    // const 
+    // const sub = this.stripe.subscriptions.search
+    console.log(customer_id)
   }
 }

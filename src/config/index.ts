@@ -13,7 +13,10 @@ const config = {
   MAILGUN_KEY: process.env.MAILGUN_KEY as string,
   CMC_PRO_API_KEY: "16d9c3b6-4d24-4d36-8b57-3842702aca1b",
   paystackCallbackUrl: "",
-  ANNUAL_PERCENTAGE_RATE: 3.2,
+  
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL as string,
+  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY as string,
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID as string,
 
   STRIPE_PUBLISH_KEY: process.env.STRIPE_PUBLISH_KEY as string,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,

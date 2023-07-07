@@ -10,7 +10,7 @@ export type NotificationStatus = "read" | "unread";
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Notification extends BaseEntity {
   @prop()
-  type: string;
+  tag: string;
 
   @prop()
   title: string;
@@ -19,7 +19,7 @@ export class Notification extends BaseEntity {
   customer: Ref<Customer>;
 
   @prop()
-  description: string;
+  content: string;
 
   @prop()
   metadata: any;
@@ -27,7 +27,7 @@ export class Notification extends BaseEntity {
   @prop()
   isAdmin: boolean;
 
-  @prop({ default: false })
+  @prop({ default: false, select: false })
   delivered: boolean;
 
   @prop({ default: "unread" })
