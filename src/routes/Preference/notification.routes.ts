@@ -8,4 +8,7 @@ const controller = new NotificationController();
 router.get("/me", authGuard, controller.getCurrentUserNotifications);
 router.put("/:id/read", authGuard, controller.markAsRead);
 
+
+router.post("/test", authGuard, controller.testNotification);
+
 export default router;

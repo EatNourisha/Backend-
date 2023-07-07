@@ -9,8 +9,10 @@ export default class SubscriptionEventListener {
   @addEvent("subscription:updated")
   static async OnSubscriptionUpdated({ owner }: NourishaEventTypes["subscription:updated"]) {
     const customer_id = getCustomerId(owner);
-    const content = `👏 Your subscription was successfully, proceed to add your meal lineup if you havn't`;
-    const note = await NotificationService.notify(customer_id, {tag: 'subscription', content, title: 'Subscription Successful', ticker: 'New message'})
+    const content = `👏 Your subscription was successfully, proceed to add your meal lineup if you haven't`;
+    const note = await NotificationService.notify(customer_id, {tag: 'subscription', content, title: 'Subscription', ticker: 'New message'});
+
+    console.log("Sent Notification", note)
     if(!!note) log("🚀 Notifications", `Sent ( ${content} ) to customer:${customer_id}`);
   }
 
@@ -18,7 +20,7 @@ export default class SubscriptionEventListener {
   static async OnSubscriptionCancelled({ owner }: NourishaEventTypes["subscription:cancelled"]) {
     const customer_id = getCustomerId(owner);
     const content = `😒 Your subscription has been cancelled`
-    const note = await NotificationService.notify(customer_id, {tag: 'subscription', content, title: 'Subscription cancalled', ticker: 'New message'})
+    const note = await NotificationService.notify(customer_id, {tag: 'subscription', content, title: 'Subscription', ticker: 'New message'})
     if(!!note) log("🚀 Notifications", `Sent ( ${content} ) to customer:${customer_id}`);
   }
 

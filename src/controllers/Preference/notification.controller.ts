@@ -24,4 +24,14 @@ export class NotificationController {
       sendError(error, next);
     }
   }
+
+  async testNotification(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, body } = req;
+      const data = await NotificationService.notify(user.sub, body);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

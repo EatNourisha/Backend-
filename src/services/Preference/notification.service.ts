@@ -6,17 +6,27 @@ import { AvailableResource, PermissionScope } from "../../valueObjects";
 
 
 import sdk from 'firebase-admin'
+import { MulticastMessage } from "firebase-admin/lib/messaging/messaging-api";
+import config from "../../config";
 
-const service_account = require('../../../nourisha-c326f-firebase-adminsdk-tze7h-860614c18b.json');
+// const service_account = require('../../../nourisha-c326f-firebase-adminsdk-tze7h-860614c18b.json');
 const admin = sdk.initializeApp({
-  credential: sdk.credential.cert(service_account)
+  // credential: sdk.credential.cert(service_account),
+  credential: sdk.credential.cert({
+    clientEmail: config.FIREBASE_CLIENT_EMAIL,
+    privateKey: config.FIREBASE_PRIVATE_KEY,
+    projectId: config.FIREBASE_PROJECT_ID,
+  })
 })
+
+
 
 interface NotifyDto {
   tag: string;
   ticker: string;
   title: string;
   content: string;
+  tokens?: string[]
 }
 
 
@@ -34,7 +44,7 @@ export class NotificationService {
 
   async markAsRead(id: string, customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.NOTIFICATION, [PermissionScope.MARK, PermissionScope.ALL]);
-    const note = await notification.findOneAndUpdate({ _id: id, customer: customer_id }, { status: "read" }).lean<Notification>().exec();
+    const note = await notification.findOneAndUpdate({ _id: id, customer: customer_id }, { status: "read", delivered: true }).lean<Notification>().exec();
     if (!note) throw createError("Notification does not exist", 404);
     return note;
   }
@@ -48,11 +58,15 @@ export class NotificationService {
 
   static async notify(customer_id: string, dto: NotifyDto) {
     validateFields(dto, ['tag', 'content', 'title', 'ticker']);
-    const tokens = await NotificationService.getCustomerDeviceTokens(customer_id);
+    const tokens = dto?.tokens ?? await NotificationService.getCustomerDeviceTokens(customer_id);
+
+    // console.log("Notification Tokens", tokens);
     if(!tokens) return null;
 
+    const message = await this.pushNotificationConfig(dto);
+
     const [response, note] = await Promise.all([
-      admin.messaging().sendEachForMulticast({ tokens, ...this.pushNotificationConfig(dto)}), 
+      admin.messaging().sendEachForMulticast({ tokens, ...message}), 
       notification.create({customer: customer_id, ...dto})
     ]);
 
@@ -64,25 +78,27 @@ export class NotificationService {
           failed_tokens.push(tokens[idx]);
         }
       })
+
       if(failed_tokens.length > 0) await this.removeFailedDeviceTokens(failed_tokens);
     }
 
-    return note;
+    return {note, ...response};
   }
 
 
   static async getCustomerDeviceTokens(customer_id: string): Promise<string[] | null> {
-    const fcm = await fcmToken.findOne({customer: customer_id}).lean<FCMToken[]>().exec();
+    const fcm = await fcmToken.find({customer: customer_id}).lean<FCMToken[]>().exec();
     if(!fcm || fcm?.length < 1) return null;
     return fcm.map(each => each.token);
   }
 
   static async removeFailedDeviceTokens(failed_tokens: string[]) {
+    // console.log("Tokens to remove", failed_tokens)
     const result = await fcmToken.deleteMany({token: {$in: failed_tokens}}).lean().exec().catch(err => console.log("Error removing failed fcm tokens", err));
     return result;
   }
 
-  static async pushNotificationConfig(dto: NotifyDto) {
+  static async pushNotificationConfig(dto: NotifyDto): Promise<Omit<MulticastMessage, 'tokens'>> {
     return  {
       apns: {
         payload: {
@@ -106,7 +122,7 @@ export class NotificationService {
         notification: {
           color: '#FE7E00',
           icon: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png',
-          channelId: "",
+          channelId: dto.tag,
           defaultSound: true,
           defaultVibrateTimings: true,
           notificationCount: 0,
@@ -124,8 +140,32 @@ export class NotificationService {
       notification: {
         title: dto.title,
         body: dto.content,
-        imageUrl: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png'
-      }
+        // imageUrl: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png'
+      },
+
+       webpush: {
+          headers: {
+            Urgency: 'high',
+          },
+          // fcmOptions: {
+          //   link: 'https://medical.aeglehealth.io',
+
+          // },
+          notification: {
+            icon: 'https://res.cloudinary.com/drivfk4v3/image/upload/c_scale,w_79/v1688665730/Nourisha/logo-icon_frbirl.png',
+            requireInteraction: true,
+            vibrate: 23,
+            // timestamp: Date.now(),
+            tag: dto.tag,
+            title: dto.title,
+            body: dto.content,
+          },
+          data: {
+            event: dto.tag,
+            body: JSON.stringify(dto),
+          },
+        },
+      
     }
   }
 }
