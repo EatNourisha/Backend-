@@ -1,4 +1,4 @@
-import { IPaginationFilter, PaginatedDocument } from "../../interfaces";
+import { IPaginationFilter, NotifyDto, PaginatedDocument } from "../../interfaces";
 import { FCMToken, Notification, NotificationStatus, fcmToken, notification } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
@@ -21,13 +21,6 @@ const admin = sdk.initializeApp({
 
 
 
-interface NotifyDto {
-  tag: string;
-  ticker: string;
-  title: string;
-  content: string;
-  tokens?: string[]
-}
 
 
 export class NotificationService {

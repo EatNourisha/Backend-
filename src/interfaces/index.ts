@@ -10,3 +10,5 @@ export * from "./dtos/meal.dto";
 export * from "./dtos/billing.dto";
 
 export * from "./dtos/allergy.dto";
+
+export * from "./dtos/notification.dto"
