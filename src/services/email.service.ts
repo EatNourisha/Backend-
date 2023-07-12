@@ -38,7 +38,8 @@ export class EmailService {
       case 'sendgrid' as any:
         return await this.sendEmail_sendgrid(subject, email, _template, data)
       case 'mailgun' as any:
-        return await this.sendEmail_mailgun(subject, email, _template, data)
+        // return await this.sendEmail_mailgun(subject, email, _template, data)
+        return;
       default:
         break;
     }
