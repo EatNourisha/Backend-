@@ -31,7 +31,7 @@ jobs:
         git config user.email "${{ github.event.sender.email }}"
         git config user.name "${{ github.event.sender.login }}"
         git add helm-charts/apps/eatnourisha-backend/prod.values.yaml
-        git commit -m "update image tag to ${{ github.sha }}"
+        git commit -m "update image tag to ${{ github.sha }}" ||  echo "No changes to commit"
         git remote -v
         git push
 
