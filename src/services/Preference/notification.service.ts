@@ -9,12 +9,16 @@ import sdk from 'firebase-admin'
 import { MulticastMessage } from "firebase-admin/lib/messaging/messaging-api";
 import config from "../../config";
 
+// console.log(config.FIREBASE_PRIVATE_KEY)
+
+const {privateKey} = !!config.FIREBASE_PRIVATE_KEY ? JSON.parse(config.FIREBASE_PRIVATE_KEY) : {privateKey: undefined};
+
 // const service_account = require('../../../nourisha-c326f-firebase-adminsdk-tze7h-860614c18b.json');
 const admin = sdk.initializeApp({
   // credential: sdk.credential.cert(service_account),
   credential: sdk.credential.cert({
     clientEmail: config.FIREBASE_CLIENT_EMAIL,
-    privateKey: config.FIREBASE_PRIVATE_KEY,
+    privateKey,
     projectId: config.FIREBASE_PROJECT_ID,
   })
 })
