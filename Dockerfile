@@ -3,7 +3,7 @@ LABEL AUTHOR github.com/famuyiwadayo
 WORKDIR /usr/src/app
 COPY ./ ./
 RUN yarn install
-RUN yarn build
+RUN yarn run build
 
 # Build Stage 2
 # This build takes the production build from staging build
@@ -19,6 +19,6 @@ RUN yarn build
 # COPY .env ./ 
 
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/build ./build
+COPY --from=build /usr/src/app/dist ./dist
 EXPOSE 8080
 CMD yarn start
