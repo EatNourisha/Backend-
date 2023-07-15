@@ -2,8 +2,8 @@
 
 import sgMail from "@sendgrid/mail";
 
-import FormData from 'form-data';
-import Mailgun from 'mailgun.js'
+// import FormData from 'form-data';
+// import Mailgun from 'mailgun.js'
 
 import * as fs from "fs";
 import * as path from "path";
@@ -12,8 +12,8 @@ import * as hbs from "handlebars";
 import config from "../config";
 import { createError } from "../utils";
 
-const mailgun = new Mailgun(FormData);
-const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
+// const mailgun = new Mailgun(FormData);
+// const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
 
 // Configure API key authorization: api-key
 // const apiInstance = new ContactsApi();
@@ -32,7 +32,7 @@ type SendViaType = "sendgrid" | "mailgun";
 
 export class EmailService {
   static async sendEmail(subject: string, email: string, _template: Template, data: any) {
-    const via: SendViaType =  'mailgun';
+    const via: SendViaType =  'sendgrid';
     
     switch (via) {
       case 'sendgrid' as any:
@@ -77,12 +77,15 @@ export class EmailService {
     let result: any;
 
     try {
-      result = await mg.messages.create('eatnourisha.com', {
-        from: "Eat Nourisha <help@eatnourisha.com>",
-        to: [email],
-        subject,
-        html: htmlToSend
-      })
+      // result = await mg.messages.create('eatnourisha.com', {
+      //   from: "Eat Nourisha <help@eatnourisha.com>",
+      //   to: [email],
+      //   subject,
+      //   html: htmlToSend
+      // })
+
+      result = {};
+      console.log(htmlToSend, subject, email)
 
     } catch (error) {
         console.error("[MAILGUN::ERROR]", error)
@@ -92,16 +95,16 @@ export class EmailService {
   }
 
   static async sendMailgunTestEmail() {
-    const result = await mg.messages.create('sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org', {
-      from: "Excited User <mailgun@sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org>",
-      to: ["famuyiwadayodaniel@gmail.com"],
-      subject: "Hello, Testing Mailgun",
-      text: "Testing some Mailgun awesomeness!",
-      html: "<h1>Testing some Mailgun awesomeness!</h1>"
-    })
+    // const result = await mg.messages.create('sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org', {
+    //   from: "Excited User <mailgun@sandbox3a0fb15bfab14b34afc646e7e9b21545.mailgun.org>",
+    //   to: ["famuyiwadayodaniel@gmail.com"],
+    //   subject: "Hello, Testing Mailgun",
+    //   text: "Testing some Mailgun awesomeness!",
+    //   html: "<h1>Testing some Mailgun awesomeness!</h1>"
+    // })
 
-    console.log("Mailgun Test", result)
+    // console.log("Mailgun Test", result)
 
-    return result
+    return {}
   }
 }
