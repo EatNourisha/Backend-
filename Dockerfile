@@ -7,7 +7,7 @@ RUN yarn run build
 
 # Build Stage 2
 # This build takes the production build from staging build
-# #
+
 FROM node:18-alpine
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
