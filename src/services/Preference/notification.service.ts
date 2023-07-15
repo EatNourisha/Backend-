@@ -9,7 +9,6 @@ import sdk from 'firebase-admin'
 import { MulticastMessage } from "firebase-admin/lib/messaging/messaging-api";
 import config from "../../config";
 
-// console.log(config.FIREBASE_PRIVATE_KEY)
 
 const {privateKey} = !!config.FIREBASE_PRIVATE_KEY ? JSON.parse(config.FIREBASE_PRIVATE_KEY) : {privateKey: undefined};
 
