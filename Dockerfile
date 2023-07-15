@@ -19,6 +19,6 @@ RUN yarn build
 # COPY .env ./ 
 
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/build ./build
 EXPOSE 8080
 CMD yarn start
