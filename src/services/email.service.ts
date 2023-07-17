@@ -38,8 +38,7 @@ export class EmailService {
       case 'sendgrid' as any:
         return await this.sendEmail_sendgrid(subject, email, _template, data)
       case 'mailgun' as any:
-        // return await this.sendEmail_mailgun(subject, email, _template, data)
-        return;
+        return await this.sendEmail_mailgun(subject, email, _template, data)
       default:
         break;
     }
@@ -48,7 +47,7 @@ export class EmailService {
   static async sendEmail_sendgrid(subject: string, email: string, _template: Template, data: any) {
     const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
 
-    console.log("sendEmail", config.SENDGRID_KEY, email);
+    // console.log("sendEmail", config.SENDGRID_KEY, email);
 
     const template = hbs.compile(html),
       htmlToSend = template(data);
