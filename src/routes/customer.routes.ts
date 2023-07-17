@@ -22,6 +22,7 @@ router.get("/:id", authGuard, controller.getCustomerById); // ✅
 // POST
 // router.post("/", authGuard, controller.createCustomer); // ✅
 router.post("/test_mailgun", controller.testEmail); // ✅
+router.post("/test_sendgrid", controller.testSendgrid); // ✅
 
 // PUT
 router.put("/me", authGuard, controller.updateCustomer); // ✅

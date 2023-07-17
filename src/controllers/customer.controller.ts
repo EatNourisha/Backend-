@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomerService, EmailService } from "../services";
-import { sendError, sendResponse } from "../utils";
+import { CustomerService, EmailService, Template } from "../services";
+import { createError, sendError, sendResponse } from "../utils";
 
 const service = new CustomerService();
 export class CustomerController {
@@ -209,6 +209,17 @@ export class CustomerController {
   async testEmail(_: Request, res: Response, next: NextFunction) {
     try {
       const result = await EmailService.sendMailgunTestEmail();
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async testSendgrid(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {body} = req;
+      if(!body?.email) throw createError("email is required in body", 401);
+      const result = await EmailService.sendEmail_sendgrid('Test Email', body.email, Template.WELCOME, {name: body?.email});
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);
