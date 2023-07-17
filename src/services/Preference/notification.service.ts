@@ -12,6 +12,9 @@ import config from "../../config";
 
 const {privateKey} = !!config.FIREBASE_PRIVATE_KEY ? JSON.parse(config.FIREBASE_PRIVATE_KEY) : {privateKey: undefined};
 
+
+// console.log(`\n\n\n-------------------- FIREBASE PRIVATE KEY --------------------------\n\n${privateKey}\n\n--------------------------------------------------------------------\n\n\n`)
+
 // const service_account = require('../../../nourisha-c326f-firebase-adminsdk-tze7h-860614c18b.json');
 const admin = sdk.initializeApp({
   // credential: sdk.credential.cert(service_account),
