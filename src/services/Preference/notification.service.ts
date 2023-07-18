@@ -36,7 +36,17 @@ export class NotificationService {
     filters: IPaginationFilter & { status?: NotificationStatus }
   ): Promise<PaginatedDocument<Notification[]>> {
     await RoleService.hasPermission(roles, AvailableResource.NOTIFICATION, [PermissionScope.READ, PermissionScope.ALL]);
-    let queries: any = { customer: customer_id };
+    let queries: any = { customer: customer_id, is_broadcast: false, is_admin: false };
+    if (!!filters?.status) Object.assign(queries, { status: filters.status });
+    return await paginate("notification", queries, filters);
+  }
+
+  async getSentBroadcasts(
+    roles: string[],
+    filters: IPaginationFilter & { status?: NotificationStatus }
+  ): Promise<PaginatedDocument<Notification[]>> {
+    await RoleService.hasPermission(roles, AvailableResource.BROADCAST, [PermissionScope.READ, PermissionScope.ALL]);
+    let queries: any = { is_broadcast: true };
     if (!!filters?.status) Object.assign(queries, { status: filters.status });
     return await paginate("notification", queries, filters);
   }
@@ -55,18 +65,28 @@ export class NotificationService {
     return device_token;
   }
 
-  static async notify(customer_id: string, dto: NotifyDto) {
+  static async notify(customer_id: string, dto: Omit<NotifyDto, 'tokens'>) {
     validateFields(dto, ['tag', 'content', 'title', 'ticker']);
-    const tokens = dto?.tokens ?? await NotificationService.getCustomerDeviceTokens(customer_id);
+    const tokens = await NotificationService.getCustomerDeviceTokens(customer_id) ?? undefined;
+    return await this.send({...dto, tokens});
+  }
 
-    // console.log("Notification Tokens", tokens);
+  static async broadcast(dto: Omit<NotifyDto, 'tokens'>, roles: string[]) {
+    validateFields(dto, ['tag', 'content', 'title', 'ticker']);
+    await RoleService.hasPermission(roles, AvailableResource.BROADCAST, [PermissionScope.BROADCAST, PermissionScope.ALL]);
+    const tokens = (await NotificationService.getAllDeviceTokens()) ?? undefined;
+    return await this.send({...dto, tokens});
+  }
+
+  private static async send(dto: NotifyDto) {
+    const tokens = dto?.tokens;
     if(!tokens) return null;
 
     const message = await this.pushNotificationConfig(dto);
 
     const [response, note] = await Promise.all([
       admin.messaging().sendEachForMulticast({ tokens, ...message}), 
-      notification.create({customer: customer_id, ...dto})
+      notification.create({...dto, is_broadcast: true})
     ]);
 
     if(!!response && response.failureCount > 0) {
@@ -87,6 +107,12 @@ export class NotificationService {
 
   static async getCustomerDeviceTokens(customer_id: string): Promise<string[] | null> {
     const fcm = await fcmToken.find({customer: customer_id}).lean<FCMToken[]>().exec();
+    if(!fcm || fcm?.length < 1) return null;
+    return fcm.map(each => each.token);
+  }
+
+  static async getAllDeviceTokens(): Promise<string[] | null> {
+    const fcm = await fcmToken.find().lean<FCMToken[]>().exec();
     if(!fcm || fcm?.length < 1) return null;
     return fcm.map(each => each.token);
   }

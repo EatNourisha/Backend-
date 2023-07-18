@@ -24,8 +24,11 @@ export class Notification extends BaseEntity {
   @prop()
   metadata: any;
 
-  @prop()
-  isAdmin: boolean;
+  @prop({default: false})
+  is_admin: boolean;
+
+  @prop({default: false})
+  is_broadcast: boolean;
 
   @prop({ default: false, select: false })
   delivered: boolean;

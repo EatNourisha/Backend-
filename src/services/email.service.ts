@@ -53,8 +53,10 @@ export class EmailService {
     const template = hbs.compile(html),
       htmlToSend = template(data);
 
+    let result: any;
+
     try {
-      await sgMail.send({
+      result = await sgMail.send({
         from: {
           name: "Nourisha",
           email: "help@eatnourisha.com",
@@ -63,10 +65,14 @@ export class EmailService {
         to: email,
         html: htmlToSend,
       });
+
+      return result;
     } catch (error) {
       console.log("Sendgrid Error:", error);
       // throw createError(error.message, 500);
     }
+
+    return result;
   }
 
   static async sendEmail_mailgun(subject: string, email: string, _template: Template, data: any) {

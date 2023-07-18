@@ -34,4 +34,25 @@ export class NotificationController {
       sendError(error, next);
     }
   }
+
+  // Admin 
+  async getSentBroadcasts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, user } = req;
+      const data = await service.getSentBroadcasts(user.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async sendBroadcast(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, user } = req;
+      const data = await NotificationService.broadcast(body, user.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }
