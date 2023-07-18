@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as hbs from "handlebars";
 
-import config from "../config";
+import config, { isTesting } from "../config";
 // import { createError } from "../utils";
 
 // const mailgun = new Mailgun(FormData);
@@ -20,6 +20,9 @@ import config from "../config";
 // apiInstance.setApiKey(ContactsApiApiKeys.apiKey, config.SEND_IN_BLUE_KEY);
 
 sgMail.setApiKey(config.SENDGRID_KEY);
+
+if(isTesting) console.log(`\n\n\n-------------------------- SENDGRID KEY -----------------------------\n${config.SENDGRID_KEY}\n---------------------------------------------------------------------\n\n\n`);
+
 
 export enum Template {
   VERIFICATION = "/emails/verification.html", // {name: '', link: '', code: ''}
@@ -48,7 +51,6 @@ export class EmailService {
   static async sendEmail_sendgrid(subject: string, email: string, _template: Template, data: any) {
     const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
 
-    // console.log("sendEmail", config.SENDGRID_KEY, email);
 
     const template = hbs.compile(html),
       htmlToSend = template(data);
