@@ -49,6 +49,10 @@ const defaultAccessControls: AccessControlType = {
         scopes: [PermissionScope.ALL],
       },
       {
+        name: AvailableResource.BROADCAST,
+        scopes: [PermissionScope.ALL],
+      },
+      {
         name: AvailableResource.MEAL,
         scopes: [PermissionScope.ALL],
       },

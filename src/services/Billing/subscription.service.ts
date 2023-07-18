@@ -2,8 +2,8 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Customer, Subscription, customer, subscription } from "../../models";
-import { createError, getUpdateOptions, paginate } from "../../utils";
+import { Card, Customer, Plan, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
@@ -20,21 +20,19 @@ export class SubscriptionService {
     // if (already_exist && dryRun) return;
     // if (already_exist && !dryRun) throw createError("Subscription already exist", 404);
 
-    const _sub = await subscription.findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions()).lean<Subscription>().exec();
+    const _sub = await subscription.findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions()).populate(['plan', 'card']).lean<Subscription>().exec();
     await customer.updateOne({_id: cus?._id}, {subscription: _sub?._id}).lean<Customer>().exec();
 
-    await NourishaBus.emit('subscription:updated', {owner: cus, subscription: _sub});
+    if(!dryRun) await NourishaBus.emit('subscription:updated', {owner: cus, subscription: _sub});
     return _sub;
   }
 
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
-    const [sub] = await Promise.all([
-      subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec(),
-      new SubscriptionService().reconcileSubscription(customer_id)
-    ]);
+    let sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec()
+    if(!sub) return await new SubscriptionService().reconcileSubscription(customer_id) as Subscription ?? null;
 
-    if (!sub) return null;
+    // if (!sub) return null;
     return sub;
   }
 
@@ -89,8 +87,31 @@ export class SubscriptionService {
   }
 
   async reconcileSubscription(customer_id: string) {
-    // const 
-    // const sub = this.stripe.subscriptions.search
-    console.log(customer_id)
+    const cus_db = await customer.findById(customer_id).select('stripe_id').lean<Customer>().exec();
+    if(!cus_db) return null;
+    const cus = await this.stripe.customers.retrieve(cus_db?.stripe_id, {expand: ['subscriptions']}) as Stripe.Customer;
+
+    const data = cus.subscriptions?.data[0] as any;
+    
+    console.log("Reconciled Subscription", data)
+
+    const [_plan, _card] = await Promise.all([
+      plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),
+      card.findOne({ token: data?.default_payment_method }).select("_id").lean<Card>().exec(),
+    ]);
+
+    const sub = await SubscriptionService.createSubscription(data?.customer! as string, {
+      stripe_id: data?.id!,
+      start_date: epochToCurrentTime(data?.current_period_start!),
+      end_date: epochToCurrentTime(data?.current_period_end!),
+      status: data?.status!,
+      plan: _plan?._id!,
+      card: _card?._id!,
+      next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
+    });
+
+    await transaction.updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id }).exec();
+
+    return sub;
   }
 }

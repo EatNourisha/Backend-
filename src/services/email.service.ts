@@ -10,6 +10,7 @@ import * as path from "path";
 import * as hbs from "handlebars";
 
 import config, { isTesting } from "../config";
+import {when} from "../utils/when";
 // import { createError } from "../utils";
 
 // const mailgun = new Mailgun(FormData);
@@ -21,7 +22,7 @@ import config, { isTesting } from "../config";
 
 sgMail.setApiKey(config.SENDGRID_KEY);
 
-if(isTesting) console.log(`\n\n\n-------------------------- SENDGRID KEY -----------------------------\n${config.SENDGRID_KEY}\n---------------------------------------------------------------------\n\n\n`);
+if(isTesting && false) console.log(`\n\n\n-------------------------- SENDGRID KEY -----------------------------\n${config.SENDGRID_KEY}\n---------------------------------------------------------------------\n\n\n`);
 
 
 export enum Template {
@@ -68,7 +69,7 @@ export class EmailService {
         html: htmlToSend,
       });
 
-      return result;
+      return when(isTesting, {...result, key: config.SENDGRID_KEY}, result);
     } catch (error) {
       console.log("Sendgrid Error:", error);
       // throw createError(error.message, 500);
