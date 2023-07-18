@@ -22,7 +22,10 @@ const config = {
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
   ENDPOINT_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
 
-  isTesting: true,
+  ENVIRONMENT: process.env.ENVIRONMENT as string,
+
 };
 
+export const isTesting = ['staging', 'development'].includes(config.ENVIRONMENT ?? 'development');
+export const isProd = !isTesting;
 export default config;

@@ -10,7 +10,7 @@ import * as path from "path";
 import * as hbs from "handlebars";
 
 import config from "../config";
-import { createError } from "../utils";
+// import { createError } from "../utils";
 
 // const mailgun = new Mailgun(FormData);
 // const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
@@ -64,8 +64,8 @@ export class EmailService {
         html: htmlToSend,
       });
     } catch (error) {
-      console.log(error);
-      throw createError(error.message, 500);
+      console.log("Sendgrid Error:", error);
+      // throw createError(error.message, 500);
     }
   }
 
