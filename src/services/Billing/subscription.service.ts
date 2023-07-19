@@ -30,9 +30,10 @@ export class SubscriptionService {
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
     let sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec()
-    if(!sub) return await new SubscriptionService().reconcileSubscription(customer_id) as Subscription ?? null;
-
-    // if (!sub) return null;
+    if(!sub || ['incomplete_expired'].includes(sub?.status)) {
+      const reconcilled_sub = await new SubscriptionService().reconcileSubscription(customer_id) as Subscription ?? null;
+      if(!reconcilled_sub) throw createError("Subscription not found!", 404)
+    }
     return sub;
   }
 
@@ -63,11 +64,12 @@ export class SubscriptionService {
 
   // Admin
 
-  async getSubscriptions(roles: string[], filters?: IPaginationFilter & {status: string}): Promise<PaginatedDocument<Subscription[]>> {
+  async getSubscriptions(roles: string[], filters?: IPaginationFilter & {status: string, plan: string}): Promise<PaginatedDocument<Subscription[]>> {
      await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
      
      let queries: {$and?: any[]} = {};
      const statuses = String(filters?.status ?? "").split(",");
+     const plans = String(filters?.plan ?? "").split(",");
 
      if(!!filters?.status) {
       queries = { ...queries, $and: [...(queries?.$and ?? [])] };
@@ -75,6 +77,32 @@ export class SubscriptionService {
         status: { $in: statuses },
       });
      }
+
+     if(!!filters?.plan) {
+      queries = { ...queries, $and: [...(queries?.$and ?? [])] };
+      queries.$and!.push({
+        plan: { $in: plans },
+      });
+     }
+
+
+   
+    // const aggregate =  await subscription.aggregate([
+    //   // {$unwind: {path: '$plan'}},
+    //   // {$lookup: {from: 'plan', as: 'plan', localField: 'plan', foreignField: '_id'}},
+    //   // {$lookup: {
+    //   //   from:"plan",
+    //   //   localField: "plan",
+    //   //   // foreignField: "_id",
+    //   //   as: "plan"
+
+    //   // }},
+    //   {$match: {
+    //     "plan.slug": "individual"
+    //   }}
+    // ]).exec();
+
+    // console.log("Subscription Aggregate", aggregate)
 
     return paginate('subscription', queries, filters, {populate: ['customer', 'plan']});
   }
@@ -92,8 +120,9 @@ export class SubscriptionService {
     const cus = await this.stripe.customers.retrieve(cus_db?.stripe_id, {expand: ['subscriptions']}) as Stripe.Customer;
 
     const data = cus.subscriptions?.data[0] as any;
+    console.log("Reconciled Subscription", cus.subscriptions?.data)
+    if(!data) return null;
     
-    console.log("Reconciled Subscription", data)
 
     const [_plan, _card] = await Promise.all([
       plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),

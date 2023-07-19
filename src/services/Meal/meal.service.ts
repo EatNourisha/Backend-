@@ -53,7 +53,10 @@ export class MealService {
   async getMealPacks(roles: string[], filters?: IPaginationFilter & { is_available: boolean }): Promise<PaginatedDocument<MealPack[]>> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-    let queries = { is_available: filters?.is_available ?? true };
+    let queries: any = {}
+    if(!RoleService.isAdmin(roles)) Object.assign(queries, { is_available: true });
+    if(!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
+
     return await paginate("mealPack", queries, filters);
   }
 

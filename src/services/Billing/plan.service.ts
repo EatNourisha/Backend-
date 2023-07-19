@@ -89,9 +89,11 @@ export class PlanService {
     return _plan;
   }
 
-  async getPlans(roles: string[], filters?: IPaginationFilter): Promise<PaginatedDocument<Plan[]>> {
+  async getPlans(roles: string[], filters?: IPaginationFilter & {searchPhrase?: string;}): Promise<PaginatedDocument<Plan[]>> {
     await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
     const queries: any = {};
+
+    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
     return paginate('plan', queries, filters);
   }
 

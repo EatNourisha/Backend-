@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { getModelForClass, index, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 
 export enum SubscriptionInterval {
@@ -8,6 +8,7 @@ export enum SubscriptionInterval {
   MONTHLY = "month",
 }
 
+@index({ "$**": "text" }) // to make the $text.$search work.
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Plan extends BaseEntity {
   @prop()
@@ -27,6 +28,9 @@ export class Plan extends BaseEntity {
 
   @prop()
   amount: number;
+
+  @prop()
+  delivery_fee: number;
 
   @prop()
   currency: string;
