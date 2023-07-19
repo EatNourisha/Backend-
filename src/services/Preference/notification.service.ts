@@ -1,5 +1,5 @@
 import { IPaginationFilter, NotifyDto, PaginatedDocument } from "../../interfaces";
-import { FCMToken, Notification, NotificationStatus, fcmToken, notification } from "../../models";
+import { FCMToken, Notification, NotificationStatus, customer, fcmToken, notification } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -74,11 +74,11 @@ export class NotificationService {
   static async broadcast(dto: Omit<NotifyDto, 'tokens'>, roles: string[]) {
     validateFields(dto, ['tag', 'content', 'title', 'ticker']);
     await RoleService.hasPermission(roles, AvailableResource.BROADCAST, [PermissionScope.BROADCAST, PermissionScope.ALL]);
-    const tokens = (await NotificationService.getAllDeviceTokens()) ?? undefined;
+    const tokens = (await NotificationService.getAllDeviceTokens({customer_ids: dto?.customer_ids, roles: dto?.roles})) ?? undefined;
     return await this.send({...dto, tokens});
   }
 
-  private static async send(dto: NotifyDto) {
+  private static async send(dto: NotifyDto, is_broadcast = false) {
     const tokens = dto?.tokens;
     if(!tokens) return null;
 
@@ -86,7 +86,7 @@ export class NotificationService {
 
     const [response, note] = await Promise.all([
       admin.messaging().sendEachForMulticast({ tokens, ...message}), 
-      notification.create({...dto, is_broadcast: true})
+      notification.create({...dto, is_broadcast})
     ]);
 
     if(!!response && response.failureCount > 0) {
@@ -111,8 +111,18 @@ export class NotificationService {
     return fcm.map(each => each.token);
   }
 
-  static async getAllDeviceTokens(): Promise<string[] | null> {
-    const fcm = await fcmToken.find().lean<FCMToken[]>().exec();
+  static async getAllDeviceTokens(options?: Partial<{customer_ids: string[], roles: string[]}>): Promise<string[] | null> {
+    const where: any = {};
+    const {customer_ids, roles} = options ?? {};
+
+    if(!!roles && roles.length > 0) {
+      const role_ids = (await RoleService.getRoleBySlugs(roles)).map(role => role?._id).filter(Boolean) as string[];
+      const ids = (await customer.find({roles: {$in: role_ids}}).select('_id').exec()).map(cus => cus?._id).filter(Boolean) as string[];
+      Object.assign(where, {customer: {$in: ids}});
+    }
+    else if(!!customer_ids && customer_ids.length > 0) Object.assign(where, {customer: {$in: customer_ids}});
+
+    const fcm = await fcmToken.find(where).lean<FCMToken[]>().exec();
     if(!fcm || fcm?.length < 1) return null;
     return fcm.map(each => each.token);
   }
