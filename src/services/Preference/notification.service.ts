@@ -72,10 +72,10 @@ export class NotificationService {
   }
 
   static async broadcast(dto: Omit<NotifyDto, 'tokens'>, roles: string[]) {
-    validateFields(dto, ['tag', 'content', 'title', 'ticker']);
+    validateFields(dto, ['tag', 'content', 'title']);
     await RoleService.hasPermission(roles, AvailableResource.BROADCAST, [PermissionScope.BROADCAST, PermissionScope.ALL]);
     const tokens = (await NotificationService.getAllDeviceTokens({customer_ids: dto?.customer_ids, roles: dto?.roles})) ?? undefined;
-    return await this.send({...dto, tokens});
+    return await this.send({...dto, ticker: dto?.tag, tokens}, true);
   }
 
   private static async send(dto: NotifyDto, is_broadcast = false) {

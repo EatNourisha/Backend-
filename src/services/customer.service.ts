@@ -24,6 +24,7 @@ import { AuthVerificationService } from "./authVerification.service";
 import config from "../config";
 import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
+// import { when } from "../utils/when";
 
 export class CustomerService {
   private authVerificationService = new AuthVerificationService();
@@ -39,7 +40,7 @@ export class CustomerService {
       subscription.countDocuments({status: 'active'}).lean<number>().exec()
     ])
 
-    console.log('Dashboard', {meals, customers, subscriptions})
+    // console.log('Dashboard', {meals, customers, subscriptions})
 
     return {meals, customers, subscriptions}
   }
@@ -148,8 +149,12 @@ export class CustomerService {
         PermissionScope.READ,
         PermissionScope.ALL,
       ]),
+      RoleService.isAdmin(roles)
     ];
-    await Promise.allSettled(toRun);
+    const [_, __, isAdminResult] = await Promise.allSettled(toRun);
+    // const {value: isAdmin} = (isAdminResult ?? {}) as any;
+
+    console.log("Is Admin", isAdminResult)
 
     let data = await customer.findById(id).lean<Customer>().exec();
     if (!data) throw createError(`Not found`, 404);
@@ -161,6 +166,7 @@ export class CustomerService {
     if (!data?.ref_code)
       data = await customer
         .findByIdAndUpdate(id, { ref_code: nanoid(5) }, { new: true })
+        // .populate({path: 'roles', model: 'roles'})
         .lean<Customer>()
         .exec();
 
