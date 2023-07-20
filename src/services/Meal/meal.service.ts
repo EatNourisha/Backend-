@@ -54,7 +54,7 @@ export class MealService {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     let queries: any = {}
-    if(!RoleService.isAdmin(roles)) Object.assign(queries, { is_available: true });
+    if(!(await RoleService.isAdmin(roles))) Object.assign(queries, { is_available: true });
     if(!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
 
     return await paginate("mealPack", queries, filters);
