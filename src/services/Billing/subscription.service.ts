@@ -7,6 +7,7 @@ import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
+import { ReferralService } from "../../services/referral.service";
 
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -23,6 +24,7 @@ export class SubscriptionService {
     const _sub = await subscription.findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions()).populate(['plan', 'card']).lean<Subscription>().exec();
     await customer.updateOne({_id: cus?._id}, {subscription: _sub?._id}).lean<Customer>().exec();
 
+    if(!!_sub && !!cus?._id) await ReferralService.updateSubscribersInvite(cus?._id, (_sub?.plan as any)?._id!)
     if(!dryRun) await NourishaBus.emit('subscription:updated', {owner: cus, subscription: _sub});
     return _sub;
   }

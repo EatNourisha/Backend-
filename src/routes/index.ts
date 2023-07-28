@@ -15,6 +15,9 @@ import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
 
+import ReferralRouter from "./referral.routes";
+import EarningsRouter from "./earnings.routes";
+
 import { sendResponse } from "../utils";
 // import config from "../config";
 
@@ -37,7 +40,9 @@ routes.use("/customers", CustomerRouter);
 routes.use("/transactions", TransactionRouter);
 routes.use("/subscriptions", SubscriptionRouter);
 routes.use("/notifications", NotificationRouter);
-// routes.use("/transactions", TransactionRouter);
+
+routes.use("/referrals", ReferralRouter);
+routes.use("/earnings", EarningsRouter);
 // routes.use("/notifications", NotificationRouter);
 
 routes.get("/healthcheck", (_, res, __) => {

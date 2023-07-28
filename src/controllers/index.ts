@@ -12,3 +12,7 @@ export * from "./Preference/allergy.controller";
 export * from "./Billing/transaction.controller";
 export * from "./Billing/subscription.controller";
 export * from "./Preference/notification.controller";
+
+
+export * from "./earnings.controller";
+export * from "./referral.controller";

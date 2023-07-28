@@ -12,6 +12,7 @@ export type NourishaEventTypes = {
   "customer:password:changed": { owner: Customer };
   "customer:deleted": { owner: Customer; modifier: Customer | string };
   "customer:enabled": { owner: Customer; modifier: Customer | string };
+  "customer:referred": { invitee: string; inviter_refCode: string };
   "customer:disabled": { owner: Customer; modifier: Customer | string };
   "customer:password:reset": { owner: Customer };
 
@@ -23,6 +24,8 @@ export type NourishaEventTypes = {
 
   "lineup:created": { owner: Customer | string, lineup: MealLineup };
   "lineup:updated": { owner: Customer | string, lineup: MealLineup };
+
+  "referral:created": { owner: Customer | string };
 
 
 };

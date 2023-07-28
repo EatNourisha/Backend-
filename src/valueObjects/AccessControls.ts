@@ -36,6 +36,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.SUBSCRIPTION,
         scopes: [PermissionScope.CANCEL, PermissionScope.READ],
       },
+      {
+        name: AvailableResource.REFERRAL,
+        scopes: [PermissionScope.READ],
+      },
     ],
   },
   superadmin: {
@@ -66,6 +70,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.ALLERGY,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.REFERRAL,
         scopes: [PermissionScope.ALL],
       },
     ],

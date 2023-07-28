@@ -24,6 +24,7 @@ import { AuthVerificationService } from "./authVerification.service";
 import config from "../config";
 import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
+import CustomerEventListener from "../listeners/customer.listener";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -61,6 +62,7 @@ export class CustomerService {
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
+    if(!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
   }
@@ -445,5 +447,11 @@ export class CustomerService {
   }
 
 
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new CustomerEventListener();
+  }
   
 }
