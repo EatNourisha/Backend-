@@ -4,6 +4,7 @@ export * from "./customer.controller";
 
 export * from "./Meal/meal.controller";
 export * from "./Meal/lineup.controller";
+export * from "./Meal/delivery.controller";
 
 export * from "./Billing/plan.controller";
 export * from "./Billing/card.controller";

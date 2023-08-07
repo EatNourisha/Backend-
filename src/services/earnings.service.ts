@@ -17,7 +17,7 @@ export class EarningsService {
         validateFields(dto, ['amount', 'account_info']);
         if(!!dto?.account_info) validateFields(dto.account_info, ['bank_name', 'bank_number']);
 
-        const minimum_withdraw_amount = 10;
+        const minimum_withdraw_amount = 100;
         await RoleService.hasPermission(roles, AvailableResource.REFERRAL, [PermissionScope.READ, PermissionScope.ALL]);
 
         const earn = await EarningsService.getEarnings(customer_id);

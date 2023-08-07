@@ -9,11 +9,13 @@ import PlanRouter from "./Billing/plan.routes";
 import CardRouter from "./Billing/card.routes";
 import CustomerRouter from "./customer.routes";
 import LineupRouter from "./Meal/lineup.routes";
+import DeliveryRouter from "./Meal/delivery.routes";
 import BillingRouter from "./Billing/billing.routes";
 import AllergyRouter from "./Preference/allergy.routes";
 import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
+
 
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
@@ -43,6 +45,7 @@ routes.use("/notifications", NotificationRouter);
 
 routes.use("/referrals", ReferralRouter);
 routes.use("/earnings", EarningsRouter);
+routes.use("/deliveries", DeliveryRouter);
 // routes.use("/notifications", NotificationRouter);
 
 routes.get("/healthcheck", (_, res, __) => {

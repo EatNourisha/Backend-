@@ -6,6 +6,7 @@ import { getUpdateOptions, createError } from "../utils";
 import addMinutes from "date-fns/addMinutes";
 import { nanoid } from "nanoid";
 import { EmailService, Template } from "./email.service";
+import { isTesting } from "../config";
 // import EmailService, { Template } from "./email.service";
 
 export class AuthVerificationService {
@@ -70,7 +71,7 @@ export class AuthVerificationService {
 
 
     // send email here.
-    await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {
+    if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {
       code: verification?.code,
       name: `${acc?.first_name}`,
       link: `https://eatnourisha.com/verification?code=${verification?.code}`,

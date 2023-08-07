@@ -25,6 +25,7 @@ import config from "../config";
 import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
 import CustomerEventListener from "../listeners/customer.listener";
+import { DeliveryService } from "./Meal/delivery.service";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -75,10 +76,14 @@ export class CustomerService {
 
     await RoleService.requiresPermission([AvailableRole.CUSTOMER], roles, AvailableResource.CUSTOMER, [PermissionScope.READ]);
 
-    const _customer = await customer
+    const [_customer] = await Promise.all([
+      customer
       .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
       .lean<Customer>()
-      .exec();
+      .exec(),
+      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day)
+    ])
+    
     if (!_customer) throw createError(`Customer not found`, 404);
     return _customer;
   }

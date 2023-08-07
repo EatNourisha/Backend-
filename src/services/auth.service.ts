@@ -66,7 +66,8 @@ export class AuthService {
     payload.exp = expiration;
 
     // send email here.
-    await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
+
+    if(!isTesting) await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
       name: `${acc?.first_name}`,
     });
 

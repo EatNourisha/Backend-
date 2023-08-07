@@ -18,5 +18,6 @@ export { default as transaction, Transaction } from "./transaction";
 export { default as subscription, Subscription } from "./subscription";
 export { default as referral, Referral } from "./referral";
 export { default as earnings, Earnings } from "./earnings";
+export { default as deliveryInfo, DeliveryInfo } from "./deliveryInfo";
 export { default as withdrawalRequest, WithdrawalRequest } from "./withdrawalRequest";
 export { default as notification, Notification, NotificationStatus, NotificationType } from "./notification";

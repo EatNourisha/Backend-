@@ -1,0 +1,44 @@
+import { NextFunction, Request, Response } from "express";
+import { DeliveryService } from "../../services";
+import { sendError, sendResponse } from "../../utils";
+
+
+export class DeliveryController {
+
+
+
+
+
+
+  async getDeliveryInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {  user } = req;
+      const data = await new DeliveryService().getDeliveryInfo(user.sub, user.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async updateDeliveryDayOfWeek(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, user } = req;
+      const data = await DeliveryService.updateDeliveryDayOfWeek(user.sub, body.day);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async updateNextDeliveryDate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {  user, body } = req;
+      const data = await DeliveryService.updateNextDeliveryDate(user.sub, body.day, body.skip_check, body.change_day_index);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+  
+  
+}
