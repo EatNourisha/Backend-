@@ -40,6 +40,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.REFERRAL,
         scopes: [PermissionScope.READ],
       },
+      {
+        name: AvailableResource.REVIEW,
+        scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
+      },
     ],
   },
   superadmin: {
@@ -74,6 +78,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.REFERRAL,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.REVIEW,
         scopes: [PermissionScope.ALL],
       },
     ],

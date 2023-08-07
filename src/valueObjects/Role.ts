@@ -32,5 +32,6 @@ export enum AvailableResource {
   NOTIFICATION = "notification",
   SUBSCRIPTION = "subscription",
   BROADCAST = "broadcast",
-  REFERRAL = "referral"
+  REFERRAL = "referral",
+  REVIEW = "referral"
 }
