@@ -9,8 +9,8 @@ const router = Router();
 const controller = new DeliveryController();
 
 // router.post("/", authGuard, controller.createMeal);
-router.put("/deliveryDate", authGuard, controller.updateNextDeliveryDate);
-router.put("/deliveryDay", authGuard, controller.updateDeliveryDayOfWeek);
+// router.put("/deliveryDate", authGuard, controller.updateNextDeliveryDate);
+// router.put("/deliveryDay", authGuard, controller.updateDeliveryDayOfWeek);
 // router.get("/", authGuard, controller.getMeals);
 // router.get("/pack", authGuard, controller.getMealPacks);
 
