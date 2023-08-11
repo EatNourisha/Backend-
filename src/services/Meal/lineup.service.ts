@@ -50,7 +50,7 @@ export class MealLineupService {
   async getCurrentCustomersLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ""].map((pop) => ({
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
       path: pop,
       populate: ["breakfast", "lunch", "dinner"],
     }));
@@ -123,7 +123,7 @@ export class MealLineupService {
 
     if(result?.is_locked && Date.now() < result.next_change_date.getTime()) 
       throw createError(
-        `Changes to your lineup is locked till ${format(result.next_change_date, "eee DD, MMM yyyy at hh:mm aaa")}`,
+        `Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`,
         400
       );
   }

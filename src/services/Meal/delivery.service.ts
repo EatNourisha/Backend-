@@ -13,6 +13,7 @@ export class DeliveryService {
 
     async getDeliveryInfo(customer_id: string, roles: string[]): Promise<DeliveryInfo> {
         await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+        await DeliveryService.updateNextLineupChangeDate(customer_id);
         return await DeliveryService.updateNextDeliveryDate(customer_id, 'sunday', true);
     }
 
@@ -50,7 +51,7 @@ export class DeliveryService {
         const is_locked = has_past_required;
 
         const delivery_day_index = days_of_week.indexOf('sunday');
-        const next_change_date = nextDay(new Date(), delivery_day_index as any);
+        const next_change_date = nextDay(new Date(), delivery_day_index as any).setHours(7, 0);
 
         const info = await deliveryInfo.findOneAndUpdate({customer: customer_id}, {customer: customer_id, is_lineup_change_locked: is_locked, next_lineup_change_date: next_change_date }, getUpdateOptions()).lean<DeliveryInfo>().exec();
         return info;
