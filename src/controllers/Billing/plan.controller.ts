@@ -25,10 +25,30 @@ export class PlanController {
     }
   }
 
+  async deletePlan(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {  user, params } = req;
+      const data = await service.deletePlan(params.id, user.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getPlans(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getPlans(user.roles);
+      const { user, query } = req;
+      const data = await service.getPlans(user.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getPlanById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, params } = req;
+      const data = await service.getPlanById(params.id, user.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

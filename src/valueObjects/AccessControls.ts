@@ -36,6 +36,14 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.SUBSCRIPTION,
         scopes: [PermissionScope.CANCEL, PermissionScope.READ],
       },
+      {
+        name: AvailableResource.REFERRAL,
+        scopes: [PermissionScope.READ],
+      },
+      {
+        name: AvailableResource.REVIEW,
+        scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
+      },
     ],
   },
   superadmin: {
@@ -46,6 +54,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.NOTIFICATION,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.BROADCAST,
         scopes: [PermissionScope.ALL],
       },
       {
@@ -62,6 +74,14 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.ALLERGY,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.REFERRAL,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.REVIEW,
         scopes: [PermissionScope.ALL],
       },
     ],

@@ -9,11 +9,17 @@ import PlanRouter from "./Billing/plan.routes";
 import CardRouter from "./Billing/card.routes";
 import CustomerRouter from "./customer.routes";
 import LineupRouter from "./Meal/lineup.routes";
+import DeliveryRouter from "./Meal/delivery.routes";
 import BillingRouter from "./Billing/billing.routes";
+import ReviewRouter from "./Preference/review.routes";
 import AllergyRouter from "./Preference/allergy.routes";
 import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
+
+
+import ReferralRouter from "./referral.routes";
+import EarningsRouter from "./earnings.routes";
 
 import { sendResponse } from "../utils";
 // import config from "../config";
@@ -30,6 +36,7 @@ routes.use("/meals", MealRouter);
 routes.use("/plans", PlanRouter);
 routes.use("/cards", CardRouter);
 routes.use("/roles", RoleRouter);
+routes.use("/reviews", ReviewRouter);
 routes.use("/lineups", LineupRouter);
 routes.use("/billings", BillingRouter);
 routes.use("/allergies", AllergyRouter);
@@ -37,7 +44,10 @@ routes.use("/customers", CustomerRouter);
 routes.use("/transactions", TransactionRouter);
 routes.use("/subscriptions", SubscriptionRouter);
 routes.use("/notifications", NotificationRouter);
-// routes.use("/transactions", TransactionRouter);
+
+routes.use("/referrals", ReferralRouter);
+routes.use("/earnings", EarningsRouter);
+routes.use("/deliveries", DeliveryRouter);
 // routes.use("/notifications", NotificationRouter);
 
 routes.get("/healthcheck", (_, res, __) => {

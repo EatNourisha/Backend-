@@ -2,9 +2,9 @@
 
 import { addPermissionDto } from "../interfaces";
 import { createError, createSlug, getUpdateOptions } from "../utils";
-import { permission, resource, Role, Permission, Resource, customer, Customer, role, AvailableRole } from "../models";
+import { permission, resource, Role, Permission, Resource, customer, Customer, role } from "../models";
 // import { Types } from "mongoose";
-import { PermissionScope } from "../valueObjects";
+import { AvailableRole, PermissionScope } from "../valueObjects";
 import { AuthService } from "./auth.service";
 import consola from "consola";
 
@@ -207,9 +207,6 @@ export class RoleService {
     const _roles = (
       await RoleService.getRoleBySlugs([
         AvailableRole.SUPERADMIN,
-        AvailableRole.MODERATOR,
-        AvailableRole.FLEET_MANAGER,
-        AvailableRole.ACCOUNTS_ADMIN,
       ])
     ).map((role) => String(role?._id));
 

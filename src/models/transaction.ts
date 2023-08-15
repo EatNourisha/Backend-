@@ -1,9 +1,10 @@
 // @ts-nocheck
 
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { Ref, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { Subscription } from "./subscription";
+import { Plan } from "./plan";
 
 export enum TransactionStatus {
   PENDING = "pending",
@@ -34,6 +35,9 @@ export class Transaction extends BaseEntity {
 
   @prop({ refPath: "itemRefPath" })
   item: Ref<Subscription>;
+
+  @prop({ref: () => Plan})
+  plan: Ref<Plan>;
 
   @prop({ enum: TransactionStatus, default: TransactionStatus.PENDING })
   status: TransactionStatus;

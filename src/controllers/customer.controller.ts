@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomerService } from "../services";
-import { sendError, sendResponse } from "../utils";
+import { CustomerService, EmailService, Template } from "../services";
+import { createError, sendError, sendResponse } from "../utils";
 
 const service = new CustomerService();
 export class CustomerController {
@@ -34,6 +34,16 @@ export class CustomerController {
     }
   }
 
+  async updateFCMToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, user } = req;
+      const result = await service.updateFCMToken(user.sub, body, user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getCurrentUserCustomer(req: Request, res: Response, next: NextFunction) {
     try {
       const { sub: id, roles } = req.user;
@@ -43,6 +53,8 @@ export class CustomerController {
       sendError(error, next);
     }
   }
+
+ 
 
   async updateCustomer(req: Request, res: Response, next: NextFunction) {
     try {
@@ -122,4 +134,96 @@ export class CustomerController {
       sendError(error, next);
     }
   }
+
+  // Admin 
+   async getCustomers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const result = await service.getCustomers(user.roles, query as any);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+   async getAdmins(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const result = await service.getAdmins(user.roles, query);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+   async getFeatureCounts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user } = req;
+      const result = await service.getFeatureCounts(user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getCustomerById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, params } = req;
+      const result = await service.getCustomerById(params.id, user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async updateCustomerNote(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, body, params } = req;
+      const result = await service.updateNote(params.id, body, user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async makeCustomerAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, params } = req;
+      const result = await service.makeAdmin(params.id, user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async revokeAdminPrivilege(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, params } = req;
+      const result = await service.revokeAdmin(params.id, user.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+  
+  async testEmail(_: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await EmailService.sendMailgunTestEmail();
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async testSendgrid(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {body} = req;
+      if(!body?.email) throw createError("email is required in body", 401);
+      const result = await EmailService.sendEmail_sendgrid('Test Email', body.email, Template.WELCOME, {name: body?.email});
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
 }

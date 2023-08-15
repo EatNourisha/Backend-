@@ -16,3 +16,4 @@ export interface InitiateSubscriptionDto {
 export interface CreateSubscriptionDto extends Omit<Subscription, "_id" | "createdAt" | "updatedAt"> {}
 
 export interface updateTransactionDto extends Partial<Omit<Transaction, "_id" | "createdAt" | "updatedAt">> {}
+

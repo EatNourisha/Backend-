@@ -18,6 +18,7 @@ export enum PermissionScope {
   REJECT = "reject",
   MARK = "mark", // mark notification read | unread
   ALL = "*",
+  BROADCAST = "broadcast",
 }
 
 /// Don't use camelCase or PascalCase for Resource naming
@@ -30,4 +31,7 @@ export enum AvailableResource {
   CUSTOMER = "customer",
   NOTIFICATION = "notification",
   SUBSCRIPTION = "subscription",
+  BROADCAST = "broadcast",
+  REFERRAL = "referral",
+  REVIEW = "referral"
 }

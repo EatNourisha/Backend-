@@ -5,6 +5,8 @@ import { getUpdateOptions, createError } from "../utils";
 
 import addMinutes from "date-fns/addMinutes";
 import { nanoid } from "nanoid";
+import { EmailService, Template } from "./email.service";
+import { isTesting } from "../config";
 // import EmailService, { Template } from "./email.service";
 
 export class AuthVerificationService {
@@ -38,10 +40,10 @@ export class AuthVerificationService {
 
     // send reset email here
     // /reset?token={{token}}&sub={{customer_id}}
-    // await EmailService.sendEmail("🥹 Reset password", acc?.email, Template.RESET_PASSWORD, {
-    //   name: `${acc?.first_name}`,
-    //   link: `https://rapydcars.com/password-reset?token=${verification?.token}&sub=${customer_id}`,
-    // });
+    await EmailService.sendEmail("🥹 Reset password", acc?.email, Template.RESET_PASSWORD, {
+      name: `${acc?.first_name}`,
+      link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
+    });
     console.log("RESET TOKEN", `?token=${verification?.token}&sub=${customer_id}`);
 
     return verification as AuthVerification;
@@ -67,12 +69,13 @@ export class AuthVerificationService {
       );
     }
 
+
     // send email here.
-    // await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {
-    //   code: verification?.code,
-    //   name: `${acc?.first_name}`,
-    //   link: `https://rapydcars.com/verify-email?code=${verification?.code}`,
-    // });
+    if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {
+      code: verification?.code,
+      name: `${acc?.first_name}`,
+      link: `https://eatnourisha.com/verification?code=${verification?.code}`,
+    });
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
 
     return verification as AuthVerification;

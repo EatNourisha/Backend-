@@ -9,7 +9,7 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
   let token = (req.headers["x-access-token"] || req.headers.authorization) as string;
   let deviceId = req.headers["device-id"] as string;
   if (!token) return next(createError("Authorization field is missing", 401));
-  if (!deviceId) return next(createError("deviceId header field is missing", 401));
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
   token = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
   try {
     let payload = await authService.validateAuthCode(token, deviceId);
@@ -26,7 +26,7 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
 
 export const deviceGuard = async (req: Request, _: Response, next: NextFunction) => {
   let deviceId = req.headers["device-id"] as string;
-  if (!deviceId) return next(createError("deviceId header field is missing", 401));
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
 
   next();
 };
@@ -37,7 +37,7 @@ export const subscriptionGuard = async (req: Request, _: Response, next: NextFun
   let token = (req.headers["x-access-token"] || req.headers.authorization) as string;
   let deviceId = req.headers["device-id"] as string;
   if (!token) return next(createError("Authorization field is missing", 401));
-  if (!deviceId) return next(createError("deviceId header field is missing", 401));
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
   token = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
   try {
     let payload = await authService.validateAuthCode(token, deviceId);
@@ -45,7 +45,7 @@ export const subscriptionGuard = async (req: Request, _: Response, next: NextFun
 
     const sub = await SubscriptionService.getSub(payload.sub);
     if (!sub) next(createError("Subscription is required!", 401));
-    if (!!sub && !!sub?.status && sub?.status !== "active") next(createError("Subscription has expired!", 401));
+    if (!!sub && !!sub?.status && sub?.status !== "active") next(createError("Subscription is required!", 401));
 
     next();
   } catch (err) {

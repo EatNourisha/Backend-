@@ -1,12 +1,12 @@
 import { ReturnModelType, DocumentType } from "@typegoose/typegoose";
 import { createError } from "../utils";
-import { customer, meal, mealPack, card, transaction, notification, allergy } from "../models";
+import { customer, meal, mealPack, card, transaction, notification, review, allergy, subscription, plan, referral } from "../models";
 
 import capitalize from "lodash/capitalize";
 import consola from "consola";
 
 // TODO: Add accessible schema union types.
-export type SchemaTypes = "customer" | "meal" | "mealPack" | "card" | "transaction" | "notification" | "allergy";
+export type SchemaTypes = "customer" | "meal" | "plan" | "mealPack" | "card" | "transaction" | "notification" | "allergy" | 'subscription' | "referral" | "review";
 
 export class AccessService {
   static async documentBelongsToAccount(customer_id: string, docId: string, schema: SchemaTypes, key?: string): Promise<boolean> {
@@ -21,7 +21,7 @@ export class AccessService {
 
   static getModel(schema: SchemaTypes): ReturnModelType<DocumentType<any>, any> {
     // TODO: Add model coresponding to the accessible schema union types.
-    const map: { [key in SchemaTypes]: DocumentType<any> } = { customer, meal, mealPack, card, transaction, notification, allergy };
+    const map: { [key in SchemaTypes]: DocumentType<any> } = { plan, customer, meal, mealPack, card, transaction, notification, allergy, subscription, referral, review };
 
     return map[schema];
   }

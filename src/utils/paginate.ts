@@ -18,7 +18,7 @@ export default async function paginate<T>(
     (Math.max(parseInt(filters?.page!), 1) - 1) * parseInt(filters?.limit!)
   );
 
-  // console.log("SKIP", filters, skip);
+  console.log("SKIP", filters, skip);
 
   const res = await Promise.all([
     model.countDocuments(query).exec(),

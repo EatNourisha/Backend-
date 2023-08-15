@@ -1,6 +1,12 @@
 node_modules
 _node_modules
 dist
-
-.env
+*.env
+*.env.prod
 .vscode/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+/keys

@@ -20,7 +20,7 @@ export class TransactionService {
 
   async getTransactionById(id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-    const tx = await transaction.findById(id).populate("item").lean<Transaction>().exec();
+    const tx = await transaction.findById(id).populate([{path: "item" }, {path: 'plan'}]).lean<Transaction>().exec();
     if (!tx) throw createError("Transaction does not exist", 404);
     return tx;
   }

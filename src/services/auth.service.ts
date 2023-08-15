@@ -4,8 +4,8 @@ import { sign, verify } from "jsonwebtoken";
 import { createError, getUpdateOptions, setExpiration, validateFields } from "../utils";
 import { AuthPayload, Auth, loginDto, registerDto, ResetPasswordDto, ChangePasswordDto } from "../interfaces";
 import { authToken, authVerification, Customer, customer } from "../models";
-import { CustomerService, RoleService, PasswordService, AuthVerificationService } from "../services";
-import config from "../config";
+import { CustomerService, RoleService, PasswordService, AuthVerificationService, EmailService, Template } from "../services";
+import config, { isTesting } from "../config";
 import { AuthVerificationReason, AvailableRole } from "../valueObjects";
 import { NourishaBus } from "../libs";
 
@@ -55,7 +55,7 @@ export class AuthService {
 
   public async requestEmailVerification(customer_id: string): Promise<{ message: string }> {
     const result = await new AuthVerificationService().requestEmailVerification(customer_id, AuthVerificationReason.ACCOUNT_VERIFICATION);
-    if (config.isTesting) return result;
+    if (isTesting) return result;
     return { message: "Verification code sent" };
   }
 
@@ -64,6 +64,13 @@ export class AuthService {
     const payload = AuthService.transformUserToPayload(acc);
     const { token, expiration } = await this.addToken(payload, device_id);
     payload.exp = expiration;
+
+    // send email here.
+
+    if(!isTesting) await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
+      name: `${acc?.first_name}`,
+    });
+
     return { payload, token };
   }
 
@@ -81,7 +88,7 @@ export class AuthService {
     const acc = await customer.findOne({ email }).select("_id").lean().exec();
     if (!acc) throw createError("Customer not found", 404);
     const result = await new AuthVerificationService().requestResetPassword(acc._id);
-    if (config.isTesting) return result;
+    if (isTesting) return result;
     return { message: "Reset link has been sent to your email" };
   }
 

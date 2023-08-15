@@ -1,0 +1,78 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    tags:
+      - stage-*
+    branches:
+      - develop
+
+jobs:
+  build-and-push-to-stage:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build and tag the Docker image
+      run: docker build .
+        --tag registry.digitalocean.com/eatnourisha/eatnourisha-backend:${{ github.sha }}
+        --tag registry.digitalocean.com/eatnourisha/eatnourisha-backend:latest
+
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Log in to DigitalOcean Container Registry with short-lived credentials
+      run: doctl registry login --expiry-seconds 900
+
+    - name: Push the tagged Docker image
+      run: |
+        docker push registry.digitalocean.com/eatnourisha/eatnourisha-backend:${{ github.sha }}
+        docker push registry.digitalocean.com/eatnourisha/eatnourisha-backend:latest
+
+    - name: clone the deployment scripts repository
+      uses: actions/checkout@v2
+      with:
+        repository: EatNourisha/infrastructure
+        token: ${{ secrets.INFRASTRUCTURE_GITHUB_ACCESS_TOKEN }}
+        ref: main
+
+    - name: update image tag
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq eval -i '.image.tag = "${{ github.sha }}"' 'helm-charts/apps/eatnourisha-backend/stage.values.yaml'
+        
+    - name: commit changes to image tag
+      run: |
+        git config user.email "${{ github.event.sender.email }}"
+        git config user.name "${{ github.event.sender.login }}"
+        git add helm-charts/apps/eatnourisha-backend/stage.values.yaml
+        git commit -m "update image tag to ${{ github.sha }}" || echo "No changes to commit"
+        git remote -v
+        git push
+
+    - name: install helm
+      run: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+
+    - name: run helm lint
+      run: helm lint ./helm-charts/apps/eatnourisha-backend/ --values=./helm-charts/apps/eatnourisha-backend/stage.values.yaml
+
+    - name: Unlock secrets
+      uses: sliteteam/github-action-git-crypt-unlock@1.2.0
+      env:
+        GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+
+    - name: Save DigitalOcean kubeconfig
+      run: doctl kubernetes cluster kubeconfig save eatnourisha
+
+    - name: Deploy
+      run: helm upgrade eatnourisha-backend-stage ./helm-charts/apps/eatnourisha-backend/ --install --wait --atomic --timeout 600s --namespace=eatnourisha-backend-stage --create-namespace --set=app.name=eatnourisha-backend-stage --values=./helm-charts/apps/eatnourisha-backend/stage.values.yaml,./helm-charts/apps/eatnourisha-backend/stage.secrets.yaml
+
+    - name: Verify deployment
+      run: kubectl rollout status deployment/eatnourisha-backend-stage -n eatnourisha-backend-stage

@@ -106,6 +106,9 @@ export class Customer extends BaseEntity {
 
   @prop({ type: () => CustomerPreference, _id: false })
   preference: CustomerPreference;
+
+  @prop()
+  notes: string;
 }
 
 export default getModelForClass(Customer);

@@ -12,4 +12,7 @@ router.get("/upcoming", authGuard, controller.getUpcomingLineup);
 router.post("/", authGuard, subscriptionGuard, controller.createLineup);
 router.put("/:id", authGuard, subscriptionGuard, controller.updateLineup);
 
+// Admin
+router.get("/:id", authGuard, controller.getLineupById);
+
 export default router;

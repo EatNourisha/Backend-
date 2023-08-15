@@ -4,14 +4,16 @@ import {
   AddCustomerAllergiesDto,
   ChangePasswordDto,
   CustomerDto,
+  IPaginationFilter,
+  PaginatedDocument,
   ResetPasswordDto,
   SetDeliveryDayDto,
   UpdateCustomerDto,
   VerifyEmailDto,
 } from "../interfaces";
 import { NourishaBus } from "../libs";
-import { customer, Customer, DeliveryDay } from "../models";
-import { createError, removeForcedInputs, validateFields } from "../utils";
+import { customer, Customer, DeliveryDay, FCMToken, mealPack, subscription } from "../models";
+import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import PasswordService from "./password.service";
 import { RoleService } from "./role.service";
@@ -21,10 +23,29 @@ import difference from "lodash/difference";
 import { AuthVerificationService } from "./authVerification.service";
 import config from "../config";
 import { join, uniq } from "lodash";
+import { NotificationService } from "./Preference/notification.service";
+import CustomerEventListener from "../listeners/customer.listener";
+import { DeliveryService } from "./Meal/delivery.service";
+// import { when } from "../utils/when";
 
 export class CustomerService {
   private authVerificationService = new AuthVerificationService();
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
+
+
+  async getFeatureCounts(roles: string[]): Promise<{meals: number; customers: number; subscriptions: number}> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.ALL]);
+
+    const [meals, customers, subscriptions] = await Promise.all([
+      mealPack.countDocuments().lean<number>().exec(),
+      customer.countDocuments({primary_role: 'customer'}).lean<number>().exec(),
+      subscription.countDocuments({status: 'active'}).lean<number>().exec()
+    ])
+
+    // console.log('Dashboard', {meals, customers, subscriptions})
+
+    return {meals, customers, subscriptions}
+  }
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({
@@ -42,6 +63,7 @@ export class CustomerService {
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
+    if(!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
   }
@@ -54,12 +76,48 @@ export class CustomerService {
 
     await RoleService.requiresPermission([AvailableRole.CUSTOMER], roles, AvailableResource.CUSTOMER, [PermissionScope.READ]);
 
-    const _customer = await customer
+    const [_customer] = await Promise.all([
+      customer
       .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
       .lean<Customer>()
-      .exec();
+      .exec(),
+      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day)
+    ])
+    
     if (!_customer) throw createError(`Customer not found`, 404);
     return _customer;
+  }
+
+  async getCustomers(roles: string[], filters?: IPaginationFilter & {has_lineup?: boolean; has_subscription?: boolean; searchPhrase?: string; nin_roles: string; populate: string}): Promise<PaginatedDocument<Customer[]>> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+
+
+    let queries: any = {};
+    // let options: QueryOptions<any> = {}
+    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
+    if(filters?.has_lineup) Object.assign(queries, {lineup: {$exists: Boolean(filters?.has_lineup)}});
+    if(filters?.has_subscription) {
+      Object.assign(queries, {subscription: {$exists: Boolean(filters?.has_lineup)}, 'subscription.status': {$eq: 'active'}});
+      // Object.assign(options, {populate: [{path: 'subscription', populate: ['plan']}]})
+    }
+
+    // Roles not-in(nin) customers `roles` array field
+    if(!!filters?.nin_roles) {
+      const role_names = String(filters.nin_roles).split(',');
+      const roles = (await RoleService.getRoleBySlugs(role_names)).map(r => r?._id);
+      Object.assign(queries, {roles: {$nin: roles}})
+    }
+
+    return paginate('customer', queries, filters, {populate: [{path: 'subscription', populate: ['plan']}, {path:"preference.allergies"}, {path: 'roles'}]});
+  }
+
+
+
+  async getCustomerById(customer_id: string, roles: string[]): Promise<Customer> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+    const cus = await customer.findById(customer_id).populate([{path: 'subscription', populate: ['plan']}, 'lineup']).lean<Customer>().exec();
+    if(!cus) throw createError("Customer not found", 404);
+    return cus;
   }
 
   async getActiveSubscription(customer_id: string, roles: string[]) {
@@ -98,8 +156,12 @@ export class CustomerService {
         PermissionScope.READ,
         PermissionScope.ALL,
       ]),
+      RoleService.isAdmin(roles)
     ];
-    await Promise.allSettled(toRun);
+    const [_, __, isAdminResult] = await Promise.allSettled(toRun);
+    // const {value: isAdmin} = (isAdminResult ?? {}) as any;
+
+    console.log("Is Admin", isAdminResult)
 
     let data = await customer.findById(id).lean<Customer>().exec();
     if (!data) throw createError(`Not found`, 404);
@@ -111,6 +173,7 @@ export class CustomerService {
     if (!data?.ref_code)
       data = await customer
         .findByIdAndUpdate(id, { ref_code: nanoid(5) }, { new: true })
+        // .populate({path: 'roles', model: 'roles'})
         .lean<Customer>()
         .exec();
 
@@ -129,6 +192,8 @@ export class CustomerService {
     if (!acc) throw createError("Customer not found", 404);
     return acc;
   }
+
+
 
   async attachStripeId(id: string, email: string, name: string) {
     const cons = await this.stripe.customers.create({
@@ -187,6 +252,12 @@ export class CustomerService {
     return acc;
   }
 
+  async updateFCMToken(customer_id: string, input: {token: string, deviceId: string}, roles: string[]): Promise<FCMToken> {
+    const device_token = await new NotificationService().updateFCMToken(customer_id, input, roles);
+    await NourishaBus.emit("customer:device_token:updated", { owner: device_token.customer, token: device_token.token});
+    return device_token;
+  }
+
   async deleteCustomer(sub: string, id: string, roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.DELETE,
@@ -204,7 +275,7 @@ export class CustomerService {
       PermissionScope.ALL,
     ]);
     const data = await customer
-      .findOneAndUpdate({ _id: id }, { control: { suspended: false } }, { new: true })
+      .findOneAndUpdate({ _id: id }, { control: { suspended: true } }, { new: true })
       .lean<Customer>()
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
@@ -219,7 +290,7 @@ export class CustomerService {
       PermissionScope.ALL,
     ]);
     const data = await customer
-      .findOneAndUpdate({ _id: id }, { control: { suspended: true } }, { new: true })
+      .findOneAndUpdate({ _id: id }, { control: { suspended: false } }, { new: true })
       .lean<Customer>()
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
@@ -270,7 +341,7 @@ export class CustomerService {
 
   async findByLogin(email: string, password: string, admin = false): Promise<Customer> {
     const where: any = { email };
-    if (!admin) Object.assign(where, { primary_role: "customer" });
+    // if (!admin) Object.assign(where, { primary_role: "customer" });
 
     const acc = await customer.findOne(where).lean<Customer>().exec();
     if (!acc) throw createError("Customer not found", 404);
@@ -294,6 +365,13 @@ export class CustomerService {
     return count > 0;
   }
 
+  static async getCustomer(data: Customer | string): Promise<Customer | null> {
+    if(typeof data === "object") return data;
+    const cus = await customer.findById(data).lean<Customer>().exec().catch(console.log);
+    if(!cus) return null
+    return cus;
+  }
+
   static async updateLastSeen(customer_id: string, validate = false) {
     const acc = customer.findOneAndUpdate({ _id: customer_id }, { lastSeen: new Date() }, { new: true }).lean<Customer>().exec();
     if (!acc && validate) throw createError("Customer not found", 404);
@@ -315,4 +393,70 @@ export class CustomerService {
       "last_seen",
     ]);
   }
+
+  async getAdmins(roles: string[], filters?: IPaginationFilter & {searchPhrase?: string;}): Promise<PaginatedDocument<Customer>> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+    const super_admin_role = await RoleService.getRoleBySlug(AvailableRole.SUPERADMIN);
+    let queries: any = {};
+
+    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
+    if(!!super_admin_role) Object.assign(queries, {roles: {$in: [super_admin_role._id]}});
+
+    return await paginate('customer', queries, filters);
+  }
+
+  async updateNote(customer_id: string, dto: {notes: string}, roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const cus = await customer.findByIdAndUpdate(customer_id, {...dto}, {new: true}).lean<Customer>().exec();
+    if(!cus) throw createError("Customer not found", 404);
+    return cus;
+  }
+
+  /***
+   * This is a combined (simplified) version of the `assignRole` funciton from the `role.service` file
+   * and the `updatePrimary` function from the `customer.service` file.
+   */
+  async makeAdmin(customer_id: string, roles: string[]): Promise<Customer> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    const res = await RoleService.getRoleBySlug('superadmin');
+    const acc = (await customer.findOneAndUpdate({ _id: customer_id }, { primary_role: res.slug,  $push: { roles: res?._id } }, { new: true }).lean().exec()) as Customer;
+    if (!acc) throw createError("Customer not found", 404);
+    return acc;
+  }
+
+  /***
+   * This is a combined (simplified) version of the `unassignRole` funciton from the `role.service` file
+   * and the `updatePrimary` function from the `customer.service` file.
+   */
+  async revokeAdmin(customer_id: string, roles: string[]): Promise<Customer> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    const res = await RoleService.getRoleBySlug('superadmin');
+    const acc = (await customer.findOneAndUpdate({ _id: customer_id }, { primary_role: 'customer',  $pull: { roles: res?._id } }, { new: true }).lean().exec()) as Customer;
+    if (!acc) throw createError("Customer not found", 404);
+    return acc;
+  }
+
+
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new CustomerEventListener();
+  }
+  
 }
