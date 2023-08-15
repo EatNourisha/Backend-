@@ -1,8 +1,8 @@
 import { IPaginationFilter, PaginatedDocument } from "../interfaces";
-import { Customer, Referral, customer, referral } from "../models";
+import { Customer, Referral, customer, referral, withdrawalRequest } from "../models";
 import {  getUpdateOptions, paginate } from "../utils";
 import { RoleService } from "./role.service";
-import { AvailableResource, PermissionScope } from "../valueObjects";
+import { AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import { EarningsService } from "./earnings.service";
 
 
@@ -54,8 +54,8 @@ export class ReferralService {
             const txs = await session.withTransaction(async () => {
                 console.log("Session Executing...")
 
-                EarningsService.updateEarnings(ref?.inviter, ref?.reward, subscriber_id, session),
-                referral.findByIdAndUpdate(ref?._id, {is_subscribed: true}, {session}).lean<Referral>().exec()
+                EarningsService.updateEarnings(ref?.inviter, ref?.reward, ref?._id!, session),
+                referral.findByIdAndUpdate(ref?._id, {is_subscribed: true, subscription_plan: plan_id}, {session}).lean<Referral>().exec()
 
                 console.log("Session Executed...\n\n")
             })
@@ -65,6 +65,43 @@ export class ReferralService {
             console.error("[UpdateSubscribersInvite]", error.message)
             // throw createError(error?.message, 400)
         }
+
+
+    }
+
+
+    // Admin
+
+    async getReferralStats(roles: string[], filter?: {customer: string}) {
+        await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.REFERRAL, [PermissionScope.ALL]);
+
+        let where: any = {is_subscribed: false};
+        if(!!filter?.customer) Object.assign(where, {inviter: filter.customer});
+
+        const [unsubscribed_invites, subscribed_invites, pending_withdrawals, fulfilled_withdrawals] = await Promise.all([
+            referral.countDocuments(where).lean<number>().exec(),
+            referral.countDocuments({...where, is_subscribed: true}).lean<number>().exec(),
+            withdrawalRequest.countDocuments({...where, is_fulfilled: false}),
+            withdrawalRequest.countDocuments({...where, is_fulfilled: true}),
+        ])
+
+        return {unsubscribed_invites, subscribed_invites, pending_withdrawals, fulfilled_withdrawals}
+    }
+
+    async getAllInvitedCustomers(roles: string[], filters: IPaginationFilter & {customer: string}): Promise<PaginatedDocument<Referral[]>> {
+        await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.REFERRAL, [PermissionScope.ALL]);
+
+        let where: any = {};
+        if(!!filters?.customer) Object.assign(where, {inviter: filters.customer});
+        return await paginate('referral', where, filters, {populate: ['inviter', 'invitee']})
+    }
+    
+    async getAllSubscribedInvitedCustomers(roles: string[], filters: IPaginationFilter & {customer: string}): Promise<PaginatedDocument<Referral[]>> {
+        await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.REFERRAL, [PermissionScope.ALL]);
+
+        let where: any = {is_subscribed: true};
+        if(!!filters?.customer) Object.assign(where, {inviter: filters.customer});
+        return await paginate('referral', where, filters, {populate: ['inviter', 'invitee', 'subscription_plan']})
     }
 
 }

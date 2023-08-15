@@ -48,4 +48,34 @@ export class ReferralController {
 //       sendError(error, next);
 //     }
 //   }
+
+  async getReferralStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const data = await service.getReferralStats(user.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  } 
+
+  async getAllInvitedCustomers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const data = await service.getAllInvitedCustomers(user.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  } 
+
+  async getAllSubscribedInvitedCustomers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user, query } = req;
+      const data = await service.getAllSubscribedInvitedCustomers(user.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  } 
 }

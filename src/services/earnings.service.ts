@@ -46,10 +46,10 @@ export class EarningsService {
     }
 
 
-    static async updateEarnings(customer_id: string, value: number, invitee_id: string, session?: ClientSession): Promise<Earnings> {
+    static async updateEarnings(customer_id: string, value: number, referral_id: string, session?: ClientSession): Promise<Earnings> {
         await this.getEarnings(customer_id); // Ensures the customer's earnings document
         return (await earnings
-        .findOneAndUpdate({ customer: customer_id}, { $inc: { balance: value }, $push: {refs: invitee_id} }, { session })
+        .findOneAndUpdate({ customer: customer_id}, { $inc: { balance: value }, $push: {refs: referral_id} }, { session })
         .lean<Earnings>()
         .exec()) as Earnings;
     }
