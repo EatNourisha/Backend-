@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 const config = {
-  PORT: process.env.PORT || 8080,
+  PORT: process.env.PORT || 8090,
   NAME: process.env.NAME as string,
   VERSION: process.env.VERSION as string,
   DB_URI: process.env.DATABASE_URL as string,
@@ -13,7 +13,7 @@ const config = {
   MAILGUN_KEY: process.env.MAILGUN_KEY as string,
   CMC_PRO_API_KEY: "16d9c3b6-4d24-4d36-8b57-3842702aca1b",
   paystackCallbackUrl: "",
-  
+
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL as string,
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY as string,
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID as string,
@@ -23,9 +23,9 @@ const config = {
   ENDPOINT_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
 
   ENVIRONMENT: process.env.ENVIRONMENT as string,
-
+  REDIS_URL: process.env.REDIS_URL as string,
 };
 
-export const isTesting = ['staging', 'development'].includes(config.ENVIRONMENT ?? 'development');
+export const isTesting = ["staging", "development"].includes(config.ENVIRONMENT ?? "development");
 export const isProd = !isTesting;
 export default config;

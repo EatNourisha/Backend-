@@ -27,6 +27,9 @@ export class Referral extends BaseEntity {
 
   @prop()
   currency: 'gbp'
+
+  @prop({default: false})
+  is_paid: boolean;
 }
 
 export default getModelForClass(Referral);

@@ -15,3 +15,5 @@ export * from "./dtos/notification.dto"
 export * from "./dtos/referral.dto"
 
 export * from './dtos/review.dto';
+
+export * from "./dtos/queues.dto"

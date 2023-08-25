@@ -16,7 +16,7 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
     if (!payload) return next(createError("Authorization failed", 401));
     await CustomerService.updateLastSeen(payload.sub);
     req.query.userId = payload.sub;
-    req.user = payload;
+    req.customer = payload;
 
     next();
   } catch (err) {

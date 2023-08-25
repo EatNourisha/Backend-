@@ -7,8 +7,8 @@ const service = new NotificationService();
 export class NotificationController {
   async getCurrentUserNotifications(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user } = req;
-      const data = await service.getCurrentUserNotifications(user.sub, user.roles, query);
+      const { query, customer } = req;
+      const data = await service.getCurrentUserNotifications(customer.sub, customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -17,8 +17,8 @@ export class NotificationController {
 
   async markAsRead(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.markAsRead(params.id, user.sub, user.roles);
+      const { customer, params } = req;
+      const data = await service.markAsRead(params.id, customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -27,19 +27,19 @@ export class NotificationController {
 
   async testNotification(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, body } = req;
-      const data = await NotificationService.notify(user.sub, body);
+      const { customer, body } = req;
+      const data = await NotificationService.notify(customer.sub, body);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
 
-  // Admin 
+  // Admin
   async getSentBroadcasts(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user } = req;
-      const data = await service.getSentBroadcasts(user.roles, query);
+      const { query, customer } = req;
+      const data = await service.getSentBroadcasts(customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -48,8 +48,8 @@ export class NotificationController {
 
   async sendBroadcast(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user } = req;
-      const data = await NotificationService.broadcast(body, user.roles);
+      const { body, customer } = req;
+      const data = await NotificationService.broadcast(body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

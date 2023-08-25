@@ -7,8 +7,8 @@ const service = new CardService();
 export class CardController {
   //   async createCard(req: Request, res: Response, next: NextFunction) {
   //     try {
-  //       const { body, user } = req;
-  //       const data = await service.createCard(body, user.roles);
+  //       const { body, customer } = req;
+  //       const data = await service.createCard(body, customer.roles);
   //       sendResponse(res, 201, data);
   //     } catch (error) {
   //       sendError(error, next);
@@ -17,8 +17,8 @@ export class CardController {
 
   async getCards(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.getCurrentUserCards(user.sub, user.roles, params);
+      const { customer, params } = req;
+      const data = await service.getCurrentUserCards(customer.sub, customer.roles, params);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -27,8 +27,8 @@ export class CardController {
 
   async deleteCard(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.deleteCard(params.id, user.roles);
+      const { customer, params } = req;
+      const data = await service.deleteCard(params.id, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

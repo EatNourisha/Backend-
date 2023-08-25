@@ -7,8 +7,8 @@ const service = new MealLineupService();
 export class MealLineupController {
   async createLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user } = req;
-      const data = await service.createLineup(user.sub, body, user.roles);
+      const { body, customer } = req;
+      const data = await service.createLineup(customer.sub, body, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
@@ -17,8 +17,8 @@ export class MealLineupController {
 
   async updateLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user, params } = req;
-      const data = await service.updateLineup(user.sub, params.id, body, user.roles, Boolean(params?.dryRun));
+      const { body, customer, params } = req;
+      const data = await service.updateLineup(customer.sub, params.id, body, customer.roles, Boolean(params?.dryRun));
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -27,8 +27,8 @@ export class MealLineupController {
 
   async getCurrentCustomersLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getCurrentCustomersLineup(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.getCurrentCustomersLineup(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -37,8 +37,8 @@ export class MealLineupController {
 
   async getTodaysLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getTodaysLineup(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.getTodaysLineup(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -46,8 +46,8 @@ export class MealLineupController {
   }
   async getUpcomingLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getUpcomingLineup(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.getUpcomingLineup(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -57,9 +57,9 @@ export class MealLineupController {
   // Admin
   async getLineupById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params, query } = req;
-      console.log('getLineup', query)
-      const data = await service.getLineupById(params.id, user.roles, !!query?.silent);
+      const { customer, params, query } = req;
+      console.log("getLineup", query);
+      const data = await service.getLineupById(params.id, customer.roles, !!query?.silent);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

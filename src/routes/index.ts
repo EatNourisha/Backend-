@@ -17,7 +17,6 @@ import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
 
-
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
 
@@ -26,6 +25,7 @@ import { sendResponse } from "../utils";
 
 import config from "../config";
 import { BillingHooks } from "../services";
+import { authGuard } from "../middlewares";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -48,7 +48,10 @@ routes.use("/notifications", NotificationRouter);
 routes.use("/referrals", ReferralRouter);
 routes.use("/earnings", EarningsRouter);
 routes.use("/deliveries", DeliveryRouter);
-// routes.use("/notifications", NotificationRouter);
+
+routes.get("/configs", authGuard, (_, res) => {
+  return sendResponse(res, 200, config);
+});
 
 routes.get("/healthcheck", (_, res, __) => {
   sendResponse(res, 200, { message: "OK" });

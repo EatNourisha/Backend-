@@ -5,8 +5,10 @@ import { getUpdateOptions, createError } from "../utils";
 
 import addMinutes from "date-fns/addMinutes";
 import { nanoid } from "nanoid";
-import { EmailService, Template } from "./email.service";
-import { isTesting } from "../config";
+// import { EmailService, Template } from "./email.service";
+// import { isTesting } from "../config";
+import { NourishaBus } from "../libs";
+// import { EmailQueue } from "../queues";
 // import EmailService, { Template } from "./email.service";
 
 export class AuthVerificationService {
@@ -19,11 +21,7 @@ export class AuthVerificationService {
     const token = nanoid(24);
     const exp = addMinutes(Date.now(), 60).getTime();
 
-    return await authVerification.findOneAndUpdate(
-      { customer_id, reason },
-      { customer_id, reason, exp, token },
-      getUpdateOptions()
-    );
+    return await authVerification.findOneAndUpdate({ customer_id, reason }, { customer_id, reason, exp, token }, getUpdateOptions());
   }
 
   // TODO: Send an the requested reset token to the email address
@@ -40,10 +38,17 @@ export class AuthVerificationService {
 
     // send reset email here
     // /reset?token={{token}}&sub={{customer_id}}
-    await EmailService.sendEmail("🥹 Reset password", acc?.email, Template.RESET_PASSWORD, {
-      name: `${acc?.first_name}`,
+    await NourishaBus.emit("customer:send_resetpassword_email", {
+      email: acc?.email!,
+      name: acc?.first_name!,
+      token: verification?.token!,
+      sub: customer_id,
       link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
     });
+    // await EmailService.sendEmail("🥹 Reset password", acc?.email, Template.RESET_PASSWORD, {
+    //   name: `${acc?.first_name}`,
+    //   link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
+    // });
     console.log("RESET TOKEN", `?token=${verification?.token}&sub=${customer_id}`);
 
     return verification as AuthVerification;
@@ -69,13 +74,17 @@ export class AuthVerificationService {
       );
     }
 
-
     // send email here.
-    if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {
-      code: verification?.code,
+    const payload = {
+      email: acc?.email!,
+      code: verification?.code!,
       name: `${acc?.first_name}`,
       link: `https://eatnourisha.com/verification?code=${verification?.code}`,
-    });
+    };
+
+    await NourishaBus.emit("customer:send_verification_email", payload);
+    // EmailQueue.add({type: "send_verification_email", ...payload})
+    // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
 
     return verification as AuthVerification;

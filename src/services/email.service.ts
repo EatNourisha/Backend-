@@ -11,7 +11,7 @@ import * as hbs from "handlebars";
 
 import config, { isTesting } from "../config";
 import {when} from "../utils/when";
-// import { createError } from "../utils";
+import { createError } from "../utils";
 
 // const mailgun = new Mailgun(FormData);
 // const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
@@ -72,7 +72,7 @@ export class EmailService {
       return when(isTesting, {...result, key: config.SENDGRID_KEY}, result);
     } catch (error) {
       console.log("Sendgrid Error:", error);
-      // throw createError(error.message, 500);
+      throw createError(error.message, 500);
     }
 
     return result;

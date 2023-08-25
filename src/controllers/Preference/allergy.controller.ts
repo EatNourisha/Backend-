@@ -7,8 +7,8 @@ const service = new AllergyService();
 export class AllergyController {
   async createAllergy(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user } = req;
-      const data = await service.createAllergy(body, user.roles);
+      const { body, customer } = req;
+      const data = await service.createAllergy(body, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
@@ -17,8 +17,8 @@ export class AllergyController {
 
   async getAllergies(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getAllergies(user.roles, query as any);
+      const { customer, query } = req;
+      const data = await service.getAllergies(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -27,8 +27,8 @@ export class AllergyController {
 
   async getAllergyById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.getAllergyById(params.id, user.roles);
+      const { customer, params } = req;
+      const data = await service.getAllergyById(params.id, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -37,8 +37,8 @@ export class AllergyController {
 
   async updateAllergy(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params, body } = req;
-      const data = await service.updateAllergy(params.id, body, user.roles);
+      const { customer, params, body } = req;
+      const data = await service.updateAllergy(params.id, body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -47,8 +47,8 @@ export class AllergyController {
 
   async deleteAllergy(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.deleteAllergy(params.id, user.roles);
+      const { customer, params } = req;
+      const data = await service.deleteAllergy(params.id, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

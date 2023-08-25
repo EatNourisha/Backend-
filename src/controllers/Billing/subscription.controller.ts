@@ -7,8 +7,8 @@ const service = new SubscriptionService();
 export class SubscriptionController {
   async getCurrentUsersSubscription(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getCurrentUsersSubscription(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.getCurrentUsersSubscription(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -17,20 +17,19 @@ export class SubscriptionController {
 
   async cancelSubscription(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.cancelSubscription(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.cancelSubscription(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
 
-
   // Admin
   async getSubscriptions(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getSubscriptions(user.roles, query as any);
+      const { customer, query } = req;
+      const data = await service.getSubscriptions(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
