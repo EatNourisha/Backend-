@@ -5,11 +5,10 @@ import { ReferralService } from "../services";
 const service = new ReferralService();
 
 export class ReferralController {
-
   async getCustomerPendingReferrals(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user } = req;
-      const data = await service.getCustomerPendingReferrals(user.sub, user.roles, query as any);
+      const { query, customer } = req;
+      const data = await service.getCustomerPendingReferrals(customer.sub, customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -18,8 +17,8 @@ export class ReferralController {
 
   async getCustomerCompletedReferrals(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user } = req;
-      const data = await service.getCustomerCompletedReferrals(user.sub, user.roles, query as any);
+      const { query, customer } = req;
+      const data = await service.getCustomerCompletedReferrals(customer.sub, customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -28,54 +27,53 @@ export class ReferralController {
 
   async getTotalReferredCustomers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user } = req;
-      const data = await service.getTotalReferredCustomers(user.sub, user.roles);
+      const { customer } = req;
+      const data = await service.getTotalReferredCustomers(customer.sub, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
 
-
   // Admin
-//   async getLineupById(req: Request, res: Response, next: NextFunction) {
-//     try {
-//       const { user, params, query } = req;
-//       console.log('getLineup', query)
-//       const data = await service.getLineupById(params.id, user.roles, !!query?.silent);
-//       sendResponse(res, 200, data);
-//     } catch (error) {
-//       sendError(error, next);
-//     }
-//   }
+  //   async getLineupById(req: Request, res: Response, next: NextFunction) {
+  //     try {
+  //       const { customer, params, query } = req;
+  //       console.log('getLineup', query)
+  //       const data = await service.getLineupById(params.id, customer.roles, !!query?.silent);
+  //       sendResponse(res, 200, data);
+  //     } catch (error) {
+  //       sendError(error, next);
+  //     }
+  //   }
 
   async getReferralStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getReferralStats(user.roles, query as any);
+      const { customer, query } = req;
+      const data = await service.getReferralStats(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
-  } 
+  }
 
   async getAllInvitedCustomers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getAllInvitedCustomers(user.roles, query as any);
+      const { customer, query } = req;
+      const data = await service.getAllInvitedCustomers(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
-  } 
+  }
 
   async getAllSubscribedInvitedCustomers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getAllSubscribedInvitedCustomers(user.roles, query as any);
+      const { customer, query } = req;
+      const data = await service.getAllSubscribedInvitedCustomers(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
-  } 
+  }
 }

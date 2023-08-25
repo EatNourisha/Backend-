@@ -1,5 +1,6 @@
 import _Emittery from "emittery";
 import { Customer, MealLineup, Subscription } from "../models";
+import { SendResetPasswordEmailDto, SendVerificationEmailDto, SendWelcomeEmailDto } from "../interfaces";
 
 _Emittery.isDebugEnabled = false;
 
@@ -17,6 +18,10 @@ export type NourishaEventTypes = {
   "customer:password:reset": { owner: Customer };
 
   "customer:device_token:updated": { owner: Customer | string, token: string };
+
+  "customer:send_verification_email": SendVerificationEmailDto;
+  "customer:send_welcome_email": SendWelcomeEmailDto;
+  "customer:send_resetpassword_email": SendResetPasswordEmailDto;
 
 
   "subscription:updated": { owner: Customer | string, subscription: Subscription };

@@ -42,7 +42,7 @@ export class AuthController {
 
   async requestEmailVerification(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await service.requestEmailVerification(req.user.sub);
+      const data = await service.requestEmailVerification(req.customer.sub);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -63,7 +63,7 @@ export class AuthController {
       const { code } = req.body;
       const deviceId = req.headers["device-id"] as string;
 
-      const data = await service.verifyEmail(req.user.sub, code, req.user.roles, deviceId);
+      const data = await service.verifyEmail(req.customer.sub, code, req.customer.roles, deviceId);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -79,7 +79,6 @@ export class AuthController {
       sendError(error, next);
     }
   }
-
 
   // Admin
   async adminLogin(req: Request, res: Response, next: NextFunction) {

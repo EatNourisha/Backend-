@@ -5,12 +5,10 @@ import { sendError, sendResponse } from "../../utils";
 const service = new ReviewService();
 
 export class ReviewController {
-
-
   async addReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user } = req;
-      const data = await service.addReview(user.sub, body, user.roles);
+      const { body, customer } = req;
+      const data = await service.addReview(customer.sub, body, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
@@ -19,8 +17,8 @@ export class ReviewController {
 
   async updateReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params, body } = req;
-      const data = await service.updateReview(params.id, user.sub, body, user.roles);
+      const { customer, params, body } = req;
+      const data = await service.updateReview(params.id, customer.sub, body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -29,19 +27,19 @@ export class ReviewController {
 
   async getCustomerReviews(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getCustomerReviews(user.sub, user.roles, query);
+      const { customer, query } = req;
+      const data = await service.getCustomerReviews(customer.sub, customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
 
-  // Admin 
+  // Admin
   async getAllReviews(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user } = req;
-      const data = await service.getAllReviews(user.roles, query);
+      const { query, customer } = req;
+      const data = await service.getAllReviews(customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -50,8 +48,8 @@ export class ReviewController {
 
   async getReviewsByCustomerId(req: Request, res: Response, next: NextFunction) {
     try {
-      const { query, user, params } = req;
-      const data = await service.getReviewsByCustomerId(params.id, user.roles, query);
+      const { query, customer, params } = req;
+      const data = await service.getReviewsByCustomerId(params.id, customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

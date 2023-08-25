@@ -7,8 +7,8 @@ const service = new PlanService();
 export class PlanController {
   async createPlan(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user } = req;
-      const data = await service.createPlan(body, user.roles);
+      const { body, customer } = req;
+      const data = await service.createPlan(body, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
@@ -17,8 +17,8 @@ export class PlanController {
 
   async updatePlan(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, user, params } = req;
-      const data = await service.updatePlan(params.id, body, user.roles);
+      const { body, customer, params } = req;
+      const data = await service.updatePlan(params.id, body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -27,8 +27,8 @@ export class PlanController {
 
   async deletePlan(req: Request, res: Response, next: NextFunction) {
     try {
-      const {  user, params } = req;
-      const data = await service.deletePlan(params.id, user.roles);
+      const { customer, params } = req;
+      const data = await service.deletePlan(params.id, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -37,8 +37,8 @@ export class PlanController {
 
   async getPlans(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, query } = req;
-      const data = await service.getPlans(user.roles, query);
+      const { customer, query } = req;
+      const data = await service.getPlans(customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -47,8 +47,8 @@ export class PlanController {
 
   async getPlanById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { user, params } = req;
-      const data = await service.getPlanById(params.id, user.roles);
+      const { customer, params } = req;
+      const data = await service.getPlanById(params.id, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
