@@ -2,7 +2,6 @@ import { Queue, Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { EmailService, Template } from "../services";
 import { SendResetPasswordEmailDto, SendVerificationEmailDto, SendWelcomeEmailDto } from "../interfaces";
-import { isTesting } from "../config";
 // import Bull, { Job } from "bull";
 
 const QUEUE_NAME = "emailq";
