@@ -32,26 +32,25 @@ export class CustomerService {
   private authVerificationService = new AuthVerificationService();
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
-
-  async getFeatureCounts(roles: string[]): Promise<{meals: number; customers: number; subscriptions: number}> {
+  async getFeatureCounts(roles: string[]): Promise<{ meals: number; customers: number; subscriptions: number }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.ALL]);
 
     const [meals, customers, subscriptions] = await Promise.all([
       mealPack.countDocuments().lean<number>().exec(),
-      customer.countDocuments({primary_role: 'customer'}).lean<number>().exec(),
-      subscription.countDocuments({status: 'active'}).lean<number>().exec()
-    ])
+      customer.countDocuments({ primary_role: "customer" }).lean<number>().exec(),
+      subscription.countDocuments({ status: "active" }).lean<number>().exec(),
+    ]);
 
     // console.log('Dashboard', {meals, customers, subscriptions})
 
-    return {meals, customers, subscriptions}
+    return { meals, customers, subscriptions };
   }
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({
       ...input,
       control: { enabled: true },
-      ref_code: nanoid(5),
+      ref_code: nanoid(7).toLowerCase(),
       roles: roles ?? [],
       is_email_verified: false,
     })) as Customer;
@@ -63,7 +62,7 @@ export class CustomerService {
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
-    if(!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
+    if (!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
   }
@@ -78,45 +77,63 @@ export class CustomerService {
 
     const [_customer] = await Promise.all([
       customer
-      .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
-      .lean<Customer>()
-      .exec(),
-      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day)
-    ])
-    
+        .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
+        .lean<Customer>()
+        .exec(),
+      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day),
+    ]);
+
     if (!_customer) throw createError(`Customer not found`, 404);
     return _customer;
   }
 
-  async getCustomers(roles: string[], filters?: IPaginationFilter & {has_lineup?: boolean; has_subscription?: boolean; searchPhrase?: string; nin_roles: string; populate: string}): Promise<PaginatedDocument<Customer[]>> {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-
+  async getCustomers(
+    roles: string[],
+    filters?: IPaginationFilter & {
+      has_lineup?: boolean;
+      has_subscription?: boolean;
+      searchPhrase?: string;
+      nin_roles: string;
+      populate: string;
+    }
+  ): Promise<PaginatedDocument<Customer[]>> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
 
     let queries: any = {};
     // let options: QueryOptions<any> = {}
-    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
-    if(filters?.has_lineup) Object.assign(queries, {lineup: {$exists: Boolean(filters?.has_lineup)}});
-    if(filters?.has_subscription) {
-      Object.assign(queries, {subscription: {$exists: Boolean(filters?.has_lineup)}, 'subscription.status': {$eq: 'active'}});
+    if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+    if (filters?.has_lineup) Object.assign(queries, { lineup: { $exists: Boolean(filters?.has_lineup) } });
+    if (filters?.has_subscription) {
+      Object.assign(queries, { subscription: { $exists: Boolean(filters?.has_lineup) }, "subscription.status": { $eq: "active" } });
       // Object.assign(options, {populate: [{path: 'subscription', populate: ['plan']}]})
     }
 
     // Roles not-in(nin) customers `roles` array field
-    if(!!filters?.nin_roles) {
-      const role_names = String(filters.nin_roles).split(',');
-      const roles = (await RoleService.getRoleBySlugs(role_names)).map(r => r?._id);
-      Object.assign(queries, {roles: {$nin: roles}})
+    if (!!filters?.nin_roles) {
+      const role_names = String(filters.nin_roles).split(",");
+      const roles = (await RoleService.getRoleBySlugs(role_names)).map((r) => r?._id);
+      Object.assign(queries, { roles: { $nin: roles } });
     }
 
-    return paginate('customer', queries, filters, {populate: [{path: 'subscription', populate: ['plan']}, {path:"preference.allergies"}, {path: 'roles'}]});
+    return paginate("customer", queries, filters, {
+      populate: [{ path: "subscription", populate: ["plan"] }, { path: "preference.allergies" }, { path: "roles" }],
+    });
   }
 
-
-
   async getCustomerById(customer_id: string, roles: string[]): Promise<Customer> {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-    const cus = await customer.findById(customer_id).populate([{path: 'subscription', populate: ['plan']}, 'lineup']).lean<Customer>().exec();
-    if(!cus) throw createError("Customer not found", 404);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+    const cus = await customer
+      .findById(customer_id)
+      .populate([{ path: "subscription", populate: ["plan"] }, "lineup"])
+      .lean<Customer>()
+      .exec();
+    if (!cus) throw createError("Customer not found", 404);
     return cus;
   }
 
@@ -156,12 +173,12 @@ export class CustomerService {
         PermissionScope.READ,
         PermissionScope.ALL,
       ]),
-      RoleService.isAdmin(roles)
+      RoleService.isAdmin(roles),
     ];
     const [_, __, isAdminResult] = await Promise.allSettled(toRun);
     // const {value: isAdmin} = (isAdminResult ?? {}) as any;
 
-    console.log("Is Admin", isAdminResult)
+    console.log("Is Admin", isAdminResult);
 
     let data = await customer.findById(id).lean<Customer>().exec();
     if (!data) throw createError(`Not found`, 404);
@@ -192,8 +209,6 @@ export class CustomerService {
     if (!acc) throw createError("Customer not found", 404);
     return acc;
   }
-
-
 
   async attachStripeId(id: string, email: string, name: string) {
     const cons = await this.stripe.customers.create({
@@ -252,9 +267,9 @@ export class CustomerService {
     return acc;
   }
 
-  async updateFCMToken(customer_id: string, input: {token: string, deviceId: string}, roles: string[]): Promise<FCMToken> {
+  async updateFCMToken(customer_id: string, input: { token: string; deviceId: string }, roles: string[]): Promise<FCMToken> {
     const device_token = await new NotificationService().updateFCMToken(customer_id, input, roles);
-    await NourishaBus.emit("customer:device_token:updated", { owner: device_token.customer, token: device_token.token});
+    await NourishaBus.emit("customer:device_token:updated", { owner: device_token.customer, token: device_token.token });
     return device_token;
   }
 
@@ -366,9 +381,9 @@ export class CustomerService {
   }
 
   static async getCustomer(data: Customer | string): Promise<Customer | null> {
-    if(typeof data === "object") return data;
+    if (typeof data === "object") return data;
     const cus = await customer.findById(data).lean<Customer>().exec().catch(console.log);
-    if(!cus) return null
+    if (!cus) return null;
     return cus;
   }
 
@@ -394,7 +409,7 @@ export class CustomerService {
     ]);
   }
 
-  async getAdmins(roles: string[], filters?: IPaginationFilter & {searchPhrase?: string;}): Promise<PaginatedDocument<Customer>> {
+  async getAdmins(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string }): Promise<PaginatedDocument<Customer>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,
       PermissionScope.ALL,
@@ -402,20 +417,23 @@ export class CustomerService {
     const super_admin_role = await RoleService.getRoleBySlug(AvailableRole.SUPERADMIN);
     let queries: any = {};
 
-    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
-    if(!!super_admin_role) Object.assign(queries, {roles: {$in: [super_admin_role._id]}});
+    if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+    if (!!super_admin_role) Object.assign(queries, { roles: { $in: [super_admin_role._id] } });
 
-    return await paginate('customer', queries, filters);
+    return await paginate("customer", queries, filters);
   }
 
-  async updateNote(customer_id: string, dto: {notes: string}, roles: string[]) {
+  async updateNote(customer_id: string, dto: { notes: string }, roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
 
-    const cus = await customer.findByIdAndUpdate(customer_id, {...dto}, {new: true}).lean<Customer>().exec();
-    if(!cus) throw createError("Customer not found", 404);
+    const cus = await customer
+      .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
+      .lean<Customer>()
+      .exec();
+    if (!cus) throw createError("Customer not found", 404);
     return cus;
   }
 
@@ -429,8 +447,11 @@ export class CustomerService {
       PermissionScope.ALL,
     ]);
 
-    const res = await RoleService.getRoleBySlug('superadmin');
-    const acc = (await customer.findOneAndUpdate({ _id: customer_id }, { primary_role: res.slug,  $push: { roles: res?._id } }, { new: true }).lean().exec()) as Customer;
+    const res = await RoleService.getRoleBySlug("superadmin");
+    const acc = (await customer
+      .findOneAndUpdate({ _id: customer_id }, { primary_role: res.slug, $push: { roles: res?._id } }, { new: true })
+      .lean()
+      .exec()) as Customer;
     if (!acc) throw createError("Customer not found", 404);
     return acc;
   }
@@ -445,18 +466,18 @@ export class CustomerService {
       PermissionScope.ALL,
     ]);
 
-    const res = await RoleService.getRoleBySlug('superadmin');
-    const acc = (await customer.findOneAndUpdate({ _id: customer_id }, { primary_role: 'customer',  $pull: { roles: res?._id } }, { new: true }).lean().exec()) as Customer;
+    const res = await RoleService.getRoleBySlug("superadmin");
+    const acc = (await customer
+      .findOneAndUpdate({ _id: customer_id }, { primary_role: "customer", $pull: { roles: res?._id } }, { new: true })
+      .lean()
+      .exec()) as Customer;
     if (!acc) throw createError("Customer not found", 404);
     return acc;
   }
-
-
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {
     new CustomerEventListener();
   }
-  
 }

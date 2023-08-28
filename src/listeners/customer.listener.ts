@@ -7,6 +7,7 @@ export default class CustomerEventListener {
   @addEvent("customer:referred")
   static async OnCustomerReferred({ invitee, inviter_refCode }: NourishaEventTypes["customer:referred"]) {
     // const customer_id = getCustomerId(owner);
+    console.log("A new referral should be created!", { invitee, inviter_refCode });
     return await new ReferralService().createReferral(invitee as any, inviter_refCode);
   }
 
