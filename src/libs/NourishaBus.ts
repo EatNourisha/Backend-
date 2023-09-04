@@ -1,6 +1,11 @@
 import _Emittery from "emittery";
 import { Customer, MealLineup, Subscription } from "../models";
-import { SendResetPasswordEmailDto, SendVerificationEmailDto, SendWelcomeEmailDto } from "../interfaces";
+import {
+  SendResetPasswordEmailMobileDto,
+  SendResetPasswordEmailWebDto,
+  SendVerificationEmailDto,
+  SendWelcomeEmailDto,
+} from "../interfaces";
 
 _Emittery.isDebugEnabled = false;
 
@@ -17,22 +22,20 @@ export type NourishaEventTypes = {
   "customer:disabled": { owner: Customer; modifier: Customer | string };
   "customer:password:reset": { owner: Customer };
 
-  "customer:device_token:updated": { owner: Customer | string, token: string };
+  "customer:device_token:updated": { owner: Customer | string; token: string };
 
   "customer:send_verification_email": SendVerificationEmailDto;
   "customer:send_welcome_email": SendWelcomeEmailDto;
-  "customer:send_resetpassword_email": SendResetPasswordEmailDto;
+  "customer:send_resetpassword_email_web": SendResetPasswordEmailWebDto;
+  "customer:send_resetpassword_email_mobile": SendResetPasswordEmailMobileDto;
 
+  "subscription:updated": { owner: Customer | string; subscription: Subscription };
+  "subscription:cancelled": { owner: Customer | string; subscription: Subscription };
 
-  "subscription:updated": { owner: Customer | string, subscription: Subscription };
-  "subscription:cancelled": { owner: Customer | string, subscription: Subscription };
-
-  "lineup:created": { owner: Customer | string, lineup: MealLineup };
-  "lineup:updated": { owner: Customer | string, lineup: MealLineup };
+  "lineup:created": { owner: Customer | string; lineup: MealLineup };
+  "lineup:updated": { owner: Customer | string; lineup: MealLineup };
 
   "referral:created": { owner: Customer | string };
-
-
 };
 
 export class _NourishaBus extends _Emittery<NourishaEventTypes> {

@@ -66,7 +66,7 @@ export class AuthService {
     payload.exp = expiration;
 
     // send email here.
-    await NourishaBus.emit('customer:send_welcome_email', {email: acc?.email!, name: acc?.first_name!})
+    await NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
 
     // if(!isTesting) await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
     //   name: `${acc?.first_name}`,
@@ -85,12 +85,28 @@ export class AuthService {
     return payload;
   }
 
+  /**
+   * Starting point for requesting an account reset password via web applications
+   */
   async requestResetPasswordToken(email: string) {
     const acc = await customer.findOne({ email }).select("_id").lean().exec();
     if (!acc) throw createError("Customer not found", 404);
     const result = await new AuthVerificationService().requestResetPassword(acc._id);
     if (isTesting) return result;
     return { message: "Reset link has been sent to your email" };
+  }
+
+  /**
+   * Starting point for requesting an account reset password via mobile devices
+   */
+  async requestResetPasswordOTP(email: string) {
+    const result = await new AuthVerificationService().requestResetPasswordOTP__Mobile(email);
+    if (isTesting) return result;
+    return { message: "Reset OTP has been sent to your email" };
+  }
+
+  async validatePasswordResetOTP(code: string) {
+    return await new AuthVerificationService().validatePasswordResetOTP(code);
   }
 
   async resetPassword(input: ResetPasswordDto) {

@@ -23,8 +23,13 @@ export default class CustomerEventListener {
     EmailQueue.add("send_welcome_email", payload);
   }
 
-  @addEvent("customer:send_resetpassword_email")
-  static async OnSendResetPasswordEmail(payload: NourishaEventTypes["customer:send_resetpassword_email"]) {
-    EmailQueue.add("send_resetpassword_email", payload);
+  @addEvent("customer:send_resetpassword_email_web")
+  static async OnSendResetPasswordEmailWeb(payload: NourishaEventTypes["customer:send_resetpassword_email_web"]) {
+    EmailQueue.add("send_resetpassword_email_web", payload);
+  }
+
+  @addEvent("customer:send_resetpassword_email_mobile")
+  static async OnSendResetPasswordEmailMobile(payload: NourishaEventTypes["customer:send_resetpassword_email_mobile"]) {
+    EmailQueue.add("send_resetpassword_email_mobile", payload);
   }
 }

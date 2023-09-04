@@ -10,7 +10,7 @@ import * as path from "path";
 import * as hbs from "handlebars";
 
 import config, { isTesting } from "../config";
-import {when} from "../utils/when";
+import { when } from "../utils/when";
 import { createError } from "../utils";
 
 // const mailgun = new Mailgun(FormData);
@@ -22,26 +22,28 @@ import { createError } from "../utils";
 
 sgMail.setApiKey(config.SENDGRID_KEY);
 
-if(isTesting && false) console.log(`\n\n\n-------------------------- SENDGRID KEY -----------------------------\n${config.SENDGRID_KEY}\n---------------------------------------------------------------------\n\n\n`);
-
+if (isTesting && false)
+  console.log(
+    `\n\n\n-------------------------- SENDGRID KEY -----------------------------\n${config.SENDGRID_KEY}\n---------------------------------------------------------------------\n\n\n`
+  );
 
 export enum Template {
   VERIFICATION = "/emails/verification.html", // {name: '', link: '', code: ''}
-  RESET_PASSWORD = "/emails/resetPassword.html",
+  RESET_PASSWORD_WEB = "/emails/resetPassword__web.html", // {name: '', link: ''}
+  RESET_PASSWORD_MOBILE = "/emails/resetPassword__mobile.html", // {name: '', code: ''}
   WELCOME = "/emails/welcome.html", // {name: ''}
 }
-
 
 type SendViaType = "sendgrid" | "mailgun";
 
 export class EmailService {
   static async sendEmail(subject: string, email: string, _template: Template, data: any) {
-    const via: SendViaType =  'sendgrid';
-    
+    const via: SendViaType = "sendgrid";
+
     switch (via) {
-      case 'sendgrid' as any:
-        return await this.sendEmail_sendgrid(subject, email, _template, data)
-      case 'mailgun' as any:
+      case "sendgrid" as any:
+        return await this.sendEmail_sendgrid(subject, email, _template, data);
+      case "mailgun" as any:
         // return await this.sendEmail_mailgun(subject, email, _template, data)
         return;
       default:
@@ -51,7 +53,6 @@ export class EmailService {
 
   static async sendEmail_sendgrid(subject: string, email: string, _template: Template, data: any) {
     const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
-
 
     const template = hbs.compile(html),
       htmlToSend = template(data);
@@ -69,7 +70,7 @@ export class EmailService {
         html: htmlToSend,
       });
 
-      return when(isTesting, {...result, key: config.SENDGRID_KEY}, result);
+      return when(isTesting, { ...result, key: config.SENDGRID_KEY }, result);
     } catch (error) {
       console.log("Sendgrid Error:", error);
       throw createError(error.message, 500);
@@ -94,10 +95,9 @@ export class EmailService {
       // })
 
       result = {};
-      console.log(htmlToSend, subject, email)
-
+      console.log(htmlToSend, subject, email);
     } catch (error) {
-        console.error("[MAILGUN::ERROR]", error)
+      console.error("[MAILGUN::ERROR]", error);
     }
 
     return result;
@@ -114,6 +114,6 @@ export class EmailService {
 
     // console.log("Mailgun Test", result)
 
-    return {}
+    return {};
   }
 }
