@@ -1,3 +1,5 @@
+import { MealPackAnalysis } from "models";
+
 export interface SendVerificationEmailDto {
   email: string;
   code: string;
@@ -22,3 +24,5 @@ export interface SendResetPasswordEmailMobileDto {
   name: string;
   code: string;
 }
+
+export interface CreateMealPackAnalysisData extends Omit<MealPackAnalysis, "_id" | "createdAt" | "updatedAt"> {}

@@ -84,6 +84,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.REVIEW,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.MEAL_ANALYSIS,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };

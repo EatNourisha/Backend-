@@ -1,6 +1,7 @@
 import _Emittery from "emittery";
 import { Customer, MealLineup, Subscription } from "../models";
 import {
+  CreateLineupDto,
   SendResetPasswordEmailMobileDto,
   SendResetPasswordEmailWebDto,
   SendVerificationEmailDto,
@@ -32,8 +33,8 @@ export type NourishaEventTypes = {
   "subscription:updated": { owner: Customer | string; subscription: Subscription };
   "subscription:cancelled": { owner: Customer | string; subscription: Subscription };
 
-  "lineup:created": { owner: Customer | string; lineup: MealLineup };
-  "lineup:updated": { owner: Customer | string; lineup: MealLineup };
+  "lineup:created": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
+  "lineup:updated": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
 
   "referral:created": { owner: Customer | string };
 };

@@ -9,6 +9,7 @@ export { default as authVerification, AuthVerification } from "./authVerificatio
 export { default as meal, Meal } from "./meal";
 export { default as review, Review } from "./review";
 export { default as mealPack, MealPack } from "./mealPack";
+export { default as mealPackAnalysis, MealPackAnalysis } from "./mealPackAnalysis";
 export { default as fcmToken, FCMToken } from "./fcmToken";
 export { default as lineup, MealLineup, DayMeals } from "./mealLineup";
 

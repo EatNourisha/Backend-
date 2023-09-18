@@ -84,4 +84,14 @@ export class MealController {
       sendError(error, next);
     }
   }
+
+  async getMealPackAnalysisById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params, query } = req;
+      const data = await service.getMealPackAnalysisById(params.id, customer.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

@@ -14,6 +14,7 @@ router.delete("/pack/:id", authGuard, controller.deleteMealPack);
 router.get("/pack", authGuard, controller.getMealPacks);
 
 router.get("/pack/:id", authGuard, controller.getMealPackById);
+router.get("/pack/analysis/:id", authGuard, controller.getMealPackAnalysisById);
 // router.get("/:id", authGuard, controller.getMealById);
 
 export default router;
