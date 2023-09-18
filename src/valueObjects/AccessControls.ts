@@ -14,7 +14,7 @@ const defaultAccessControls: AccessControlType = {
     permissions: [
       {
         name: AvailableResource.CUSTOMER,
-        scopes: [PermissionScope.READ, PermissionScope.UPDATE, PermissionScope.VERIFY],
+        scopes: [PermissionScope.READ, PermissionScope.UPDATE, PermissionScope.VERIFY, PermissionScope.DELETE],
       },
       {
         name: AvailableResource.NOTIFICATION,

@@ -38,10 +38,7 @@ router.put("/:id/revoke_admin", authGuard, controller.revokeAdminPrivilege); // 
 // router.put("/:id/primaryRole", authGuard, controller.updatePrimaryRole); // ✅
 
 // DELETE
-router.delete("/:id", authGuard, controller.deleteCustomer); // ✅
+router.delete("/me", authGuard, controller.deleteCustomer); // ✅
 router.delete("/allergies", authGuard, controller.removeCustomerAllergy); // ✅
-
-
-
 
 export default router;

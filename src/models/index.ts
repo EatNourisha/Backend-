@@ -3,6 +3,7 @@ export { default as resource, Resource } from "./resource";
 export { default as permission, Permission } from "./rolePermission";
 
 export { default as customer, Customer, DeliveryDay } from "./customer";
+export { default as deletedCustomer, DeletedCustomer } from "./deletedCustomer";
 export { default as authToken, AuthToken } from "./authToken";
 export { default as authVerification, AuthVerification } from "./authVerification";
 

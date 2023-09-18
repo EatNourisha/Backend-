@@ -153,7 +153,7 @@ export class MealLineupService {
       PermissionScope.ALL,
     ]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((pop) => ({
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
       path: pop,
       populate: ["breakfast", "lunch", "dinner"],
     }));

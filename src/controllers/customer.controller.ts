@@ -96,8 +96,8 @@ export class CustomerController {
 
   async deleteCustomer(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      const result = await service.deleteCustomer(req.customer.sub, id, req.customer.roles);
+      const { body, customer } = req;
+      const result = await service.deleteCustomer(customer.sub, body, req.customer.roles);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

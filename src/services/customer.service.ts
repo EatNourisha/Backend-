@@ -12,7 +12,7 @@ import {
   VerifyEmailDto,
 } from "../interfaces";
 import { NourishaBus } from "../libs";
-import { customer, Customer, DeliveryDay, FCMToken, mealPack, subscription } from "../models";
+import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, subscription } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import PasswordService from "./password.service";
@@ -220,6 +220,22 @@ export class CustomerService {
     return acc;
   }
 
+  async deleteCustomer(id: string, dto: { reason: string }, roles: string[]) {
+    validateFields(dto, ["reason"]);
+    await RoleService.requiresPermission([AvailableRole.CUSTOMER], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.DELETE,
+      PermissionScope.ALL,
+    ]);
+
+    const cus = await customer.findById(id).lean<Customer>().exec();
+    if (!cus) throw createError("Account not found", 404);
+
+    await deletedCustomer.create({ ...cus, deletion_reason: dto?.reason });
+    // await NourishaBus.emit("customer:deleted", { owner: data, modifier: sub });
+
+    return await customer.deleteOne({ _id: id }).lean().exec();
+  }
+
   async updateCustomer(id: string, roles: string[], input: UpdateCustomerDto) {
     input = CustomerService.removeUpdateForcedInputs(input);
     if (isEmpty(input)) throw createError("No valid input", 404);
@@ -273,16 +289,16 @@ export class CustomerService {
     return device_token;
   }
 
-  async deleteCustomer(sub: string, id: string, roles: string[]) {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
-      PermissionScope.DELETE,
-      PermissionScope.ALL,
-    ]);
-    const data = await customer.findOneAndDelete({ _id: id }, { new: true }).lean<Customer>().exec();
-    if (!data) throw createError(`Not found`, 404);
-    await NourishaBus.emit("customer:deleted", { owner: data, modifier: sub });
-    return data;
-  }
+  // async deleteCustomer(sub: string, id: string, roles: string[]) {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+  //     PermissionScope.DELETE,
+  //     PermissionScope.ALL,
+  //   ]);
+  //   const data = await customer.findOneAndDelete({ _id: id }, { new: true }).lean<Customer>().exec();
+  //   if (!data) throw createError(`Not found`, 404);
+  //   await NourishaBus.emit("customer:deleted", { owner: data, modifier: sub });
+  //   return data;
+  // }
 
   async disableCustomer(sub: string, id: string, roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
