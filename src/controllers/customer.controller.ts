@@ -217,7 +217,7 @@ export class CustomerController {
     try {
       const { body } = req;
       if (!body?.email) throw createError("email is required in body", 401);
-      const result = await EmailService.sendEmail_sendgrid("Test Email", body.email, Template.WELCOME, { name: body?.email });
+      const result = await EmailService.sendEmail("Test Email", body.email, Template.WELCOME, { name: body?.email });
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

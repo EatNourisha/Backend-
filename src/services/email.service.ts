@@ -12,6 +12,7 @@ import * as hbs from "handlebars";
 import config, { isTesting } from "../config";
 import { when } from "../utils/when";
 import { createError } from "../utils";
+import nodemailer from "nodemailer";
 
 // const mailgun = new Mailgun(FormData);
 // const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
@@ -19,6 +20,18 @@ import { createError } from "../utils";
 // Configure API key authorization: api-key
 // const apiInstance = new ContactsApi();
 // apiInstance.setApiKey(ContactsApiApiKeys.apiKey, config.SEND_IN_BLUE_KEY);
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    type: "OAuth2",
+    user: "support@eatnourisha.com",
+    // pass: "Obago@100trillion",
+    clientId: config.GOOGLE_CLIENT_ID,
+    clientSecret: config.GOOGLE_CLIENT_SECRET,
+    refreshToken: config.GOOGLE_REFRESH_TOKEN,
+  },
+} as any);
 
 sgMail.setApiKey(config.SENDGRID_KEY);
 
@@ -34,11 +47,12 @@ export enum Template {
   WELCOME = "/emails/welcome.html", // {name: ''}
 }
 
-type SendViaType = "sendgrid" | "mailgun";
+type SendViaType = "sendgrid" | "mailgun" | "nodemailer";
 
 export class EmailService {
   static async sendEmail(subject: string, email: string, _template: Template, data: any) {
-    const via: SendViaType = "sendgrid";
+    // const via: SendViaType = "sendgrid";
+    const via: SendViaType = "nodemailer";
 
     switch (via) {
       case "sendgrid" as any:
@@ -46,6 +60,8 @@ export class EmailService {
       case "mailgun" as any:
         // return await this.sendEmail_mailgun(subject, email, _template, data)
         return;
+      case "nodemailer" as any:
+        return await this.sendEmail_nodemailer(subject, email, _template, data);
       default:
         break;
     }
@@ -96,6 +112,50 @@ export class EmailService {
 
       result = {};
       console.log(htmlToSend, subject, email);
+    } catch (error) {
+      console.error("[MAILGUN::ERROR]", error);
+    }
+
+    return result;
+  }
+
+  static async sendEmail_nodemailer(subject: string, email: string, _template: Template, data: any) {
+    const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
+    const template = hbs.compile(html),
+      htmlToSend = template(data);
+
+    let result: any;
+
+    try {
+      // result = await mg.messages.create('eatnourisha.com', {
+      //   from: "Eat Nourisha <help@eatnourisha.com>",
+      //   to: [email],
+      //   subject,
+      //   html: htmlToSend
+      // })
+
+      const result = await new Promise((resolve, reject) => {
+        transporter.sendMail(
+          {
+            from: {
+              name: "Nourisha",
+              address: "help@eatnourisha.com",
+            },
+            subject,
+            to: email,
+            html: htmlToSend,
+          },
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        );
+      });
+
+      // result = {};
+      // console.log(htmlToSend, subject, email);
+      console.log(result);
+      return result;
     } catch (error) {
       console.error("[MAILGUN::ERROR]", error);
     }
