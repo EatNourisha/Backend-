@@ -1,10 +1,10 @@
 import Stripe from "stripe";
-import { Card, Customer, Plan, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Order, Plan, Subscription, card, customer, order, plan, subscription, transaction } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import config from "../../config";
-import { CreateCheckoutSessionDto, InitiateSubscriptionDto } from "../../interfaces";
+import { CreateCheckoutSessionDto, InitializePaymentDto, InitiateSubscriptionDto } from "../../interfaces";
 import { CardService } from "./card.service";
 import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
@@ -25,7 +25,7 @@ export class BillingService {
       customer: cus?.stripe_id,
       line_items: [{ price: dto?.price_id, quantity: 1 }],
       payment_method_types: ["card"],
-      success_url: "https://nourisha.onrender.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
+      success_url: "https://api.eatnourisha.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
     });
 
     return session;
@@ -45,7 +45,7 @@ export class BillingService {
       customer: cus?.stripe_id,
       //   line_items: [{ price: dto?.price_id, quantity: 1 }],
       payment_method_types: ["card"],
-      success_url: "https://nourisha.onrender.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
+      success_url: "https://api.eatnourisha.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
     });
 
     return session;
@@ -68,6 +68,48 @@ export class BillingService {
     });
 
     return { client_secret: intent.client_secret };
+  }
+
+  async initializePayment(customer_id: string, dto: InitializePaymentDto, roles?: string[]) {
+    validateFields(dto, ["order_id"]);
+    if (!!roles) await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+
+    console.log({ dto });
+
+    const cus = await customer.findById(customer_id).lean<Customer>().exec();
+    if (!cus) throw createError("Customer does not exist", 404);
+
+    const _order = await order.findById(dto?.order_id).lean<Order>().exec();
+    if (!_order) throw createError("Order does not exist", 404);
+
+    if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
+
+    const intent = await this.stripe.paymentIntents.create({
+      customer: cus?.stripe_id,
+      payment_method: dto?.card_token,
+      amount: Math.round(_order?.total * 100),
+      currency: "gbp",
+      off_session: !!dto?.card_token,
+      expand: ["invoice"],
+    });
+
+    const invoice = intent?.invoice as Stripe.Invoice;
+
+    if (!!intent.id) {
+      await transaction.create({
+        itemRefPath: "Order",
+        item: _order?._id,
+        currency: intent.currency,
+        order_reference: _order?._id,
+        customer: cus?._id,
+        amount: (intent.amount ?? 0) / 100,
+        reference: invoice?.number,
+        reason: TransactionReason.ORDER,
+        stripe_customer_id: cus?.stripe_id,
+      });
+    }
+
+    return { client_secret: intent?.client_secret };
   }
 
   // This method creates an intent to collect customer's subscription payment details and then store the payment
@@ -142,6 +184,16 @@ export class BillingHooks {
     );
 
     return card;
+  }
+
+  static async paymentIntentCreated(event: Stripe.Event) {
+    const data = event.data.object as any;
+    console.log("Payment Intent Created", data);
+  }
+
+  static async paymentIntentSucceeded(event: Stripe.Event) {
+    const data = event.data.object as any;
+    console.log("Payment Intent Succeeded", data);
   }
 
   static async paymentMethodAttached(event: Stripe.Event) {

@@ -79,29 +79,30 @@ export class PlanService {
     return _plan;
   }
 
-
-
   async getPlanById(id: string, roles: string[]): Promise<Plan> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.ALL]);
 
     const _plan = await plan.findById(id).lean<Plan>().exec();
-    if(!_plan) throw createError("Plan not found", 404);
+    if (!_plan) throw createError("Plan not found", 404);
     return _plan;
   }
 
-  async getPlans(roles: string[], filters?: IPaginationFilter & {searchPhrase?: string;}): Promise<PaginatedDocument<Plan[]>> {
+  async getPlans(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string }): Promise<PaginatedDocument<Plan[]>> {
     await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
     const queries: any = {};
 
-    if(!!filters?.searchPhrase) Object.assign(queries, {$text: {$search: filters?.searchPhrase}});
-    return paginate('plan', queries, filters);
+    if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+    return paginate("plan", queries, filters);
   }
 
   async deletePlan(id: string, roles: string[]) {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.DELETE, PermissionScope.ALL]);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [
+      PermissionScope.DELETE,
+      PermissionScope.ALL,
+    ]);
 
-     const _plan = await plan.findByIdAndDelete(id).lean<Plan>().exec();
-    if(!_plan) throw createError("Plan not found", 404);
+    const _plan = await plan.findByIdAndDelete(id).lean<Plan>().exec();
+    if (!_plan) throw createError("Plan not found", 404);
     return _plan;
   }
 

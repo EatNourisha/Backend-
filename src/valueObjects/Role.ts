@@ -34,5 +34,6 @@ export enum AvailableResource {
   BROADCAST = "broadcast",
   REFERRAL = "referral",
   REVIEW = "referral",
+  ORDER = "order",
   MEAL_ANALYSIS = "meal_analysis",
 }

@@ -13,6 +13,9 @@ import {
   subscription,
   plan,
   referral,
+  cartItem,
+  order,
+  orderItem,
 } from "../models";
 
 import capitalize from "lodash/capitalize";
@@ -31,6 +34,9 @@ export type SchemaTypes =
   | "subscription"
   | "referral"
   | "review"
+  | "cartItem"
+  | "orderItem"
+  | "order"
   | "mealPackAnalysis";
 
 export class AccessService {
@@ -59,6 +65,9 @@ export class AccessService {
       referral,
       review,
       mealPackAnalysis,
+      cartItem,
+      order,
+      orderItem,
     };
 
     return map[schema];

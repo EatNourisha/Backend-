@@ -1,0 +1,45 @@
+// @ts-nocheck
+
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import BaseEntity from "./base";
+import { Address, Customer } from "./customer";
+
+enum OrderStatus {
+  PROCESSING = "processing", // "processing payment"
+  CANCELLED = "cancelled",
+  CONFIRMING = "confirming", // "confirming payment"
+  ACCEPTED = "accepted", // "order has been confirmed"
+  DELIVERED = "delivered",
+}
+
+@modelOptions({ schemaOptions: { timestamps: true } })
+export class Order extends BaseEntity {
+  @prop({ ref: () => "Customer" })
+  customer: Ref<Customer>;
+
+  @prop()
+  cart_id: string;
+
+  @prop({ min: 0 })
+  subtotal: number;
+
+  @prop({ min: 0 })
+  delivery_fee: number;
+
+  @prop({ min: 0 })
+  total: number;
+
+  @prop({ enum: OrderStatus, default: OrderStatus.PROCESSING })
+  status: OrderStatus;
+
+  @prop()
+  ref: string;
+
+  @prop({ type: () => Address })
+  delivery_address: Address;
+
+  @prop()
+  phone_number: string;
+}
+
+export default getModelForClass(Order);

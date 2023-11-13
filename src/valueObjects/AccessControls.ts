@@ -44,6 +44,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.REVIEW,
         scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
       },
+      {
+        name: AvailableResource.ORDER,
+        scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
+      },
     ],
   },
   superadmin: {
@@ -82,6 +86,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.REVIEW,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.ORDER,
         scopes: [PermissionScope.ALL],
       },
       {

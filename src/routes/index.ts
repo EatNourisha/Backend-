@@ -7,6 +7,8 @@ import RoleRouter from "./role.routes";
 import MealRouter from "./Meal/meal.routes";
 import PlanRouter from "./Billing/plan.routes";
 import CardRouter from "./Billing/card.routes";
+import CartRouter from "./Billing/cart.routes";
+import OrderRouter from "./Billing/order.routes";
 import CustomerRouter from "./customer.routes";
 import LineupRouter from "./Meal/lineup.routes";
 import DeliveryRouter from "./Meal/delivery.routes";
@@ -35,6 +37,8 @@ routes.use("/auth", AuthRouter);
 routes.use("/meals", MealRouter);
 routes.use("/plans", PlanRouter);
 routes.use("/cards", CardRouter);
+routes.use("/cart", CartRouter);
+routes.use("/orders", OrderRouter);
 routes.use("/roles", RoleRouter);
 routes.use("/reviews", ReviewRouter);
 routes.use("/lineups", LineupRouter);
@@ -78,6 +82,14 @@ routes.post("/webhook", async (req, res, __) => {
     }
     case "setup_intent.succeeded": {
       await BillingHooks.setupIntentSucceeded(event);
+      break;
+    }
+    case "payment_intent.created": {
+      await BillingHooks.paymentIntentCreated(event);
+      break;
+    }
+    case "payment_intent.succeeded": {
+      await BillingHooks.paymentIntentSucceeded(event);
       break;
     }
     case "invoice.paid": {

@@ -16,10 +16,12 @@ export enum TransactionStatus {
 
 export enum TransactionReason {
   SUBSCRIPTION = "subscription",
+  ORDER = "order",
 }
 
 export enum ItemModelTypes {
   SUBSCRIPTION = "Subscription",
+  ORDER = "Order",
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
@@ -34,9 +36,9 @@ export class Transaction extends BaseEntity {
   itemRefPath: ItemModelTypes;
 
   @prop({ refPath: "itemRefPath" })
-  item: Ref<Subscription>;
+  item: Ref<Subscription> | Ref<Order>;
 
-  @prop({ref: () => Plan})
+  @prop({ ref: () => Plan })
   plan: Ref<Plan>;
 
   @prop({ enum: TransactionStatus, default: TransactionStatus.PENDING })
@@ -56,6 +58,9 @@ export class Transaction extends BaseEntity {
 
   @prop()
   subscription_reference: string;
+
+  @prop()
+  order_reference: string;
 
   @prop()
   currency: string;
