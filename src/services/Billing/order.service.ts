@@ -92,11 +92,11 @@ export class OrderService {
             { session: txSession }
           ),
           // TODO: remove the session_id on the cart here
-          //   cart.updateOne({ customer: customer_id, session_id: _order?.ref }, { session_id: undefined }, { session: txSession }).exec(),
+          cart.updateOne({ customer: customer_id, session_id: _order?.ref }, { session_id: undefined }, { session: txSession }).exec(),
         ]);
 
         // TODO: remove the cart items with the session_id
-        // await cartItem.deleteMany({ customer: customer_id, session_id: _order?.ref }, { session: txSession }).exec();
+        await cartItem.deleteMany({ customer: customer_id, session_id: _order?.ref }, { session: txSession }).exec();
       });
 
       if (txs) await txSession.endSession();
