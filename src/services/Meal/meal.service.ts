@@ -1,6 +1,23 @@
 import Stripe from "stripe";
-import { CreateMealDto, CreateMealPackAnalysisData, CreateMealPackDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { meal, Meal, mealPack, MealPack, MealPackAnalysis, mealPackAnalysis } from "../../models";
+import {
+  CreateMealDto,
+  CreateMealPackAnalysisData,
+  CreateMealPackDto,
+  IPaginationFilter,
+  PaginatedDocument,
+  RequestPartyMealDto,
+} from "../../interfaces";
+import {
+  customer,
+  meal,
+  Meal,
+  mealPack,
+  MealPack,
+  MealPackAnalysis,
+  mealPackAnalysis,
+  PartyMealRequest,
+  partyMealRequest,
+} from "../../models";
 import { RoleService } from "../../services/role.service";
 import { createError, createSlug, getUpdateOptions, paginate, removeForcedInputs, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -220,5 +237,27 @@ export class MealService {
       { ...dto },
       getUpdateOptions()
     );
+  }
+
+  async requestPartyMeal(dto: RequestPartyMealDto) {
+    validateFields(dto, ["address", "event_date", "event_type", "meals", "number_of_guests", "phone_number", "is_guest"]);
+    if (!!dto?.address) validateFields(dto.address, ["address_", "city", "country", "postcode"]);
+    if (!!dto?.is_guest) validateFields(dto, ["email", "first_name", "last_name"]);
+    else validateFields(dto, ["customer"]);
+
+    if (!!dto?.customer && !dto?.is_guest && (await customer.countDocuments({ _id: dto?.customer }).exec()) < 1)
+      throw createError(`Customer does not exist`, 400);
+
+    const request = await partyMealRequest.create({ ...dto });
+    return request;
+  }
+
+  async getPartyMealRequests(
+    customer_id: string,
+    roles: string[],
+    filters?: IPaginationFilter
+  ): Promise<PaginatedDocument<PartyMealRequest[]>> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+    return await paginate("partyMealRequest", { customer: customer_id }, filters);
   }
 }

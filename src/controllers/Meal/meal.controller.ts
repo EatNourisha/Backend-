@@ -94,4 +94,24 @@ export class MealController {
       sendError(error, next);
     }
   }
+
+  async requestPartyMeal(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const data = await service.requestPartyMeal(body);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getPartyMealRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getPartyMealRequests(customer.sub, customer.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

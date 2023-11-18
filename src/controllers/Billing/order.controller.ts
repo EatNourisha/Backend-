@@ -39,6 +39,16 @@ export class OrderController {
     try {
       const { customer, body } = req;
       const data = await service.placeOrder(customer.sub, body, customer.roles);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async updateOrderStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body, params } = req;
+      const data = await service.updateOrderStatus(params.id, customer.sub, body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

@@ -8,7 +8,8 @@ import { CreateCheckoutSessionDto, InitializePaymentDto, InitiateSubscriptionDto
 import { CardService } from "./card.service";
 import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
-import { TransactionReason, TransactionStatus } from "../../models/transaction";
+import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
+import { OrderService } from "./order.service";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -90,20 +91,21 @@ export class BillingService {
       amount: Math.round(_order?.total * 100),
       currency: "gbp",
       off_session: !!dto?.card_token,
+      receipt_email: cus?.email,
       expand: ["invoice"],
     });
 
-    const invoice = intent?.invoice as Stripe.Invoice;
+    // const invoice = intent?.invoice as Stripe.Invoice;
 
     if (!!intent.id) {
       await transaction.create({
         itemRefPath: "Order",
         item: _order?._id,
         currency: intent.currency,
-        order_reference: _order?._id,
+        order_reference: intent?.id,
         customer: cus?._id,
         amount: (intent.amount ?? 0) / 100,
-        reference: invoice?.number,
+        reference: intent?.id,
         reason: TransactionReason.ORDER,
         stripe_customer_id: cus?.stripe_id,
       });
@@ -191,9 +193,16 @@ export class BillingHooks {
     console.log("Payment Intent Created", data);
   }
 
-  static async paymentIntentSucceeded(event: Stripe.Event) {
+  static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Payment Intent Succeeded", data);
+    switch (tx.reason) {
+      case "order":
+        await OrderService.markOrderAsPaid(tx);
+        break;
+      default:
+        break;
+    }
   }
 
   static async paymentMethodAttached(event: Stripe.Event) {

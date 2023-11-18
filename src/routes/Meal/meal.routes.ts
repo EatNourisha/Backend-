@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../../middlewares";
+import { authGuard, deviceGuard } from "../../middlewares";
 import { MealController } from "../../controllers";
 
 const router = Router();
@@ -15,6 +15,8 @@ router.get("/pack", authGuard, controller.getMealPacks);
 
 router.get("/pack/:id", authGuard, controller.getMealPackById);
 router.get("/pack/analysis/:id", authGuard, controller.getMealPackAnalysisById);
-// router.get("/:id", authGuard, controller.getMealById);
+
+router.get("/parties", authGuard, controller.getPartyMealRequests);
+router.post("/parties", deviceGuard, controller.requestPartyMeal);
 
 export default router;

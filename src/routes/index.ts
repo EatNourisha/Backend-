@@ -28,6 +28,8 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 import { authGuard } from "../middlewares";
+import { Transaction, transaction } from "../models";
+import { TransactionStatus } from "../models/transaction";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -74,6 +76,13 @@ routes.post("/webhook", async (req, res, __) => {
     // console.log("Error", error);
     return sendResponse(res, 400, { message: error.message });
   }
+
+  const data = event.data.object as any;
+  const tx = await transaction
+    .findOneAndUpdate({ reference: data.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
+    .lean<Transaction>()
+    .exec();
+
   // console.log("Stripe Event", event);
   switch (event.type) {
     case "checkout.session.completed": {
@@ -89,7 +98,7 @@ routes.post("/webhook", async (req, res, __) => {
       break;
     }
     case "payment_intent.succeeded": {
-      await BillingHooks.paymentIntentSucceeded(event);
+      await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
     }
     case "invoice.paid": {

@@ -1,9 +1,10 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, cart, cartItem, order, orderItem } from "../../models";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, order, orderItem } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
+import { OrderStatus } from "../../models/order";
 
 export class OrderService {
   async getOrders(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<PaginatedDocument<Order[]>> {
@@ -16,10 +17,30 @@ export class OrderService {
 
     const [_order, items] = await Promise.all([
       order.findById(order_id).lean<Order>().exec(),
-      paginate<OrderItem[]>("orderItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+      paginate<OrderItem[]>("orderItem", { order: order_id, customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
     ]);
 
     return { order: _order, items };
+  }
+
+  async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
+    validateFields(dto, ["status"]);
+
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    const is_admin = await RoleService.isAdmin(roles);
+
+    const supported_statuses_for_admin = Object.values(OrderStatus);
+    const supported_statuses_for_customers = [OrderStatus.RECEIVED];
+
+    if (!is_admin && !supported_statuses_for_customers.includes(dto?.status))
+      throw createError(`Valid statuses are: ${supported_statuses_for_customers.join(", ")}`);
+    else if (is_admin && !supported_statuses_for_admin.includes(dto.status))
+      throw createError(`Supported statuses are: ${supported_statuses_for_admin.join(", ")}`);
+
+    let query = { _id: order_id };
+    if (!is_admin) Object.assign(query, { customer: customer_id });
+    const _order = await order.findOneAndUpdate({ order_id }, { status: dto.status }, { new: true }).lean<Order>().exec();
+    return _order;
   }
 
   async placeOrder(customer_id: string, dto: PlaceOrderDto, roles: string[]) {
@@ -91,12 +112,7 @@ export class OrderService {
             })),
             { session: txSession }
           ),
-          // TODO: remove the session_id on the cart here
-          cart.updateOne({ customer: customer_id, session_id: _order?.ref }, { session_id: undefined }, { session: txSession }).exec(),
         ]);
-
-        // TODO: remove the cart items with the session_id
-        await cartItem.deleteMany({ customer: customer_id, session_id: _order?.ref }, { session: txSession }).exec();
       });
 
       if (txs) await txSession.endSession();
@@ -105,5 +121,22 @@ export class OrderService {
       await txSession.endSession();
       throw createError(error.message, 400);
     }
+  }
+
+  static async markOrderAsPaid(tx: Transaction) {
+    const item = tx?.item as string;
+    if (!item) return;
+    const _order = await order.findByIdAndUpdate(item, { status: OrderStatus.PAID }).lean<Order>().exec();
+    // TODO: remove the session_id on the cart here
+    await Promise.all([
+      cart
+        .updateOne(
+          { customer: _order?.customer, session_id: _order?.ref },
+          { session_id: undefined, total: 0, subtotal: 0, deliveryFee: 0 }
+        )
+        .exec(),
+      // TODO: remove the cart items with the session_id
+      cartItem.deleteMany({ customer: _order?._id, session_id: _order?.ref }).exec(),
+    ]);
   }
 }

@@ -8,6 +8,7 @@ const controller = new OrderController();
 router.get("/", authGuard, controller.getOrders);
 router.get("/:id", authGuard, controller.getOrderById);
 router.post("/", authGuard, controller.placeOrder);
+router.put("/:id", authGuard, controller.updateOrderStatus);
 // router.put("/", authGuard, controller.addItemToCart);
 // router.delete("/", authGuard, controller.removeItemFromCart);
 

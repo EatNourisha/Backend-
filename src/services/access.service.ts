@@ -16,6 +16,7 @@ import {
   cartItem,
   order,
   orderItem,
+  partyMealRequest,
 } from "../models";
 
 import capitalize from "lodash/capitalize";
@@ -37,6 +38,7 @@ export type SchemaTypes =
   | "cartItem"
   | "orderItem"
   | "order"
+  | "partyMealRequest"
   | "mealPackAnalysis";
 
 export class AccessService {
@@ -68,6 +70,7 @@ export class AccessService {
       cartItem,
       order,
       orderItem,
+      partyMealRequest,
     };
 
     return map[schema];

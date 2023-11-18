@@ -4,12 +4,14 @@ import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Address, Customer } from "./customer";
 
-enum OrderStatus {
+export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
+  PAID = "payment_received", // "processing payment"
   CANCELLED = "cancelled",
   CONFIRMING = "confirming", // "confirming payment"
   ACCEPTED = "accepted", // "order has been confirmed"
-  DELIVERED = "delivered",
+  DISPATCHED = "dispatched",
+  RECEIVED = "received",
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
