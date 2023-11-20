@@ -9,7 +9,14 @@ import { OrderStatus } from "../../models/order";
 export class OrderService {
   async getOrders(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-    return await paginate("order", { customer: customer_id }, filters, { populate: ["items"] });
+    return await paginate("order", { customer: customer_id }, filters, {
+      populate: [
+        {
+          path: "items",
+          populate: ["item"],
+        },
+      ],
+    });
   }
 
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
