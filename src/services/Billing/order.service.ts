@@ -9,7 +9,7 @@ import { OrderStatus } from "../../models/order";
 export class OrderService {
   async getOrders(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-    return await paginate("order", { customer: customer_id }, filters);
+    return await paginate("order", { customer: customer_id }, filters, { populate: ["items"] });
   }
 
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
@@ -127,7 +127,11 @@ export class OrderService {
   static async markOrderAsPaid(tx: Transaction) {
     const item = tx?.item as string;
     if (!item) return;
-    const _order = await order.findByIdAndUpdate(item, { status: OrderStatus.PAID }).lean<Order>().exec();
+    const _order_items = await orderItem.find({ order: item, customer: tx?.customer }).lean<OrderItem[]>().exec();
+    const _order = await order
+      .findByIdAndUpdate(item, { status: OrderStatus.PAID, $push: { items: _order_items.map((i) => i._id) } })
+      .lean<Order>()
+      .exec();
     // TODO: remove the session_id on the cart here
     await Promise.all([
       cart

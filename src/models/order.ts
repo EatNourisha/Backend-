@@ -3,6 +3,7 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Address, Customer } from "./customer";
+import { OrderItem } from "./orderItem";
 
 export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
@@ -45,6 +46,9 @@ export class Order extends BaseEntity {
 
   @prop()
   phone_number: string;
+
+  @prop({ type: [OrderItem] })
+  items?: OrderItem[];
 }
 
 export default getModelForClass(Order);

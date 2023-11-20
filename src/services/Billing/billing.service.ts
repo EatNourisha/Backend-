@@ -279,7 +279,7 @@ export class BillingHooks {
     console.log("Customer subscription deleted", data);
 
     const sub = await subscription.findOne({ stripe_id: data?.id }).lean<Subscription>().exec();
-    if (!sub || (!!sub && sub.status === "cancelled")) return;
+    if (!sub || (!!sub && sub.status === "cancelled") || (!!sub && sub?.is_assigned_by_admin)) return;
     await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean().exec();
   }
 }
