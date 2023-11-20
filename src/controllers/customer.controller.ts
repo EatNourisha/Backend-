@@ -194,6 +194,16 @@ export class CustomerController {
     }
   }
 
+  async toggleSubscriptionAutoRenewal(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body } = req;
+      const result = await service.toggleAutoRenewal(customer.sub, body, customer.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async revokeAdminPrivilege(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params } = req;

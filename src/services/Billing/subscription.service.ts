@@ -26,7 +26,7 @@ export class SubscriptionService {
       .populate(["plan", "card"])
       .lean<Subscription>()
       .exec();
-    await customer.updateOne({ _id: cus?._id }, { subscription: _sub?._id }).lean<Customer>().exec();
+    await customer.updateOne({ _id: cus?._id }, { subscription: _sub?._id, subscription_status: _sub?.status }).lean<Customer>().exec();
 
     if (!!_sub && !!cus?._id) await ReferralService.updateSubscribersInvite(cus?._id, (_sub?.plan as any)?._id!);
     if (!dryRun) await NourishaBus.emit("subscription:updated", { owner: cus, subscription: _sub });
@@ -36,10 +36,10 @@ export class SubscriptionService {
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
     let sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
-    if (!sub || ["incomplete_expired"].includes(sub?.status)) {
-      const reconcilled_sub = ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
-      if (!reconcilled_sub) throw createError("Subscription not found!", 404);
-    }
+    // if (!sub || ["incomplete_expired"].includes(sub?.status)) {
+    //   const reconcilled_sub = ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
+    //   if (!reconcilled_sub) throw createError("Subscription not found!", 404);
+    // }
     return sub;
   }
 
@@ -48,7 +48,7 @@ export class SubscriptionService {
     const sub = await subscription.findOne({ customer: customer_id }).populate(["plan"]).lean<Subscription>().exec();
     if (!sub) throw createError("Subscription not found", 404);
 
-    const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id, {
+    const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
       prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
@@ -151,6 +151,17 @@ export class SubscriptionService {
       .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
       .exec();
 
+    return sub;
+  }
+
+  static async updateSubscription(id: string, dto: Partial<CreateSubscriptionDto>) {
+    const sub = await subscription
+      .findByIdAndUpdate(id, { ...dto }, { new: true })
+      .lean<Subscription>()
+      .exec();
+    if (!sub) return;
+
+    await customer.updateOne({ _id: sub?.customer }, { subscription_status: dto?.status }).exec();
     return sub;
   }
 }

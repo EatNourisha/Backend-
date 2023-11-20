@@ -45,6 +45,9 @@ export class CustomerPreference {
 
   @prop()
   next_lineup_change_exp: number;
+
+  @prop({ default: true })
+  auto_renew: boolean;
 }
 
 @index({ "$**": "text" }) // to make the $text.$search work.
@@ -109,6 +112,9 @@ export class Customer extends BaseEntity {
 
   @prop()
   notes: string;
+
+  @prop()
+  subscription_status: string;
 }
 
 export default getModelForClass(Customer);

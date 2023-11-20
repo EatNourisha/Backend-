@@ -24,4 +24,16 @@ export class TransactionController {
       sendError(error, next);
     }
   }
+
+  // admin
+
+  async getCustomerTransactions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer: admin, query, params } = req;
+      const data = await service.getCusomterTransactions(params.id, admin.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

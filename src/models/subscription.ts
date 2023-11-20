@@ -8,8 +8,8 @@ import { Customer } from "./customer";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Subscription extends BaseEntity {
-  @prop()
-  stripe_id: string;
+  @prop({ required: false })
+  stripe_id?: string;
 
   @prop({ ref: () => Plan })
   plan: Ref<Plan>;
@@ -29,8 +29,14 @@ export class Subscription extends BaseEntity {
   @prop()
   status: string;
 
-  @prop({ ref: () => Card })
-  card: Ref<Card>;
+  @prop({ ref: () => Card, required: false })
+  card?: Ref<Card>;
+
+  @prop()
+  is_assigned_by_admin?: boolean;
+
+  @prop()
+  last_assigned_date?: Date;
 }
 
 export default getModelForClass(Subscription);

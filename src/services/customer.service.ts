@@ -12,7 +12,7 @@ import {
   VerifyEmailDto,
 } from "../interfaces";
 import { NourishaBus } from "../libs";
-import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, subscription } from "../models";
+import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, Subscription, subscription } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import PasswordService from "./password.service";
@@ -26,6 +26,7 @@ import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
 import CustomerEventListener from "../listeners/customer.listener";
 import { DeliveryService } from "./Meal/delivery.service";
+import { when } from "../utils/when";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -65,6 +66,25 @@ export class CustomerService {
     if (!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
+  }
+
+  async toggleAutoRenewal(customer_id: string, dto: { auto_renew: boolean }, roles: string[]) {
+    validateFields(dto, ["auto_renew"]);
+    await RoleService.requiresPermission([AvailableRole.CUSTOMER], roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE]);
+
+    const cus = await customer
+      .findByIdAndUpdate(customer_id, { preference: { auto_renew: dto?.auto_renew } }, { new: true })
+      .populate("subscription")
+      .lean<Customer>()
+      .exec();
+    if (!cus) throw createError("Customer does not exist", 404);
+
+    const sub = cus?.subscription as Subscription;
+
+    // https://stripe.com/docs/billing/subscriptions/pause
+    const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
+    if (!!sub?.stripe_id && sub?.stripe_id?.length > 2) await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });
+    return cus;
   }
 
   async setDeliveryDay(customer_id: string, dto: SetDeliveryDayDto, roles: string[]): Promise<Customer> {

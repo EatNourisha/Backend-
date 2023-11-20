@@ -2,6 +2,7 @@ import { queues } from "./queues";
 
 export * from "./email.queue";
 export * from "./lineup.queue";
+export * from "./schedule.queue";
 export { serverAdapter } from "./board";
 
 export async function closeWorkers() {

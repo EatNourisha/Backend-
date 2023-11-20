@@ -10,6 +10,7 @@ import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
 import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
 import { OrderService } from "./order.service";
+import { when } from "../../utils/when";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -126,10 +127,12 @@ export class BillingService {
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
 
+    const renew = cus?.preference?.auto_renew;
+
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
       default_payment_method: dto?.card_token,
-      collection_method: "charge_automatically",
+      collection_method: when(renew, "charge_automatically", "send_invoice"),
       items: [
         {
           price: _plan?.price_id,

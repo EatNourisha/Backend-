@@ -3,9 +3,12 @@ import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreatePlanDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { plan, Plan } from "../../models";
+import { Customer, customer, plan, Plan, Subscription } from "../../models";
 import { createError, createSlug, paginate, validateFields } from "../../utils";
 import { SubscriptionInterval } from "../../models/plan";
+import { SubscriptionService } from "./subscription.service";
+import { add } from "date-fns";
+import { ScheduleQueue } from "../../queues";
 
 export class PlanService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -104,6 +107,45 @@ export class PlanService {
     const _plan = await plan.findByIdAndDelete(id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan not found", 404);
     return _plan;
+  }
+
+  async assignPlan(plan_id: string, dto: { customer_id: string }, roles: string[]) {
+    validateFields(dto, ["customer_id"]);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [
+      PermissionScope.ASSIGN,
+      PermissionScope.ALL,
+    ]);
+
+    const { customer_id } = dto;
+    const _plan = await plan.findById(plan_id).lean<Plan>().exec();
+    if (!_plan) throw createError("Plan not found", 404);
+
+    const cus = await customer.findById(customer_id).populate("subscription").lean<Customer>().exec();
+    if (!cus) throw createError("Customer not found", 404);
+
+    const interval = `${_plan?.subscription_interval ?? "week"}s`;
+    const next_sub_date = add(new Date(), { [interval]: 1 });
+
+    const prev_sub = cus?.subscription as Subscription;
+
+    const sub = await SubscriptionService.createSubscription(cus?.stripe_id, {
+      end_date: next_sub_date,
+      start_date: new Date(),
+      next_billing_date: next_sub_date,
+      plan: _plan?._id!,
+      status: "active",
+      customer: cus?._id,
+      card: prev_sub?.card ?? cus?._id!,
+      stripe_id: prev_sub?.stripe_id ?? undefined,
+      is_assigned_by_admin: true,
+      last_assigned_date: new Date(),
+    });
+
+    const delay = next_sub_date.getTime() - Date.now();
+    await ScheduleQueue.add("update_subscription_cron", { id: sub?._id!, status: "expired" }, { delay });
+    // console.log("Job", job);
+
+    return sub;
   }
 
   static async checkPlanExists(key: keyof Plan, value: string): Promise<boolean> {
