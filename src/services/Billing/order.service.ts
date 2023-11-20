@@ -44,7 +44,7 @@ export class OrderService {
   }
 
   async placeOrder(customer_id: string, dto: PlaceOrderDto, roles: string[]) {
-    validateFields(dto, ["cart_session_id"]);
+    validateFields(dto, ["cart_session_id", "delivery_date"]);
     if (!!dto?.delivery_address) validateFields(dto?.delivery_address, ["address_", "city", "country"]);
 
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.CREATE, PermissionScope.ALL]);
@@ -73,6 +73,7 @@ export class OrderService {
       total: _cart?.total,
       phone_number: dto?.phone_number ?? cus?.phone,
       cart_id: _cart?._id!,
+      delivery_date: dto?.delivery_date,
     });
 
     console.log("Created Order", _order);

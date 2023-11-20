@@ -9,4 +9,5 @@ export interface PlaceOrderDto {
   card_token?: string;
   cart_session_id: string;
   coupon_code?: string;
+  delivery_date: Date;
 }

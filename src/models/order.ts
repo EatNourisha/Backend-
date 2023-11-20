@@ -35,6 +35,9 @@ export class Order extends BaseEntity {
   status: OrderStatus;
 
   @prop()
+  delivery_date: Date;
+
+  @prop()
   ref: string;
 
   @prop({ type: () => Address })
