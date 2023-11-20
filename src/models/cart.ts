@@ -18,7 +18,7 @@ export class Cart extends BaseEntity {
   @prop({ min: 0 })
   total: number;
 
-  @prop({ unique: true })
+  @prop()
   session_id: string;
 }
 
