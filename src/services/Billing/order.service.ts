@@ -136,7 +136,7 @@ export class OrderService {
     if (!item) return;
     const _order_items = await orderItem.find({ order: item, customer: tx?.customer }).lean<OrderItem[]>().exec();
     const _order = await order
-      .findByIdAndUpdate(item, { status: OrderStatus.PAID, $push: { items: _order_items.map((i) => i._id) } })
+      .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
       .lean<Order>()
       .exec();
     // TODO: remove the session_id on the cart here
