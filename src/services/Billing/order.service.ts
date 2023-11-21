@@ -13,7 +13,10 @@ export class OrderService {
       populate: [
         {
           path: "items",
-          populate: ["item"],
+          populate: {
+            path: "item",
+            model: "MealPack",
+          },
         },
       ],
     });
@@ -72,7 +75,7 @@ export class OrderService {
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
-    const _order = await OrderService.createOrder(customer_id, {
+    const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
       delivery_fee: _cart?.deliveryFee,
@@ -83,7 +86,13 @@ export class OrderService {
       delivery_date: dto?.delivery_date,
     });
 
-    console.log("Created Order", _order);
+    const { order: _order, items } = result;
+    await order
+      .findByIdAndUpdate(_order._id!, { items: items?.map((i) => i._id) })
+      .lean<Order>()
+      .exec();
+
+    console.log("Created Order", result);
 
     const payment_intent = await new BillingService().initializePayment(customer_id, {
       order_id: _order?._id!,
@@ -100,31 +109,36 @@ export class OrderService {
       .find({ customer: customer_id, cart: dto?.cart_id, session_id: dto?.ref, quantity: { $gt: 0 } })
       .lean<CartItem[]>()
       .exec();
+
+    console.log("Cart Items", items);
     if (items.length < 1) throw createError("Cart items cannot be empty", 400);
 
-    let result = {} as { order: Order };
+    let result = {} as { order: Order; items: OrderItem[] };
 
     try {
       const txs = await txSession.withTransaction(async () => {
         const _order = ((await order.create([{ ...dto, customer: customer_id }], { session: txSession })) as unknown as Order[])[0];
         Object.assign(result, { order: _order });
 
-        await Promise.all([
+        const [order_items] = await Promise.all([
           orderItem.insertMany(
             items.map((item) => ({
               customer: customer_id,
               order: _order?._id,
               cart_session_id: _order?.ref,
-              item: item?._id,
+              item: item?.item as string,
               quantity: item?.quantity,
             })),
             { session: txSession }
           ),
         ]);
+        Object.assign(result, { items: order_items });
+
+        console.log("1. Created Order Items", order_items);
       });
 
       if (txs) await txSession.endSession();
-      return result.order;
+      return result;
     } catch (error) {
       await txSession.endSession();
       throw createError(error.message, 400);
@@ -135,10 +149,15 @@ export class OrderService {
     const item = tx?.item as string;
     if (!item) return;
     const _order_items = await orderItem.find({ order: item, customer: tx?.customer }).lean<OrderItem[]>().exec();
+
+    console.log("Order items", _order_items);
     const _order = await order
-      .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
+      // .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
+      .findByIdAndUpdate(item, { status: OrderStatus.PAID })
       .lean<Order>()
       .exec();
+
+    console.log("Paid Order", _order);
     // TODO: remove the session_id on the cart here
     await Promise.all([
       cart
@@ -147,8 +166,8 @@ export class OrderService {
           { session_id: undefined, total: 0, subtotal: 0, deliveryFee: 0 }
         )
         .exec(),
-      // TODO: remove the cart items with the session_id
-      cartItem.deleteMany({ customer: _order?._id, session_id: _order?.ref }).exec(),
+
+      cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
     ]);
   }
 }

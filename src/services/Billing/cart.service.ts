@@ -7,6 +7,7 @@ import omit from "lodash/omit";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import { ClientSession } from "mongoose";
 import { nanoid } from "nanoid";
+import { add } from "lodash";
 
 interface CartItemDto {
   itemId: string;
@@ -53,7 +54,8 @@ export class CartService {
 
     try {
       const txs = await session.withTransaction(async () => {
-        const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, false, session);
+        // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, false, session);
+        const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, false, session);
         _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
       });
 
@@ -76,7 +78,8 @@ export class CartService {
 
     try {
       const txs = await session.withTransaction(async () => {
-        const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, true, session);
+        // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, true, session);
+        const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, true, session);
         _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
         if (updates?.item?.quantity < 1) await cartItem.deleteOne({ _id: updates?.item._id }, { session });
       });
@@ -91,14 +94,17 @@ export class CartService {
   }
 
   private static async calcItemPrice(
-    customer_id: string,
-    cart_id: string,
-    cart_session_id: string,
+    // customer_id: string,
+    // cart_id: string,
+    cart: Cart,
     dto: CartItemDto,
+    cart_session_id: string,
     neg = false,
     session?: ClientSession
   ) {
     if (!Number.isInteger(dto?.quantity)) throw createError("😒 quantity must be an integer", 400);
+
+    const { customer: customer_id, _id: cart_id, total, subtotal, deliveryFee } = cart;
 
     const shouldNegate = (
       (neg: boolean) => (value: number) =>
@@ -135,9 +141,9 @@ export class CartService {
 
     return {
       item: cart_item,
-      subtotal: shouldNegate(item?.price?.amount * dto?.quantity),
-      deliveryFee: shouldNegate(item?.price?.deliveryFee * dto?.quantity),
-      total: shouldNegate(item?.price?.amount * dto?.quantity + item?.price?.deliveryFee * dto?.quantity),
+      subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),
+      deliveryFee: Math.max(0, add(deliveryFee, shouldNegate(item?.price?.deliveryFee * dto?.quantity))),
+      total: Math.max(0, add(total, shouldNegate(item?.price?.amount * dto?.quantity + item?.price?.deliveryFee * dto?.quantity))),
     };
   }
 
@@ -148,7 +154,8 @@ export class CartService {
     session?: ClientSession
   ): Promise<Cart> {
     return await cart
-      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, $inc: { ...omit(info, ["item"]) } }, { new: true, session })
+      // .findByIdAndUpdate(cart_id, { session_id: cart_session_id, $inc: { ...omit(info, ["item"]) } }, { new: true, session })
+      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, ...omit(info, ["item"]) }, { new: true, session })
       .lean<Cart>()
       .exec();
   }

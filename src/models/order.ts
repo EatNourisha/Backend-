@@ -47,8 +47,8 @@ export class Order extends BaseEntity {
   @prop()
   phone_number: string;
 
-  @prop({ type: [OrderItem] })
-  items?: OrderItem[];
+  @prop({ ref: () => OrderItem })
+  items?: Ref<OrderItem>[];
 }
 
 export default getModelForClass(Order);
