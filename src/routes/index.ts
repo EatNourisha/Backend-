@@ -18,6 +18,7 @@ import AllergyRouter from "./Preference/allergy.routes";
 import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
+import AdminSettingsRouter from "./Preference/adminSettings.route";
 
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
@@ -47,6 +48,7 @@ routes.use("/lineups", LineupRouter);
 routes.use("/billings", BillingRouter);
 routes.use("/allergies", AllergyRouter);
 routes.use("/customers", CustomerRouter);
+routes.use("/settings", AdminSettingsRouter);
 routes.use("/transactions", TransactionRouter);
 routes.use("/subscriptions", SubscriptionRouter);
 routes.use("/notifications", NotificationRouter);

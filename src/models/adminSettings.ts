@@ -1,0 +1,30 @@
+// @ts-nocheck
+
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import BaseEntity from "./base";
+import { Customer } from "./customer";
+
+export enum DeliveryFeeCalculationType {
+  FIXED = "fixed",
+  PER_MEAL = "per_meal",
+}
+
+@modelOptions({ schemaOptions: { timestamps: true } })
+export class AdminSettings extends BaseEntity {
+  @prop()
+  name: string;
+
+  @prop({ min: 0 })
+  delivery_fee: number;
+
+  @prop({ ref: () => Customer })
+  last_updated_by: Ref<Customer>;
+
+  @prop({ enum: DeliveryFeeCalculationType, default: DeliveryFeeCalculationType.FIXED })
+  delivery_fee_calculation_type: DeliveryFeeCalculationType;
+
+  @prop({ default: "gbp" })
+  currency: string;
+}
+
+export default getModelForClass(AdminSettings);

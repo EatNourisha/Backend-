@@ -19,3 +19,4 @@ export * from "./dtos/review.dto";
 export * from "./dtos/queues.dto";
 
 export * from "./dtos/order.dto";
+export * from "./dtos/settings.dto";

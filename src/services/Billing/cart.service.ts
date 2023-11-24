@@ -1,5 +1,5 @@
 import { IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Cart, CartItem, MealPack, cart, cartItem } from "../../models";
+import { AdminSettings, Cart, CartItem, MealPack, adminSettings, cart, cartItem } from "../../models";
 import { RoleService } from "../../services/role.service";
 import { createError, getUpdateOptions, validateFields, paginate } from "../../utils";
 import { when } from "../../utils/when";
@@ -153,9 +153,18 @@ export class CartService {
     info: Awaited<ReturnType<typeof this.calcItemPrice>>,
     session?: ClientSession
   ): Promise<Cart> {
+    const settings = await adminSettings
+      .findOne({ name: "settings" })
+      .select(["delivery_fee", "delivery_fee_calculation_type"])
+      .lean<AdminSettings>()
+      .exec();
+
+    const delivery_fee_calculation_type = settings?.delivery_fee_calculation_type ?? "fixed";
+    const deliveryFee = when(delivery_fee_calculation_type === "fixed", settings?.delivery_fee, info?.deliveryFee);
+
     return await cart
       // .findByIdAndUpdate(cart_id, { session_id: cart_session_id, $inc: { ...omit(info, ["item"]) } }, { new: true, session })
-      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, ...omit(info, ["item"]) }, { new: true, session })
+      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, ...omit(info, ["item"]), deliveryFee }, { new: true, session })
       .lean<Cart>()
       .exec();
   }

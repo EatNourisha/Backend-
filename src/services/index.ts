@@ -20,6 +20,7 @@ export * from "./Billing/transaction.service";
 export * from "./Billing/subscription.service";
 export * from "./Preference/notification.service";
 export * from "./Preference/review.service";
+export * from "./Preference/adminSettings.service";
 
 export * from "./referral.service";
 export * from "./earnings.service";

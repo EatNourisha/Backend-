@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+// import Stripe from "stripe";
 import {
   CreateMealDto,
   CreateMealPackAnalysisData,
@@ -21,10 +21,10 @@ import {
 import { RoleService } from "../../services/role.service";
 import { createError, createSlug, getUpdateOptions, paginate, removeForcedInputs, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
-import config from "../../config";
+// import config from "../../config";
 
 export class MealService {
-  private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
+  // private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
   async createMeal(dto: CreateMealDto, roles: string[]): Promise<Meal> {
     validateFields(dto, ["name"]);
@@ -38,27 +38,29 @@ export class MealService {
   }
 
   async createMealPack(dto: CreateMealPackDto, roles: string[]): Promise<MealPack> {
-    validateFields(dto, ["name", "meals", "image_url", "images", "price"]);
+    validateFields(dto, ["name", "meals", "images", "price"]);
     if (!!dto?.price) validateFields(dto.price, ["amount", "deliveryFee"]);
+    if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
 
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.CREATE, PermissionScope.ALL]);
 
     const slug = createSlug(dto.name);
     if (await MealService.checkMealPackExists("slug", slug)) throw createError("Meal pack already exist", 400);
 
-    const amount = dto?.price?.amount + (dto?.price?.deliveryFee ?? 0.12);
+    // const amount = dto?.price?.amount + (dto?.price?.deliveryFee ?? 0.12);
 
-    const result = await this.stripe.products.create({
-      name: dto.name,
-      description: dto.description,
-      images: dto.images,
-      default_price_data: {
-        currency: "gbp",
-        unit_amount: Math.round(amount * 100),
-      },
-    });
+    // const result = await this.stripe.products.create({
+    //   name: dto.name,
+    //   description: dto.description,
+    //   images: dto.images,
+    //   default_price_data: {
+    //     currency: "gbp",
+    //     unit_amount: Math.round(amount * 100),
+    //   },
+    // });
 
-    const _meal_pack = await mealPack.create({ ...dto, slug, price_id: result.default_price, product_id: result.id });
+    // const _meal_pack = await mealPack.create({ ...dto, slug, price_id: result.default_price, product_id: result.id });
+    const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
     return _meal_pack;
   }
 
@@ -74,51 +76,51 @@ export class MealService {
     dto.price = {
       ...dto?.price,
       previousAmount: _meal?.price?.amount ?? 0,
-      deliveryFee: dto?.price?.deliveryFee ?? _meal?.price?.previousAmount,
+      deliveryFee: dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee,
     } as any;
 
-    let price: Stripe.Response<Stripe.Price> | null = null;
-    let product: Stripe.Response<Stripe.Product> | null = null;
-    const amount = (dto?.price?.amount ?? _meal?.price?.amount) + (dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee);
+    // let price: Stripe.Response<Stripe.Price> | null = null;
+    // let product: Stripe.Response<Stripe.Product> | null = null;
+    // const amount = (dto?.price?.amount ?? _meal?.price?.amount) + (dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee);
 
-    if (!_meal?.price_id && !_meal?.product_id) {
-      console.log("Got to the product creation");
-      product = await this.stripe.products.create({
-        name: dto?.name ?? _meal?.name,
-        description: dto?.description ?? _meal?.description,
-        images: dto?.images ?? _meal?.images,
-        default_price_data: {
-          currency: "gbp",
-          // stripe expects an integer, throws `Invalid integer` error when a floating point value is sent
-          unit_amount: Math.round(amount * 100),
-        },
-      });
+    // if (!_meal?.price_id && !_meal?.product_id) {
+    //   console.log("Got to the product creation");
+    //   product = await this.stripe.products.create({
+    //     name: dto?.name ?? _meal?.name,
+    //     description: dto?.description ?? _meal?.description,
+    //     images: dto?.images ?? _meal?.images,
+    //     default_price_data: {
+    //       currency: "gbp",
+    //       // stripe expects an integer, throws `Invalid integer` error when a floating point value is sent
+    //       unit_amount: Math.round(amount * 100),
+    //     },
+    //   });
 
-      console.log("Product", product);
-    }
+    //   console.log("Product", product);
+    // }
 
-    if (!!dto?.price?.amount && dto?.price?.amount !== (_meal?.price?.amount ?? 0) && (!!_meal?.product_id || product?.id)) {
-      price = await this.stripe.prices.create({
-        currency: "gbp",
-        unit_amount: Math.round(amount * 100),
-        product: product?.id ?? _meal?.product_id,
-      });
+    // if (!!dto?.price?.amount && dto?.price?.amount !== (_meal?.price?.amount ?? 0) && (!!_meal?.product_id || product?.id)) {
+    //   price = await this.stripe.prices.create({
+    //     currency: "gbp",
+    //     unit_amount: Math.round(amount * 100),
+    //     product: product?.id ?? _meal?.product_id,
+    //   });
 
-      console.log({ price, amount: amount * 100 });
-    }
+    //   console.log({ price, amount: amount * 100 });
+    // }
 
-    if (!product && (!!dto?.name || !!dto?.images || (!!dto?.price?.amount && price))) {
-      await Promise.all([
-        this.stripe.products.update(_meal.product_id, {
-          name: dto?.name,
-          description: dto?.description,
-          default_price: price?.id,
-          images: dto?.images ?? _meal?.images,
-        }),
+    // if (!product && (!!dto?.name || !!dto?.images || (!!dto?.price?.amount && price))) {
+    //   await Promise.all([
+    //     this.stripe.products.update(_meal.product_id, {
+    //       name: dto?.name,
+    //       description: dto?.description,
+    //       default_price: price?.id,
+    //       images: dto?.images ?? _meal?.images,
+    //     }),
 
-        this.stripe.prices.update(_meal?.price_id, { active: false }),
-      ]);
-    }
+    //     this.stripe.prices.update(_meal?.price_id, { active: false }),
+    //   ]);
+    // }
 
     _meal = await mealPack
       .findByIdAndUpdate(
@@ -126,8 +128,9 @@ export class MealService {
         {
           ...dto,
           slug: createSlug(dto?.name ?? _meal?.name),
-          product_id: product?.id ?? _meal?.product_id,
-          price_id: price?.id ?? _meal?.price_id,
+          // product_id: product?.id ?? _meal?.product_id,
+          // price_id: price?.id ?? _meal?.price_id,
+          image_url: !_meal?.image_url && dto?.images ? dto?.images[0] : _meal?.image_url,
         },
         { new: true }
       )

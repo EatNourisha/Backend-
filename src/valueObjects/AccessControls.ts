@@ -100,6 +100,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.TRANSACTION,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.ADMIN_SETTINGS,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };

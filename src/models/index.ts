@@ -21,6 +21,8 @@ export { default as cartItem, CartItem } from "./cartItem";
 export { default as order, Order } from "./order";
 export { default as orderItem, OrderItem } from "./orderItem";
 
+export { default as adminSettings, AdminSettings } from "./adminSettings";
+
 export { default as plan, Plan } from "./plan";
 export { default as card, Card } from "./card";
 export { default as allergy, Allergy } from "./allergy";
