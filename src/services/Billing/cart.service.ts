@@ -143,7 +143,7 @@ export class CartService {
       item: cart_item,
       subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),
       deliveryFee: Math.max(0, add(deliveryFee, shouldNegate(item?.price?.deliveryFee * dto?.quantity))),
-      total: Math.max(0, add(total, shouldNegate(item?.price?.amount * dto?.quantity + item?.price?.deliveryFee * dto?.quantity))),
+      total: Math.max(0, add(total, shouldNegate(item?.price?.amount * dto?.quantity))),
     };
   }
 
@@ -161,10 +161,11 @@ export class CartService {
 
     const delivery_fee_calculation_type = settings?.delivery_fee_calculation_type ?? "fixed";
     const deliveryFee = when(delivery_fee_calculation_type === "fixed", settings?.delivery_fee, info?.deliveryFee);
+    const total = Math.max(0, add(info?.total, deliveryFee));
 
     return await cart
       // .findByIdAndUpdate(cart_id, { session_id: cart_session_id, $inc: { ...omit(info, ["item"]) } }, { new: true, session })
-      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, ...omit(info, ["item"]), deliveryFee }, { new: true, session })
+      .findByIdAndUpdate(cart_id, { session_id: cart_session_id, ...omit(info, ["item"]), deliveryFee, total }, { new: true, session })
       .lean<Cart>()
       .exec();
   }

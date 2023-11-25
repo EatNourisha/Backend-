@@ -18,7 +18,7 @@ export class OrderController {
   async getOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, query } = req;
-      const data = await service.getOrders(customer.sub, customer.roles, query);
+      const data = await service.getOrders(customer.sub, customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

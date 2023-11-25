@@ -7,27 +7,43 @@ import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
 
 export class OrderService {
-  async getOrders(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<PaginatedDocument<Order[]>> {
+  async getOrders(
+    customer_id: string,
+    roles: string[],
+    filters: IPaginationFilter & { customer: string }
+  ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-    return await paginate("order", { customer: customer_id }, filters, {
-      populate: [
-        {
-          path: "items",
-          populate: {
-            path: "item",
-            model: "MealPack",
-          },
+
+    let query = {};
+    let populate = [
+      {
+        path: "items",
+        populate: {
+          path: "item",
+          model: "MealPack",
         },
-      ],
-    });
+      } as any,
+    ];
+    const is_admin = await RoleService.isAdmin(roles);
+    if (!is_admin) Object.assign(query, { customer: customer_id });
+    else if (is_admin) populate.push({ path: "customer" });
+
+    if (is_admin && !!filters?.customer) Object.assign(query, { customer: filters.customer });
+    return await paginate("order", query, filters, { populate });
   }
 
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
 
+    const is_admin = await RoleService.isAdmin(roles);
+    let query = { order: order_id, quantity: { $gt: 0 } };
+    let populate_order = [] as string[];
+    if (!is_admin) Object.assign(query, { customer: customer_id });
+    else if (is_admin) populate_order.push("customer");
+
     const [_order, items] = await Promise.all([
-      order.findById(order_id).lean<Order>().exec(),
-      paginate<OrderItem[]>("orderItem", { order: order_id, customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+      order.findById(order_id).populate(populate_order).lean<Order>().exec(),
+      paginate<OrderItem[]>("orderItem", query, filters, { populate: ["item"] }),
     ]);
 
     return { order: _order, items };
@@ -49,7 +65,7 @@ export class OrderService {
 
     let query = { _id: order_id };
     if (!is_admin) Object.assign(query, { customer: customer_id });
-    const _order = await order.findOneAndUpdate({ order_id }, { status: dto.status }, { new: true }).lean<Order>().exec();
+    const _order = await order.findOneAndUpdate(query, { status: dto.status }, { new: true }).lean<Order>().exec();
     return _order;
   }
 

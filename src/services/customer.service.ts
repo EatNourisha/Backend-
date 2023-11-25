@@ -12,7 +12,7 @@ import {
   VerifyEmailDto,
 } from "../interfaces";
 import { NourishaBus } from "../libs";
-import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, Subscription, subscription } from "../models";
+import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, order, Subscription, subscription } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import PasswordService from "./password.service";
@@ -27,24 +27,26 @@ import { NotificationService } from "./Preference/notification.service";
 import CustomerEventListener from "../listeners/customer.listener";
 import { DeliveryService } from "./Meal/delivery.service";
 import { when } from "../utils/when";
+import { OrderStatus } from "../models/order";
 // import { when } from "../utils/when";
 
 export class CustomerService {
   private authVerificationService = new AuthVerificationService();
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
-  async getFeatureCounts(roles: string[]): Promise<{ meals: number; customers: number; subscriptions: number }> {
+  async getFeatureCounts(roles: string[]): Promise<{ meals: number; customers: number; subscriptions: number; orders: number }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [PermissionScope.ALL]);
 
-    const [meals, customers, subscriptions] = await Promise.all([
+    const [meals, customers, subscriptions, orders] = await Promise.all([
       mealPack.countDocuments().lean<number>().exec(),
       customer.countDocuments({ primary_role: "customer" }).lean<number>().exec(),
       subscription.countDocuments({ status: "active" }).lean<number>().exec(),
+      order.countDocuments({ status: OrderStatus.PAID }).lean<number>().exec(),
     ]);
 
     // console.log('Dashboard', {meals, customers, subscriptions})
 
-    return { meals, customers, subscriptions };
+    return { meals, customers, subscriptions, orders };
   }
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
