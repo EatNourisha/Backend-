@@ -161,7 +161,7 @@ export class CartService {
 
     const delivery_fee_calculation_type = settings?.delivery_fee_calculation_type ?? "fixed";
     const deliveryFee = when(delivery_fee_calculation_type === "fixed", settings?.delivery_fee, info?.deliveryFee);
-    const total = Math.max(0, add(info?.total, deliveryFee));
+    const total = Math.max(0, add(info?.subtotal, deliveryFee));
 
     return await cart
       // .findByIdAndUpdate(cart_id, { session_id: cart_session_id, $inc: { ...omit(info, ["item"]) } }, { new: true, session })
