@@ -126,6 +126,7 @@ export class BillingService {
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
 
+    // one_off allows users to toggle auto charge
     dto.one_off = dto?.one_off ?? true;
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
