@@ -127,6 +127,7 @@ export class BillingService {
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
 
+    dto.one_off = dto?.one_off ?? true;
     const renew = !dto?.one_off && cus?.preference?.auto_renew;
 
     const sub = await this.stripe.subscriptions.create({
