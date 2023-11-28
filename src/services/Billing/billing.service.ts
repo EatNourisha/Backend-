@@ -127,6 +127,7 @@ export class BillingService {
     if (!_plan) throw createError("Plan does not exist", 404);
 
     dto.one_off = dto?.one_off ?? true;
+    // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
     const sub = await this.stripe.subscriptions.create({
