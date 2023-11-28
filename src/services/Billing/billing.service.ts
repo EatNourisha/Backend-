@@ -10,7 +10,6 @@ import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
 import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
 import { OrderService } from "./order.service";
-import { when } from "../../utils/when";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -128,13 +127,12 @@ export class BillingService {
     if (!_plan) throw createError("Plan does not exist", 404);
 
     dto.one_off = dto?.one_off ?? true;
-    const renew = !dto?.one_off && cus?.preference?.auto_renew;
+    const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
       default_payment_method: dto?.card_token,
-      collection_method: when(renew, "charge_automatically", "send_invoice"),
-      days_until_due: when(renew, undefined, 2),
+      collection_method: "charge_automatically",
       items: [
         {
           price: _plan?.price_id,
@@ -144,6 +142,7 @@ export class BillingService {
       payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
+      cancel_at_period_end,
     });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
