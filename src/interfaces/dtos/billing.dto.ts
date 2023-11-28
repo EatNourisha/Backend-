@@ -11,6 +11,7 @@ export interface CreateCardDto extends Omit<Card, "_id" | "createdAt" | "updated
 export interface InitiateSubscriptionDto {
   plan_id: string;
   card_token?: string;
+  one_off?: boolean;
 }
 
 export interface InitializePaymentDto {
