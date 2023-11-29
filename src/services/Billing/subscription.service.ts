@@ -36,10 +36,11 @@ export class SubscriptionService {
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
     let sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
-    // if (!sub || ["incomplete_expired"].includes(sub?.status)) {
-    //   const reconcilled_sub = ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
-    //   if (!reconcilled_sub) throw createError("Subscription not found!", 404);
-    // }
+    if (!sub || ["incomplete_expired", "cancelled", "canceled"].includes(sub?.status)) {
+      ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
+      // const reconcilled_sub = ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
+      // if (!reconcilled_sub) throw createError("Subscription not found!", 404);
+    }
     return sub;
   }
 
@@ -49,7 +50,7 @@ export class SubscriptionService {
     if (!sub) throw createError("Subscription not found", 404);
 
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
-      prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount
+      prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount,
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
     const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
@@ -129,8 +130,8 @@ export class SubscriptionService {
     const cus = (await this.stripe.customers.retrieve(cus_db?.stripe_id, { expand: ["subscriptions"] })) as Stripe.Customer;
 
     const data = cus.subscriptions?.data[0] as any;
-    console.log("Reconciled Subscription", cus.subscriptions?.data);
-    if (!data) return null;
+    // console.log("Reconciled Subscription", cus?.subscriptions?.data);
+    if (!data || data?.status !== "active") return null;
 
     const [_plan, _card] = await Promise.all([
       plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),

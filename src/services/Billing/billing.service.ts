@@ -10,6 +10,7 @@ import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
 import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
 import { OrderService } from "./order.service";
+import consola from "consola";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -202,12 +203,16 @@ export class BillingHooks {
   static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Payment Intent Succeeded", data);
-    switch (tx.reason) {
-      case "order":
-        await OrderService.markOrderAsPaid(tx);
-        break;
-      default:
-        break;
+    try {
+      switch (tx?.reason) {
+        case "order":
+          await OrderService.markOrderAsPaid(tx);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      consola.error(error?.message);
     }
   }
 

@@ -66,9 +66,10 @@ export class NotificationService {
 
   static async notify(customer_id: string, dto: Omit<NotifyDto, "_">) {
     console.log("ID", customer_id);
-    validateFields(dto, ["tag", "content", "title", "ticker", "tokens"]);
-    // const tokens = await NotificationService.getCustomerDeviceTokens(customer_id) ?? undefined;
-    const tokens = dto?.tokens;
+    validateFields(dto, ["tag", "content", "title", "ticker"]);
+    const customer_tokens = (await NotificationService.getCustomerDeviceTokens(customer_id)) ?? undefined;
+    const tokens = dto?.tokens ?? customer_tokens ?? [];
+    if (!tokens || tokens.length < 1) return;
     return await this.send({ ...dto, tokens });
   }
 

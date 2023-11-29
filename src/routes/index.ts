@@ -79,12 +79,6 @@ routes.post("/webhook", async (req, res, __) => {
     return sendResponse(res, 400, { message: error.message });
   }
 
-  const data = event.data.object as any;
-  const tx = await transaction
-    .findOneAndUpdate({ reference: data.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
-    .lean<Transaction>()
-    .exec();
-
   // console.log("Stripe Event", event);
   switch (event.type) {
     case "checkout.session.completed": {
@@ -100,6 +94,11 @@ routes.post("/webhook", async (req, res, __) => {
       break;
     }
     case "payment_intent.succeeded": {
+      const data = event.data.object as any;
+      const tx = await transaction
+        .findOneAndUpdate({ reference: data.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
+        .lean<Transaction>()
+        .exec();
       await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
     }
