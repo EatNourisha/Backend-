@@ -115,6 +115,9 @@ export class Customer extends BaseEntity {
 
   @prop()
   subscription_status: string;
+
+  @prop()
+  last_stripe_check: Date;
 }
 
 export default getModelForClass(Customer);

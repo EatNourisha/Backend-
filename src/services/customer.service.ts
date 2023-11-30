@@ -28,6 +28,7 @@ import CustomerEventListener from "../listeners/customer.listener";
 import { DeliveryService } from "./Meal/delivery.service";
 import { when } from "../utils/when";
 import { OrderStatus } from "../models/order";
+import { add } from "date-fns";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -238,7 +239,10 @@ export class CustomerService {
       name,
     });
 
-    const acc = await customer.findByIdAndUpdate(id, { stripe_id: cons.id }, { new: true }).lean<Customer>().exec();
+    const acc = await customer
+      .findByIdAndUpdate(id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+      .lean<Customer>()
+      .exec();
     return acc;
   }
 
@@ -404,6 +408,7 @@ export class CustomerService {
     const roles = (acc?.roles ?? [])?.map((role) => String(role));
     if (admin && !(await RoleService.isAdmin(roles))) throw createError("❌ Access Denied", 401);
     if (!(await PasswordService.checkPassword(acc._id!, password))) throw createError("Incorrect email or password", 401);
+    await this.ascertainCustomerStripeId(acc);
     await CustomerService.updateLastSeen(acc?._id!);
     return acc;
   }
@@ -511,6 +516,19 @@ export class CustomerService {
       .exec()) as Customer;
     if (!acc) throw createError("Customer not found", 404);
     return acc;
+  }
+
+  async ascertainCustomerStripeId(cus: Customer) {
+    // this will check every month to seen if this customer still exists on stripe else we add the customer to stripe
+    // this is also to make sure that the stripe_id on the customer data exists on stripe as it is required to make payments and subscriptions
+    if (!!cus?.last_stripe_check && Date.now() < add(cus?.last_stripe_check, { months: 1 }).getTime()) return;
+
+    const stripe_cus = await this.stripe.customers
+      .retrieve(cus?.stripe_id)
+      .catch((err) => console.log(`[ascertainCustomerStripeId]`, err.message));
+
+    // console.log("Customer", stripe_cus);
+    if (!stripe_cus) await this.attachStripeId(cus?._id!, cus?.email, join([cus?.first_name, cus?.last_name], " "));
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
