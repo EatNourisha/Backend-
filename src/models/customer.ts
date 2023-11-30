@@ -46,7 +46,7 @@ export class CustomerPreference {
   @prop()
   next_lineup_change_exp: number;
 
-  @prop({ default: true })
+  @prop({ default: false })
   auto_renew: boolean;
 }
 
