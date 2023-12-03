@@ -43,16 +43,22 @@ export class OrderService {
       PermissionScope.ALL,
     ]);
 
-    const txs = await transaction.find({ reason: TransactionReason.ORDER, status: TransactionStatus.PENDING }).lean<Transaction[]>().exec();
-    // console.log("Transactions", txs);
+    const txs = await transaction
+      .find({ reason: TransactionReason.ORDER, status: TransactionStatus.PENDING })
+      .populate("item")
+      .lean<Transaction[]>()
+      .exec();
+    console.log("Transactions", txs);
 
     const to_run = txs.map((tx) => this.ascertainOrderPayment(tx));
     await Promise.all(to_run);
-    return { tx: txs.length, done: true };
+    // return { tx: txs.length, done: true };
+
+    return txs;
   }
 
   async ascertainOrderPayment(tx: Transaction) {
-    if (!tx?.order_reference) return;
+    if (!tx?.order_reference || [OrderStatus.RECEIVED, OrderStatus.DISPATCHED].includes((tx?.item as Order)?.status)) return;
     try {
       const pi = await this.stripe.paymentIntents.retrieve(tx.order_reference);
       if (pi?.status !== "succeeded") return;
@@ -61,6 +67,7 @@ export class OrderService {
         .findByIdAndUpdate(tx?._id!, { status: TransactionStatus.SUCCESSFUL }, { new: true })
         .lean<Transaction>()
         .exec();
+
       return await OrderService.markOrderAsPaid(new_tx);
     } catch (error) {}
   }

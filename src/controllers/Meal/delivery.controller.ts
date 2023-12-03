@@ -23,6 +23,16 @@ export class DeliveryController {
     }
   }
 
+  async fixMissingCustomerDeliveryDay(_: Request, res: Response, next: NextFunction) {
+    try {
+      // const { customer, body } = req;
+      const data = await new DeliveryService().fixMissingCustomersDeliveryDay();
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async updateNextDeliveryDate(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, body } = req;

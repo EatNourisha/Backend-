@@ -1,8 +1,5 @@
-
-
-
 import { Router } from "express";
-import { authGuard } from "../../middlewares";
+import { authGuard, deviceGuard } from "../../middlewares";
 import { DeliveryController } from "../../controllers";
 
 const router = Router();
@@ -16,5 +13,6 @@ const controller = new DeliveryController();
 
 // router.get("/pack/:id", authGuard, controller.getMealPackById);
 router.get("/info", authGuard, controller.getDeliveryInfo);
+router.put("/fix", deviceGuard, controller.fixMissingCustomerDeliveryDay);
 
 export default router;
