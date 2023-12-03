@@ -54,4 +54,14 @@ export class OrderController {
       sendError(error, next);
     }
   }
+
+  async ascertainOrderPayments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.ascertainOrderPayments(customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

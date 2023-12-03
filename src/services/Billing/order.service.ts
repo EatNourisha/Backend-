@@ -1,12 +1,17 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
-import { AvailableResource, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, order, orderItem } from "../../models";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, order, orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
+import { TransactionReason, TransactionStatus } from "../../models/transaction";
+import Stripe from "stripe";
+import config from "../../config";
 
 export class OrderService {
+  private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
+
   async getOrders(
     customer_id: string,
     roles: string[],
@@ -30,6 +35,34 @@ export class OrderService {
 
     if (is_admin && !!filters?.customer) Object.assign(query, { customer: filters.customer });
     return await paginate("order", query, filters, { populate });
+  }
+
+  async ascertainOrderPayments(roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.ORDER, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    const txs = await transaction.find({ reason: TransactionReason.ORDER, status: TransactionStatus.PENDING }).lean<Transaction[]>().exec();
+    // console.log("Transactions", txs);
+
+    const to_run = txs.map((tx) => this.ascertainOrderPayment(tx));
+    await Promise.all(to_run);
+    return { tx: txs.length, done: true };
+  }
+
+  async ascertainOrderPayment(tx: Transaction) {
+    if (!tx?.order_reference) return;
+    try {
+      const pi = await this.stripe.paymentIntents.retrieve(tx.order_reference);
+      if (pi?.status !== "succeeded") return;
+
+      const new_tx = await transaction
+        .findByIdAndUpdate(tx?._id!, { status: TransactionStatus.SUCCESSFUL }, { new: true })
+        .lean<Transaction>()
+        .exec();
+      return await OrderService.markOrderAsPaid(new_tx);
+    } catch (error) {}
   }
 
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
@@ -169,7 +202,7 @@ export class OrderService {
     console.log("Order items", _order_items);
     const _order = await order
       // .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
-      .findByIdAndUpdate(item, { status: OrderStatus.PAID })
+      .findByIdAndUpdate(item, { status: OrderStatus.PAID }, { new: true })
       .lean<Order>()
       .exec();
 

@@ -3,7 +3,8 @@ import "dotenv/config";
 const config = {
   PORT: process.env.PORT || 8080,
   NAME: process.env.NAME as string,
-  VERSION: process.env.VERSION as string,
+  // VERSION: process.env.VERSION as string,
+  VERSION: "1.1.25",
   DB_URI: process.env.DATABASE_URL as string,
   // DB_URI: process.env.DATABASE_URL_PROD as string,
   JWT_SECRET: process.env.JWT_SECRET as string,
