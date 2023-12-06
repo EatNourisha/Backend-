@@ -23,6 +23,9 @@ export { default as orderItem, OrderItem } from "./orderItem";
 
 export { default as adminSettings, AdminSettings } from "./adminSettings";
 
+export { default as coupon, Coupon } from "./coupon";
+export { default as promoCode, PromoCode } from "./promocode";
+
 export { default as plan, Plan } from "./plan";
 export { default as card, Card } from "./card";
 export { default as allergy, Allergy } from "./allergy";

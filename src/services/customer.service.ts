@@ -85,7 +85,6 @@ export class CustomerService {
     const sub = cus?.subscription as Subscription;
 
     // https://stripe.com/docs/billing/subscriptions/pause
-
     const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
     if (!!sub?.stripe_id && sub?.stripe_id?.length > 2 && sub?.status === "active")
       await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });

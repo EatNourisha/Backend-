@@ -6,6 +6,7 @@ import { Role } from "./role";
 import { Subscription } from "./subscription";
 import { Allergy } from "./allergy";
 import { MealLineup } from "./mealLineup";
+import { PromoCode } from "./promocode";
 
 export class AccountControl {
   @prop({ default: false })
@@ -48,6 +49,17 @@ export class CustomerPreference {
 
   @prop({ default: false })
   auto_renew: boolean;
+}
+
+export class CustomerPromo {
+  @prop({ ref: () => "PromoCode" })
+  promo: Ref<PromoCode>;
+
+  @prop({ default: false })
+  used_up: boolean;
+
+  @prop({ default: 0 })
+  no_of_use: number;
 }
 
 @index({ "$**": "text" }) // to make the $text.$search work.
@@ -101,6 +113,9 @@ export class Customer extends BaseEntity {
   @prop({ enum: DeliveryDay })
   delivery_day: DeliveryDay;
 
+  @prop()
+  delivery_date: Date;
+
   @prop({ ref: () => Subscription })
   subscription: Ref<Subscription>;
 
@@ -118,6 +133,9 @@ export class Customer extends BaseEntity {
 
   @prop()
   last_stripe_check: Date;
+
+  @prop({ ref: () => "PromoCode" })
+  pending_promo: Ref<PromoCode>;
 }
 
 export default getModelForClass(Customer);

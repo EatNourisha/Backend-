@@ -15,6 +15,7 @@ export * from "./Billing/card.service";
 export * from "./Billing/cart.service";
 export * from "./Billing/order.service";
 export * from "./Billing/billing.service";
+export * from "./Billing/discount.service";
 export * from "./Preference/allergy.service";
 export * from "./Billing/transaction.service";
 export * from "./Billing/subscription.service";

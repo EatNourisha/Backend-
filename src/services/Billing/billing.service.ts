@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { Card, Customer, Order, Plan, Subscription, card, customer, order, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Order, Plan, PromoCode, Subscription, card, customer, order, plan, subscription, transaction } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -121,7 +121,7 @@ export class BillingService {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    const cus = await customer.findById(customer_id).lean<Customer>().exec();
+    const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
@@ -131,6 +131,8 @@ export class BillingService {
     dto.one_off = dto?.one_off ?? true;
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
+
+    const promo = cus?.pending_promo as PromoCode;
 
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
@@ -146,6 +148,7 @@ export class BillingService {
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
+      promotion_code: promo?.stripe_id,
     });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
@@ -162,6 +165,8 @@ export class BillingService {
         reason: TransactionReason.SUBSCRIPTION,
         stripe_customer_id: sub?.customer,
       }),
+
+      !!promo && customer.updateOne({ _id: customer_id }, { pending_promo: null }).exec(),
     ]);
 
     const client_secret = payment_intent.client_secret;

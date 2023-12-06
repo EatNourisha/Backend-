@@ -14,13 +14,16 @@ import { DeliveryService } from "./delivery.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
-    validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+    validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
       throw createError("Customer's weekly lineup already exist", 400);
 
+    console.clear();
+    console.log("Lineup Dto", dto);
+
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
-    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id }).exec();
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
     // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
 
@@ -40,11 +43,15 @@ export class MealLineupService {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     await MealLineupService.validateLockedLineupChange(customer_id);
 
+    console.clear();
+    console.log("Lineup Dto", dto);
+
     const _lineup = await lineup
       .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { ...omit(dto, ["customer"]) }, { new: true })
       .lean<MealLineup>()
       .exec();
     if (!_lineup && !dryRun) throw createError("Customer's weekly lineup does not exist", 404);
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
     // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto as any);
 
@@ -92,6 +99,7 @@ export class MealLineupService {
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     let pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     const day_of_week_index = getDay(new Date());
+
     let _intersect = intersection(intersection(days, pops), Array.from(days).splice(day_of_week_index + 1));
 
     pops = pops.map((pop) => ({
@@ -166,7 +174,7 @@ export class MealLineupService {
   }
 
   static async createLineupAnalysis(customer_id: string, dto: CreateLineupDto) {
-    const day_keys = Object.keys(dto);
+    const day_keys = Object.keys(dto).filter((k) => k !== "delivery_date");
 
     const analysis_doc: MealPackAnalysis[] = [];
     for (const day_key of day_keys) {

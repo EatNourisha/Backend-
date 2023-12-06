@@ -4,12 +4,14 @@ import { getUpdateOptions, paginate } from "../utils";
 import { RoleService } from "./role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import { EarningsService } from "./earnings.service";
+import { DiscountService } from "./Billing/discount.service";
 
 export class ReferralService {
   async createReferral(invitee_id: string, ref_code: string) {
     const refCode = String(ref_code).toLowerCase();
     const cus = await customer.findOne({ ref_code: refCode }).select("_id").lean<Customer>().exec();
-    if (!cus) return null;
+    if (!cus) return await DiscountService.attachPromoToCustomer(invitee_id, ref_code);
+
     const inviter_id = cus?._id;
     const ref = await referral
       .findOneAndUpdate(
@@ -68,8 +70,10 @@ export class ReferralService {
       const txs = await session.withTransaction(async () => {
         console.log("Session Executing...");
 
-        EarningsService.updateEarnings(ref?.inviter, ref?.reward, ref?._id!, session),
-          referral.findByIdAndUpdate(ref?._id, { is_subscribed: true, subscription_plan: plan_id }, { session }).lean<Referral>().exec();
+        // await Promise.all([
+        EarningsService.updateEarnings(ref?.inviter, ref?.reward, ref?._id!, session);
+        referral.findByIdAndUpdate(ref?._id, { is_subscribed: true, subscription_plan: plan_id }, { session }).lean<Referral>().exec();
+        // ]);
 
         console.log("Session Executed...\n\n");
       });
@@ -107,7 +111,7 @@ export class ReferralService {
 
     let where: any = {};
     if (!!filters?.customer) Object.assign(where, { inviter: filters.customer });
-    return await paginate("referral", where, filters, { populate: ["inviter", "invitee"] });
+    return await paginate("referral", where, filters, { populate: ["inviter", "invitee", "promo"] });
   }
 
   async getAllSubscribedInvitedCustomers(
@@ -118,6 +122,6 @@ export class ReferralService {
 
     let where: any = { is_subscribed: true };
     if (!!filters?.customer) Object.assign(where, { inviter: filters.customer });
-    return await paginate("referral", where, filters, { populate: ["inviter", "invitee", "subscription_plan"] });
+    return await paginate("referral", where, filters, { populate: ["inviter", "invitee", "subscription_plan", "promo"] });
   }
 }

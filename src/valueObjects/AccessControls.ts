@@ -104,6 +104,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.ADMIN_SETTINGS,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.DISCOUNT,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };
