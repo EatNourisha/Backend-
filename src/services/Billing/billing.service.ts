@@ -11,6 +11,7 @@ import { TransactionService } from "./transaction.service";
 import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
 import { OrderService } from "./order.service";
 import consola from "consola";
+import { DiscountService } from "./discount.service";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -76,8 +77,6 @@ export class BillingService {
     validateFields(dto, ["order_id"]);
     if (!!roles) await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    console.log({ dto });
-
     const cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
@@ -94,6 +93,7 @@ export class BillingService {
       off_session: !!dto?.card_token,
       receipt_email: cus?.email,
       expand: ["invoice"],
+      confirm: !!dto?.card_token,
     });
 
     // const invoice = intent?.invoice as Stripe.Invoice;
@@ -111,6 +111,8 @@ export class BillingService {
         stripe_customer_id: cus?.stripe_id,
       });
     }
+
+    console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
     return { client_secret: intent?.client_secret };
   }
@@ -165,8 +167,6 @@ export class BillingService {
         reason: TransactionReason.SUBSCRIPTION,
         stripe_customer_id: sub?.customer,
       }),
-
-      !!promo && customer.updateOne({ _id: customer_id }, { pending_promo: null }).exec(),
     ]);
 
     const client_secret = payment_intent.client_secret;
@@ -263,10 +263,13 @@ export class BillingHooks {
     const data = event.data.object as any;
     console.log("Customer subscription updated", data);
 
-    const [_plan, _card] = await Promise.all([
+    const [_plan, _card, cus] = await Promise.all([
       plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),
       card.findOne({ token: data?.default_payment_method }).select("_id").lean<Card>().exec(),
+      customer.findOne({ stripe_id: data?.customer }).select(["_id", "pending_promo"]).populate("pending_promo").lean<Customer>().exec(),
     ]);
+
+    const promo = cus?.pending_promo as PromoCode;
 
     const sub = await SubscriptionService.createSubscription(data?.customer! as string, {
       stripe_id: data?.id!,
@@ -281,6 +284,9 @@ export class BillingHooks {
     await transaction
       .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
       .exec();
+
+    !!promo && _plan?._id && cus?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo);
+    !!promo && cus?._id && customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec();
 
     console.log("Subscription data", { _plan, _card, sub });
 

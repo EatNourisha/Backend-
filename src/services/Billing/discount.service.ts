@@ -1,12 +1,30 @@
 import Stripe from "stripe";
 import { CreatePromoCodeDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Coupon, Customer, PromoCode, Referral, coupon, customer, promoCode, referral } from "../../models";
+import {
+  AdminSettings,
+  Coupon,
+  Customer,
+  Earnings,
+  //   Earnings,
+  Plan,
+  PromoCode,
+  Referral,
+  adminSettings,
+  coupon,
+  customer,
+  earnings,
+  //   earnings,
+  plan,
+  promoCode,
+  referral,
+} from "../../models";
 import { RoleService } from "../role.service";
 import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import config from "../../config";
 import { toLower, omit } from "lodash";
 import { when } from "../../utils/when";
+import { InfluencerRewardType } from "../../models/adminSettings";
 
 export class DiscountService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -121,6 +139,33 @@ export class DiscountService {
       .lean<Referral>()
       .exec();
 
+    console.log("[attachPromoToCustomer]", { ref, promo, cus });
+
     return ref;
+  }
+
+  static async updateInfluencersReward(customer_id: string, plan_id: string, promo: PromoCode) {
+    const pln = await plan.findById(plan_id).lean<Plan>().exec();
+    if (!pln) return;
+
+    const settings = await adminSettings.findOne({ name: "settings" }).lean<AdminSettings>().exec();
+
+    const value = pln?.amount ?? 0;
+    const ins = settings?.influencer_reward;
+    const percentage_amount = value * ((ins?.amount ?? 1) / 100);
+
+    const reward = when(ins?.type === InfluencerRewardType.FIXED, ins?.amount ?? 2, percentage_amount);
+
+    const refs: string[] = [];
+    const ref = await referral
+      .findOneAndUpdate({ invitee: customer_id, promo: promo?._id, is_promotion: true }, { $inc: { reward }, is_subscribed: true })
+      .lean<Referral>()
+      .exec();
+
+    if (!!ref) refs.push(ref?._id!);
+    return await earnings
+      .findOneAndUpdate({ promo: promo?._id }, { $inc: { balance: reward }, $push: { refs }, promo: promo?._id }, getUpdateOptions())
+      .lean<Earnings>()
+      .exec();
   }
 }

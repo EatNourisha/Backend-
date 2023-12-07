@@ -43,6 +43,8 @@ export class DeliveryService {
       .findOneAndUpdate({ customer: customer_id }, { customer: customer_id, next_delivery_date, delivery_day: dd }, getUpdateOptions())
       .lean<DeliveryInfo>()
       .exec();
+
+    if (!cus?.delivery_info) await customer.updateOne({ _id: customer_id }, { delivery_info: info?._id }).exec();
     return info;
   }
 
@@ -51,7 +53,7 @@ export class DeliveryService {
       .findOneAndUpdate({ customer: customer_id }, { customer: customer_id, delivery_day }, getUpdateOptions())
       .lean<DeliveryInfo>()
       .exec();
-    await customer.findByIdAndUpdate(customer_id, { delivery_day }).lean<Customer>().exec();
+    await customer.findByIdAndUpdate(customer_id, { delivery_day, delivery_info: info }).lean<Customer>().exec();
     return info;
   }
 

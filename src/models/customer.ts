@@ -7,6 +7,7 @@ import { Subscription } from "./subscription";
 import { Allergy } from "./allergy";
 import { MealLineup } from "./mealLineup";
 import { PromoCode } from "./promocode";
+import { DeliveryInfo } from "./deliveryInfo";
 
 export class AccountControl {
   @prop({ default: false })
@@ -112,6 +113,9 @@ export class Customer extends BaseEntity {
 
   @prop({ enum: DeliveryDay })
   delivery_day: DeliveryDay;
+
+  @prop({ ref: () => "DeliveryInfo" })
+  delivery_info: Ref<DeliveryInfo>;
 
   @prop()
   delivery_date: Date;

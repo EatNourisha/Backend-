@@ -9,6 +9,19 @@ export enum DeliveryFeeCalculationType {
   PER_MEAL = "per_meal",
 }
 
+export enum InfluencerRewardType {
+  FIXED = "fixed",
+  PERCENTAGE = "percentage",
+}
+
+class InfluencersReward {
+  @prop({ enum: InfluencerRewardType, default: InfluencerRewardType.FIXED })
+  type: InfluencerRewardType;
+
+  @prop()
+  amount: number;
+}
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class AdminSettings extends BaseEntity {
   @prop()
@@ -25,6 +38,9 @@ export class AdminSettings extends BaseEntity {
 
   @prop({ default: "gbp" })
   currency: string;
+
+  @prop({ type: InfluencersReward })
+  influencer_reward: InfluencersReward;
 }
 
 export default getModelForClass(AdminSettings);

@@ -143,7 +143,12 @@ export class CustomerService {
     }
 
     return paginate("customer", queries, filters, {
-      populate: [{ path: "subscription", populate: ["plan"] }, { path: "preference.allergies" }, { path: "roles" }],
+      populate: [
+        { path: "subscription", populate: ["plan"] },
+        { path: "preference.allergies" },
+        { path: "roles" },
+        { path: "delivery_info" },
+      ],
     });
   }
 
