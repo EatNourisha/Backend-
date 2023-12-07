@@ -61,7 +61,7 @@ export class DiscountService {
     const coupon_data = dto?.coupon as Coupon;
     if (!!coupon_data) validateFields(dto.coupon as Coupon, ["duration"]);
 
-    console.log("Coupon DTO", dto?.coupon);
+    console.log("Promo Code DTO", dto);
 
     const currency = coupon_data?.currency ?? "gbp";
     const amount_or_percent = coupon_data?.percent_off ?? coupon_data.amount_off;
@@ -72,6 +72,7 @@ export class DiscountService {
       PermissionScope.ALL,
     ]);
 
+    const expires_at = when(!!dto?.expires_at, new Date(dto?.expires_at), undefined) as any;
     const amount_off = when(!!coupon_data?.amount_off, coupon_data?.amount_off * 100, null);
     const stripe_coup = await this.stripe.coupons.create({ ...dto?.coupon, amount_off, currency });
 
@@ -93,6 +94,7 @@ export class DiscountService {
     const stripe_promo = await this.stripe.promotionCodes.create({
       ...omit(dto as any, ["influencer"]),
       coupon: stripe_coup?.id,
+      expires_at: expires_at?.getTime() / 1000,
       restrictions: { ...dto?.restrictions, minimum_amount_currency },
     });
 
@@ -108,6 +110,7 @@ export class DiscountService {
             coupon: coup._id,
             stripe_id: stripe_promo.id,
             created_by: admin_id,
+            expires_at,
           },
           getUpdateOptions()
         )

@@ -285,8 +285,10 @@ export class BillingHooks {
       .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
       .exec();
 
-    !!promo && _plan?._id && cus?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo);
-    !!promo && cus?._id && customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec();
+    if (data?.status === "active") {
+      !!promo && _plan?._id && cus?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo);
+      !!promo && cus?._id && customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec();
+    }
 
     console.log("Subscription data", { _plan, _card, sub });
 
