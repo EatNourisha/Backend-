@@ -17,6 +17,7 @@ import {
   order,
   orderItem,
   promoCode,
+  earnings,
   partyMealRequest,
 } from "../models";
 
@@ -40,6 +41,7 @@ export type SchemaTypes =
   | "orderItem"
   | "order"
   | "promoCode"
+  | "earnings"
   | "partyMealRequest"
   | "mealPackAnalysis";
 
@@ -73,6 +75,7 @@ export class AccessService {
       order,
       promoCode,
       orderItem,
+      earnings,
       partyMealRequest,
     };
 

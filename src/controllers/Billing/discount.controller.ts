@@ -15,6 +15,16 @@ export class DiscountController {
     }
   }
 
+  async getPromoCodeById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params, query } = req;
+      const data = await service.getPromoById(params.id, customer.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async createPromoCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, body } = req;

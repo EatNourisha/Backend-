@@ -37,6 +37,20 @@ export class DiscountService {
     return await paginate("promoCode", {}, filters, { populate: ["coupon"] });
   }
 
+  async getPromoById(promo_id: string, roles: string[], filters: IPaginationFilter) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const [promo, earnings] = await Promise.all([
+      promoCode.findById(promo_id).populate("coupon").lean<PromoCode>().exec(),
+      paginate<Earnings[]>("earnings", { promo: promo_id }, filters),
+    ]);
+
+    return { promo, earnings };
+  }
+
   async createPromoCode(admin_id: string, dto: CreatePromoCodeDto, roles: string[]) {
     validateFields(dto, ["code", "coupon", "influencer"]);
 
