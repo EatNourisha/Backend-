@@ -2,12 +2,13 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Card, Customer, Plan, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction } from "../../models";
 import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
 import { ReferralService } from "../../services/referral.service";
+import { DiscountService } from "./discount.service";
 
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -125,7 +126,12 @@ export class SubscriptionService {
   }
 
   async reconcileSubscription(customer_id: string) {
-    const cus_db = await customer.findById(customer_id).select("stripe_id").lean<Customer>().exec();
+    const cus_db = await customer
+      .findById(customer_id)
+      .select(["stripe_id", "pending_promo"])
+      .populate("pending_promo")
+      .lean<Customer>()
+      .exec();
     if (!cus_db) return null;
     const cus = (await this.stripe.customers.retrieve(cus_db?.stripe_id, { expand: ["subscriptions"] })) as Stripe.Customer;
 
@@ -151,6 +157,14 @@ export class SubscriptionService {
     await transaction
       .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
       .exec();
+
+    const promo = cus_db?.pending_promo as PromoCode;
+    if (!!promo && !!cus_db?._id) {
+      await Promise.all([
+        !!_plan?._id && DiscountService.updateInfluencersReward(cus_db?._id!, _plan?._id!, promo),
+        customer.updateOne({ _id: cus_db?._id }, { pending_promo: null }).exec(),
+      ]);
+    }
 
     return sub;
   }

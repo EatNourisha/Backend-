@@ -77,6 +77,7 @@ export class AuthService {
 
   async validateAuthCode(token: string, device_id: string): Promise<AuthPayload> {
     const auth = await authToken.findOne({ token, device_id }).select("token").lean().exec();
+    // console.log("[validateAuthCode]", { auth, token, device_id });
     if (!auth) throw createError("Authorization code is invalid", 401);
     const payload: AuthPayload = verify(auth.token, config.JWT_SECRET, {
       audience: config.JWT_AUDIENCE,

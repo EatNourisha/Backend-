@@ -12,6 +12,7 @@ import { Transaction, TransactionReason, TransactionStatus } from "../../models/
 import { OrderService } from "./order.service";
 import consola from "consola";
 import { DiscountService } from "./discount.service";
+import { when } from "../../utils/when";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -135,6 +136,7 @@ export class BillingService {
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
     const promo = cus?.pending_promo as PromoCode;
+    const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
 
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
@@ -150,7 +152,7 @@ export class BillingService {
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
-      promotion_code: promo?.stripe_id,
+      promotion_code: promo_code,
     });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
@@ -285,9 +287,11 @@ export class BillingHooks {
       .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
       .exec();
 
-    if (data?.status === "active") {
-      !!promo && _plan?._id && cus?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo);
-      !!promo && cus?._id && customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec();
+    if (data?.status === "active" && !!promo && !!cus?._id) {
+      await Promise.all([
+        !!_plan?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),
+        customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec(),
+      ]);
     }
 
     console.log("Subscription data", { _plan, _card, sub });
