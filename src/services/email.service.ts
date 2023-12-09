@@ -13,6 +13,7 @@ import config, { isTesting } from "../config";
 import { when } from "../utils/when";
 import { createError } from "../utils";
 import nodemailer from "nodemailer";
+import { ServerClient } from "postmark";
 
 // const mailgun = new Mailgun(FormData);
 // const mg = mailgun.client({username: 'api', key: config.MAILGUN_KEY});
@@ -21,12 +22,15 @@ import nodemailer from "nodemailer";
 // const apiInstance = new ContactsApi();
 // apiInstance.setApiKey(ContactsApiApiKeys.apiKey, config.SEND_IN_BLUE_KEY);
 
+var postmark_serverToken = "xxxx-xxxxx-xxxx-xxxxx-xxxxxx";
+var postmark_client = new ServerClient(postmark_serverToken);
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     type: "OAuth2",
     user: "support@eatnourisha.com",
-    // pass: "Obago@100trillion",
+    // pass: "",
     clientId: config.GOOGLE_CLIENT_ID,
     clientSecret: config.GOOGLE_CLIENT_SECRET,
     refreshToken: config.GOOGLE_REFRESH_TOKEN,
@@ -47,7 +51,7 @@ export enum Template {
   WELCOME = "/emails/welcome.html", // {name: ''}
 }
 
-type SendViaType = "sendgrid" | "mailgun" | "nodemailer";
+type SendViaType = "sendgrid" | "mailgun" | "nodemailer" | "postmark";
 
 export class EmailService {
   static async sendEmail(subject: string, email: string, _template: Template, data: any) {
@@ -62,6 +66,8 @@ export class EmailService {
         return;
       case "nodemailer" as any:
         return await this.sendEmail_nodemailer(subject, email, _template, data);
+      case "postmark" as any:
+        return await this.sendEmail_postmark(subject, email, _template, data);
       default:
         break;
     }
@@ -93,6 +99,31 @@ export class EmailService {
     }
 
     return result;
+  }
+
+  static async sendEmail_postmark(subject: string, email: string, _template: Template, data: any) {
+    const html = fs.readFileSync(path.join(__dirname, "..", _template.toString())).toString();
+
+    const template = hbs.compile(html),
+      htmlToSend = template(data);
+
+    let result: any;
+
+    try {
+      result = await postmark_client.sendEmail({
+        From: "support@eatnourisha.com",
+        To: email,
+        Subject: subject,
+        HtmlBody: htmlToSend,
+      });
+
+      return result;
+    } catch (error) {
+      console.log("Postmark Error:", error);
+      // throw createError(error.message, 500);
+      /// Try sending via SMTP
+      return await this.sendEmail_nodemailer(subject, email, _template, data);
+    }
   }
 
   static async sendEmail_mailgun(subject: string, email: string, _template: Template, data: any) {
@@ -139,7 +170,7 @@ export class EmailService {
           {
             from: {
               name: "Nourisha",
-              address: "help@eatnourisha.com",
+              address: "support@eatnourisha.com",
             },
             subject,
             to: email,

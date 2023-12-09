@@ -12,7 +12,18 @@ import {
   VerifyEmailDto,
 } from "../interfaces";
 import { NourishaBus } from "../libs";
-import { customer, Customer, deletedCustomer, DeliveryDay, FCMToken, mealPack, order, Subscription, subscription } from "../models";
+import {
+  customer,
+  Customer,
+  deletedCustomer,
+  DeliveryDay,
+  deliveryInfo,
+  FCMToken,
+  mealPack,
+  order,
+  Subscription,
+  subscription,
+} from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
 import PasswordService from "./password.service";
@@ -159,7 +170,7 @@ export class CustomerService {
     ]);
     const cus = await customer
       .findById(customer_id)
-      .populate([{ path: "subscription", populate: ["plan"] }, "lineup"])
+      .populate([{ path: "subscription", populate: ["plan"] }, "lineup", "delivery_info"])
       .lean<Customer>()
       .exec();
     if (!cus) throw createError("Customer not found", 404);
@@ -215,6 +226,10 @@ export class CustomerService {
     if (!data?.stripe_id) {
       data = await this.attachStripeId(data?._id!, data?.email, join([data?.first_name, data?.last_name], " "));
     }
+    if (!data?.delivery_info) {
+      const c = await this.attachDeliveryInfo(data?._id!);
+      if (!!c) data = c;
+    }
 
     if (!data?.ref_code)
       data = await customer
@@ -247,6 +262,18 @@ export class CustomerService {
 
     const acc = await customer
       .findByIdAndUpdate(id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+      .lean<Customer>()
+      .exec();
+    return acc;
+  }
+
+  async attachDeliveryInfo(id: string) {
+    const info = await deliveryInfo.findOne({ customer: id }).select("_id").lean().exec();
+    if (!info) return null;
+
+    const acc = await customer
+      .findByIdAndUpdate(id, { delivery_info: info?._id }, { new: true })
+      // .populate("delivery_info")
       .lean<Customer>()
       .exec();
     return acc;
