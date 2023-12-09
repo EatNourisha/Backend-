@@ -22,7 +22,7 @@ import { ServerClient } from "postmark";
 // const apiInstance = new ContactsApi();
 // apiInstance.setApiKey(ContactsApiApiKeys.apiKey, config.SEND_IN_BLUE_KEY);
 
-var postmark_serverToken = "xxxx-xxxxx-xxxx-xxxxx-xxxxxx";
+var postmark_serverToken = "xxxx-xxxxx-xxxx-xxxxx-xxxxxxXX";
 var postmark_client = new ServerClient(postmark_serverToken);
 
 const transporter = nodemailer.createTransport({
