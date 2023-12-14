@@ -35,6 +35,26 @@ export class DiscountController {
     }
   }
 
+  async updatePromoCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body, params } = req;
+      const data = await service.updatePromoCode(params.id, body, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async deletePromoCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params } = req;
+      const data = await service.deletePromoCode(params.id, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   //   async deleteCard(req: Request, res: Response, next: NextFunction) {
   //     try {
   //       const { customer, params } = req;

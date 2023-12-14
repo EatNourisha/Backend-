@@ -9,8 +9,8 @@ const days_of_week = ["sunday", "monday", "tuesday", "wednesday", "thursday", "f
 type DaysOfWeekType = (typeof days_of_week)[number];
 
 export class DeliveryService {
-  async getDeliveryInfo(customer_id: string, roles: string[]): Promise<DeliveryInfo> {
-    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  async getDeliveryInfo(customer_id: string, roles: string[], dry_run = false): Promise<DeliveryInfo> {
+    if (!dry_run) await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     const info = await DeliveryService.updateNextLineupChangeDate(customer_id);
     return await DeliveryService.updateNextDeliveryDate(customer_id, info?.delivery_day as any, true);
   }

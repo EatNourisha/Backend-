@@ -46,7 +46,7 @@ export class DiscountService {
     const [promo, earnings_, referrals] = await Promise.all([
       promoCode.findById(promo_id).populate("coupon").lean<PromoCode>().exec(),
       earnings.findOne({ promo: promo_id }).lean<Earnings>().exec(),
-      paginate<Referral[]>("referral", { promo: promo_id }, filters),
+      paginate<Referral[]>("referral", { promo: promo_id }, filters, { populate: ["invitee", "subscription_plan"] }),
     ]);
 
     return { promo, earnings: earnings_, referrals };
@@ -99,7 +99,7 @@ export class DiscountService {
             created_by: admin_id,
             expires_at,
             no_discount: true,
-            active: true,
+            active: dto?.active ?? true,
           },
           getUpdateOptions()
         )
@@ -152,6 +152,74 @@ export class DiscountService {
     }
 
     return null;
+  }
+
+  async updatePromoCode(id: string, dto: Partial<CreatePromoCodeDto>, roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    console.log("Promo Code DTO", dto);
+
+    dto = omit(dto, ["code", "expires_at", "coupon", "restrictions"]);
+    const coupon_data = dto?.coupon as Coupon;
+
+    const promo = await promoCode.findById(id).populate("coupon").lean<PromoCode>().exec();
+    if (!promo) throw createError(`Promotion code not found`, 404);
+
+    // const currency = coupon_data?.currency ?? "gbp";
+    const amount_or_percent = coupon_data?.percent_off ?? coupon_data?.amount_off;
+    // const coupoon = promo?.coupon as Coupon;
+
+    if (!!amount_or_percent || coupon_data?.duration || coupon_data?.currency)
+      throw createError("amount_off, percent_off, duration, and currency cannot be updated", 403);
+
+    // const expires_at = when(!!dto?.expires_at, new Date(dto?.expires_at as any), undefined) as any;
+    // const amount_off = when(!!coupon_data?.amount_off, coupon_data?.amount_off * 100, null);
+
+    // if ((coupoon?.amount_off ?? 0) <= 0 || (coupoon?.percent_off ?? 0) <= 0) {
+    //   return await promoCode
+    //     .findByIdAndUpdate(
+    //       id,
+    //       {
+    //         ...dto,
+    //         coupon: undefined,
+    //         expires_at,
+    //       },
+    //       { new: true }
+    //     )
+    //     .lean<PromoCode>()
+    //     .exec();
+    // }
+
+    const [, update] = await Promise.all([
+      this.stripe.promotionCodes.update(promo?.stripe_id, { active: dto?.active }),
+      promoCode
+        .findByIdAndUpdate(id, { ...dto }, { new: true })
+        .lean<PromoCode>()
+        .exec(),
+    ]);
+
+    return update;
+  }
+
+  async deletePromoCode(id: string, roles: string[]) {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
+      PermissionScope.DELETE,
+      PermissionScope.ALL,
+    ]);
+
+    const promo = await promoCode.findById(id).populate("coupon").lean<PromoCode>().exec();
+    if (!promo) throw createError(`Promotion code not found`, 404);
+
+    const [_, __, del] = await Promise.all([
+      this.stripe.promotionCodes.update(promo?.stripe_id, { active: false }),
+      this.stripe.coupons.del((promo?.coupon as Coupon)?.stripe_id),
+      promoCode.findByIdAndDelete(id).lean<PromoCode>().exec(),
+    ]);
+
+    return del;
   }
 
   static async attachPromoToCustomer(customer_id: string, code: string) {

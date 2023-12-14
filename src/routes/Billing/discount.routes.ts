@@ -9,7 +9,7 @@ router.get("/promos", authGuard, controller.getPromoCodes);
 router.get("/promos/:id", authGuard, controller.getPromoCodeById);
 router.post("/promos", authGuard, controller.createPromoCode);
 
-// router.post("/", authGuard, controller.createCard);
-// router.delete("/:id", authGuard, controller.deleteCard);
+router.put("/promos/:id", authGuard, controller.updatePromoCode);
+router.delete("/promos/:id", authGuard, controller.deletePromoCode);
 
 export default router;

@@ -214,6 +214,7 @@ export class CustomerService {
         PermissionScope.ALL,
       ]),
       RoleService.isAdmin(roles),
+      new DeliveryService().getDeliveryInfo(id, roles, true),
     ];
     const [_, __, isAdminResult] = await Promise.allSettled(toRun);
     // const {value: isAdmin} = (isAdminResult ?? {}) as any;
