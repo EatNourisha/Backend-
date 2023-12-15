@@ -160,6 +160,7 @@ export class CustomerService {
         { path: "roles" },
         { path: "delivery_info" },
       ],
+      sort: { subscription_status: -1 },
     });
   }
 
@@ -170,7 +171,7 @@ export class CustomerService {
     ]);
     const cus = await customer
       .findById(customer_id)
-      .populate([{ path: "subscription", populate: ["plan"] }, "lineup", "delivery_info"])
+      .populate([{ path: "subscription", populate: ["plan"] }, { path: "preference.allergies" }, "lineup", "delivery_info"])
       .lean<Customer>()
       .exec();
     if (!cus) throw createError("Customer not found", 404);
@@ -217,7 +218,6 @@ export class CustomerService {
       new DeliveryService().getDeliveryInfo(id, roles, true),
     ];
     const [_, __, isAdminResult] = await Promise.allSettled(toRun);
-    // const {value: isAdmin} = (isAdminResult ?? {}) as any;
 
     console.log("Is Admin", isAdminResult);
 
@@ -227,10 +227,10 @@ export class CustomerService {
     if (!data?.stripe_id) {
       data = await this.attachStripeId(data?._id!, data?.email, join([data?.first_name, data?.last_name], " "));
     }
-    if (!data?.delivery_info) {
-      const c = await this.attachDeliveryInfo(data?._id!);
-      if (!!c) data = c;
-    }
+    // if (!data?.delivery_info) {
+    //   const c = await this.attachDeliveryInfo(data?._id!);
+    //   if (!!c) data = c;
+    // }
 
     if (!data?.ref_code)
       data = await customer

@@ -280,12 +280,16 @@ export class BillingHooks {
       status: data?.status!,
       plan: _plan?._id!,
       card: _card?._id!,
-      next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
+      next_billing_date: epochToCurrentTime(data?.current_period_end!),
     });
 
-    await transaction
-      .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
-      .exec();
+    await Promise.all([
+      transaction
+        .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
+        .exec(),
+
+      customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
+    ]);
 
     if (data?.status === "active" && !!promo && !!cus?._id) {
       await Promise.all([
@@ -295,7 +299,6 @@ export class BillingHooks {
     }
 
     console.log("Subscription data", { _plan, _card, sub });
-
     return sub;
   }
 
@@ -305,6 +308,7 @@ export class BillingHooks {
 
     const sub = await subscription.findOne({ stripe_id: data?.id }).lean<Subscription>().exec();
     if (!sub || (!!sub && sub.status === "cancelled") || (!!sub && sub?.is_assigned_by_admin)) return;
-    await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean().exec();
+    // await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean().exec();
+    await SubscriptionService.updateSubscription(sub?._id!, { status: "cancelled" });
   }
 }
