@@ -21,7 +21,7 @@ const config = {
 
   STRIPE_PUBLISH_KEY: process.env.STRIPE_PUBLISH_KEY as string,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
-  ENDPOINT_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
+  ENDPOINT_SECRET: "whsec_8UMKjIo8aljl26QYaOU11fOOqH6DcjwD" ?? (process.env.STRIPE_WEBHOOK_SECRET as string),
 
   ENVIRONMENT: process.env.ENVIRONMENT as string,
   REDIS_URL: process.env.REDIS_URL as string,
