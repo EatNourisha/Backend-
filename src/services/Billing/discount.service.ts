@@ -47,7 +47,7 @@ export class DiscountService {
     if (!!filters?.is_subscribed && ["true", "false"].includes(filters?.is_subscribed!))
       Object.assign(ref_queries, { is_subscribed: JSON.parse(filters?.is_subscribed) });
 
-    console.log("Queries", ref_queries);
+    // console.log("Queries", ref_queries);
 
     const [promo, earnings_, referrals] = await Promise.all([
       promoCode.findById(promo_id).populate("coupon").lean<PromoCode>().exec(),
