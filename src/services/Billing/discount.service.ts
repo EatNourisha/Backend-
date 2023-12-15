@@ -37,16 +37,22 @@ export class DiscountService {
     return await paginate("promoCode", {}, filters, { populate: ["coupon"] });
   }
 
-  async getPromoById(promo_id: string, roles: string[], filters: IPaginationFilter) {
+  async getPromoById(promo_id: string, roles: string[], filters: IPaginationFilter & { is_subscribed?: string }) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
 
+    let ref_queries = { promo: promo_id };
+    if (!!filters?.is_subscribed && ["true", "false"].includes(filters?.is_subscribed!))
+      Object.assign(ref_queries, { is_subscribed: JSON.parse(filters?.is_subscribed) });
+
+    console.log("Queries", ref_queries);
+
     const [promo, earnings_, referrals] = await Promise.all([
       promoCode.findById(promo_id).populate("coupon").lean<PromoCode>().exec(),
       earnings.findOne({ promo: promo_id }).lean<Earnings>().exec(),
-      paginate<Referral[]>("referral", { promo: promo_id }, filters, { populate: ["invitee", "subscription_plan"] }),
+      paginate<Referral[]>("referral", ref_queries, filters, { populate: ["invitee", "subscription_plan"] }),
     ]);
 
     return { promo, earnings: earnings_, referrals };
