@@ -1,10 +1,11 @@
 // @ts-nocheck
 
-import { Ref, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { Ref, getModelForClass, index, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Plan } from "./plan";
 import { PromoCode } from "./promocode";
 
+@index({ "$**": "text" }) // to make the $text.$search work.
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Referral extends BaseEntity {
   @prop({ ref: () => "Customer" })

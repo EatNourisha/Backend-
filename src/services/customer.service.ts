@@ -160,7 +160,7 @@ export class CustomerService {
         { path: "roles" },
         { path: "delivery_info" },
       ],
-      sort: { subscription_status: -1 },
+      // sort: { subscription_status: -1 },
     });
   }
 

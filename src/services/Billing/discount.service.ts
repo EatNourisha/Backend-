@@ -246,7 +246,7 @@ export class DiscountService {
         {
           inviter: promo?.influencer?.customer,
           invitee: customer_id,
-          ref_code: code,
+          ref_code: String(code).toLowerCase(),
           reward: 0,
           currency: "gbp",
           is_promotion: true,

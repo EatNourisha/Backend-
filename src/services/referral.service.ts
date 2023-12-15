@@ -27,10 +27,11 @@ export class ReferralService {
   async getCustomerPendingReferrals(
     customer_id: string,
     roles: string[],
-    filters?: IPaginationFilter
+    filters?: IPaginationFilter & { ref_code: string }
   ): Promise<PaginatedDocument<Referral[]>> {
     await RoleService.hasPermission(roles, AvailableResource.REFERRAL, [PermissionScope.READ, PermissionScope.ALL]);
     let queries: any = { inviter: customer_id, is_subscribed: false };
+
     return await paginate("referral", queries, filters, { populate: ["invitee"] });
   }
 
@@ -106,22 +107,29 @@ export class ReferralService {
     return { unsubscribed_invites, subscribed_invites, pending_withdrawals, fulfilled_withdrawals };
   }
 
-  async getAllInvitedCustomers(roles: string[], filters: IPaginationFilter & { customer: string }): Promise<PaginatedDocument<Referral[]>> {
+  async getAllInvitedCustomers(
+    roles: string[],
+    filters: IPaginationFilter & { customer: string; ref_code: string }
+  ): Promise<PaginatedDocument<Referral[]>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.REFERRAL, [PermissionScope.ALL]);
 
     let where: any = {};
     if (!!filters?.customer) Object.assign(where, { inviter: filters.customer });
+    if (!!filters?.ref_code) Object.assign(where, { ref_code: { $regex: `^${filters?.ref_code}$`, $options: "i" } });
+
+    // console.log("Query", { where, filters });
     return await paginate("referral", where, filters, { populate: ["inviter", "invitee", "promo"] });
   }
 
   async getAllSubscribedInvitedCustomers(
     roles: string[],
-    filters: IPaginationFilter & { customer: string }
+    filters: IPaginationFilter & { customer: string; ref_code: string }
   ): Promise<PaginatedDocument<Referral[]>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.REFERRAL, [PermissionScope.ALL]);
 
     let where: any = { is_subscribed: true };
     if (!!filters?.customer) Object.assign(where, { inviter: filters.customer });
+    if (!!filters?.ref_code) Object.assign(where, { ref_code: { $regex: `^${filters?.ref_code}$`, $options: "i" } });
     return await paginate("referral", where, filters, { populate: ["inviter", "invitee", "subscription_plan", "promo"] });
   }
 }
