@@ -40,9 +40,9 @@ export class BillingController {
     try {
       const { body, customer } = req;
       const data = await service.initializeSubscription(customer.sub, body, customer.roles);
-      //I added this now
-      
-      //I added this
+      //I added this now (Hezekiah)
+      await EmailService.sendEmail("📧 Meal created successfully", customer?.email, Template.VERIFICATION, data);
+      //I added this (hezekiah)
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
