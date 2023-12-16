@@ -342,8 +342,10 @@ export class CustomerService {
   async findByLogin(email: string, password: string, admin = false): Promise<Customer> {
     const where: any = { email };
     // if (!admin) Object.assign(where, { primary_role: "customer" });
+    
 
     const acc = await customer.findOne(where).lean<Customer>().exec();
+
     if (!acc) throw createError("Customer not found", 404);
 
     if (!!acc?.control?.suspended) throw createError("Customer suspended, please contact the administrator", 404);
@@ -352,6 +354,7 @@ export class CustomerService {
     if (admin && !(await RoleService.isAdmin(roles))) throw createError("❌ Access Denied", 401);
     if (!(await PasswordService.checkPassword(acc._id!, password))) throw createError("Incorrect email or password", 401);
     await CustomerService.updateLastSeen(acc?._id!);
+    console.log("Account"+acc)
     return acc;
   }
 

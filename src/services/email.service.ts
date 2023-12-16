@@ -29,7 +29,7 @@ export enum Template {
   VERIFICATION = "/emails/verification.html", // {name: '', link: '', code: ''}
   RESET_PASSWORD = "/emails/resetPassword.html",
   WELCOME = "/emails/welcome.html", // {name: ''}
-}
+} 
 
 
 type SendViaType = "sendgrid" | "mailgun";

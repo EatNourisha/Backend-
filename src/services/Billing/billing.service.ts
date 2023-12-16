@@ -161,6 +161,7 @@ export class BillingHooks {
   static async invoicePaid(event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Invoice Paid", data);
+    
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
       status: TransactionStatus.SUCCESSFUL,
