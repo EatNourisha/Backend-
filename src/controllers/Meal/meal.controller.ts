@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { EmailService, MealService, Template, } from "../../services";
+import { MealService, } from "../../services";
 import { sendError, sendResponse } from "../../utils";
 
 const service = new MealService();
