@@ -52,19 +52,19 @@ export class PlanService {
 
     let price: Stripe.Response<Stripe.Price> | null = null;
     if (!!dto?.amount && dto?.amount !== _plan?.amount) {
-      [price] = await Promise.all([
-        this.stripe.prices.create({
-          currency: "gbp",
-          unit_amount: dto.amount * 100,
-          product: _plan?.product_id,
-          recurring: {
-            interval: dto?.subscription_interval ?? _plan.subscription_interval,
-            interval_count: 1,
-          },
-        }),
+      price = await this.stripe.prices.create({
+        currency: "gbp",
+        unit_amount: dto.amount * 100,
+        product: _plan?.product_id,
+        recurring: {
+          interval: dto?.subscription_interval ?? _plan.subscription_interval,
+          interval_count: 1,
+        },
+      });
+      // [price] = await Promise.all([
 
-        this.stripe.prices.update(_plan?.price_id, { active: false }),
-      ]);
+      //   this.stripe.prices.update(_plan?.price_id, { active: false }),
+      // ]);
     }
 
     if (!!dto?.name || !!dto?.perks || (!!dto?.amount && price)) {
@@ -73,6 +73,8 @@ export class PlanService {
         description: dto?.perks && !!dto?.perks[0] ? dto.perks[0] : undefined,
         default_price: price?.id,
       });
+
+      await this.stripe.prices.update(_plan?.price_id, { active: false });
     }
 
     _plan = await plan
