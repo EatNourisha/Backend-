@@ -1,12 +1,22 @@
 import { Queue, Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { EmailService, Template } from "../services";
-import { SendResetPasswordEmailDto, SendVerificationEmailDto, SendWelcomeEmailDto } from "../interfaces";
+import {
+  SendResetPasswordEmailMobileDto,
+  SendResetPasswordEmailWebDto,
+  SendVerificationEmailDto,
+  SendWelcomeEmailDto,
+} from "../interfaces";
 // import Bull, { Job } from "bull";
 
 const QUEUE_NAME = "emailq";
 
-export const known_email_jobs = ["send_verification_email", "send_welcome_email", "send_resetpassword_email"] as const;
+export const known_email_jobs = [
+  "send_verification_email",
+  "send_welcome_email",
+  "send_resetpassword_email_web",
+  "send_resetpassword_email_mobile",
+] as const;
 export type KnowEmailJobType = (typeof known_email_jobs)[number];
 
 // // Create a new connection in every instance
@@ -31,8 +41,10 @@ async function emailProcessor(job: Job<any, any, KnowEmailJobType>) {
       return await sendVerificationEmail(job);
     case "send_welcome_email":
       return await sendWelcomeEmail(job);
-    case "send_resetpassword_email":
-      return await sendResetPasswordEmail(job);
+    case "send_resetpassword_email_web":
+      return await sendResetPasswordEmail__Web(job);
+    case "send_resetpassword_email_mobile":
+      return await sendResetPasswordEmail__Mobile(job);
     default:
       throw new Error(`Job(EmailQueue) ${job.name} not processed!`);
   }
@@ -76,10 +88,16 @@ async function sendWelcomeEmail(job: Job<SendWelcomeEmailDto, any, KnowEmailJobT
   return await EmailService.sendEmail("Welcome to Nourisha", data?.email, Template.WELCOME, data);
 }
 
-async function sendResetPasswordEmail(job: Job<SendResetPasswordEmailDto, any, KnowEmailJobType>) {
+async function sendResetPasswordEmail__Web(job: Job<SendResetPasswordEmailWebDto, any, KnowEmailJobType>) {
   const data = job.data;
-  console.log("Send Reset Password Email", job.data);
-  return await EmailService.sendEmail("🥹 Reset password", data?.email, Template.RESET_PASSWORD, data);
+  console.log("Send Reset Password Email - Web", job.data);
+  return await EmailService.sendEmail("🥹 Reset password", data?.email, Template.RESET_PASSWORD_WEB, data);
+}
+
+async function sendResetPasswordEmail__Mobile(job: Job<SendResetPasswordEmailMobileDto, any, KnowEmailJobType>) {
+  const data = job.data;
+  console.log("Send Reset Password Email - Mobile", job.data);
+  return await EmailService.sendEmail("🥹 Reset password", data?.email, Template.RESET_PASSWORD_MOBILE, data);
 }
 
 export const EmailQ = { Queue: EmailQueue, Worker: EmailWorker };

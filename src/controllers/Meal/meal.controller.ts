@@ -61,8 +61,18 @@ export class MealController {
 
   async getMealPacks(req: Request, res: Response, next: NextFunction) {
     try {
+      const { query } = req;
+      const data = await service.getMealPacks([], query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getMealPacksAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
       const { customer, query } = req;
-      const data = await service.getMealPacks(customer.roles, query as any);
+      const data = await service.getMealPacksAdmin(customer.roles, query as any);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -71,8 +81,8 @@ export class MealController {
 
   async getMealById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, params } = req;
-      const data = await service.getMealById(params.id, customer.roles);
+      const { params } = req;
+      const data = await service.getMealById(params.id, []);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -83,6 +93,36 @@ export class MealController {
     try {
       const { customer, params } = req;
       const data = await service.getMealPackById(params.id, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getMealPackAnalysisById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params, query } = req;
+      const data = await service.getMealPackAnalysisById(params.id, customer.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async requestPartyMeal(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const data = await service.requestPartyMeal(body);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getPartyMealRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getPartyMealRequests(customer.sub, customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

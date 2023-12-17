@@ -58,6 +58,26 @@ export class AuthController {
     }
   }
 
+  // Starting point for password reset on mobile
+  async requestResetPasswordOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await service.requestResetPasswordOTP(req.body.email);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  // Step two for password reset on mobile, validating the otp to get a reset token
+  async validatePasswordResetOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await service.validatePasswordResetOTP(req.body.code);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
       const { code } = req.body;

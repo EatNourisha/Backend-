@@ -1,14 +1,18 @@
 import Stripe from "stripe";
-import { Card, Customer, Plan, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Order, Plan, PromoCode, Subscription, card, customer, order, plan, subscription, transaction } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import config from "../../config";
-import { CreateCheckoutSessionDto, InitiateSubscriptionDto } from "../../interfaces";
+import { CreateCheckoutSessionDto, InitializePaymentDto, InitiateSubscriptionDto } from "../../interfaces";
 import { CardService } from "./card.service";
 import { SubscriptionService } from "./subscription.service";
 import { TransactionService } from "./transaction.service";
-import { TransactionReason, TransactionStatus } from "../../models/transaction";
+import { Transaction, TransactionReason, TransactionStatus } from "../../models/transaction";
+import { OrderService } from "./order.service";
+import consola from "consola";
+import { DiscountService } from "./discount.service";
+import { when } from "../../utils/when";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -25,7 +29,7 @@ export class BillingService {
       customer: cus?.stripe_id,
       line_items: [{ price: dto?.price_id, quantity: 1 }],
       payment_method_types: ["card"],
-      success_url: "https://nourisha.onrender.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
+      success_url: "https://api.eatnourisha.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
     });
 
     return session;
@@ -45,7 +49,7 @@ export class BillingService {
       customer: cus?.stripe_id,
       //   line_items: [{ price: dto?.price_id, quantity: 1 }],
       payment_method_types: ["card"],
-      success_url: "https://nourisha.onrender.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
+      success_url: "https://api.eatnourisha.com/v1/success.html?session_id={CHECKOUT_SESSION_ID}",
     });
 
     return session;
@@ -59,6 +63,8 @@ export class BillingService {
     const cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
+    console.log("Cus", cus);
+
     const intent = await this.stripe.setupIntents.create({
       customer: cus?.stripe_id,
       usage: "off_session",
@@ -68,17 +74,69 @@ export class BillingService {
     return { client_secret: intent.client_secret };
   }
 
+  async initializePayment(customer_id: string, dto: InitializePaymentDto, roles?: string[]) {
+    validateFields(dto, ["order_id"]);
+    if (!!roles) await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+
+    const cus = await customer.findById(customer_id).lean<Customer>().exec();
+    if (!cus) throw createError("Customer does not exist", 404);
+
+    const _order = await order.findById(dto?.order_id).lean<Order>().exec();
+    if (!_order) throw createError("Order does not exist", 404);
+
+    if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
+
+    const intent = await this.stripe.paymentIntents.create({
+      customer: cus?.stripe_id,
+      payment_method: dto?.card_token,
+      amount: Math.round(_order?.total * 100),
+      currency: "gbp",
+      off_session: !!dto?.card_token,
+      receipt_email: cus?.email,
+      expand: ["invoice"],
+      confirm: !!dto?.card_token,
+    });
+
+    // const invoice = intent?.invoice as Stripe.Invoice;
+
+    if (!!intent.id) {
+      await transaction.create({
+        itemRefPath: "Order",
+        item: _order?._id,
+        currency: intent.currency,
+        order_reference: intent?.id,
+        customer: cus?._id,
+        amount: (intent.amount ?? 0) / 100,
+        reference: intent?.id,
+        reason: TransactionReason.ORDER,
+        stripe_customer_id: cus?.stripe_id,
+      });
+    }
+
+    console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
+
+    return { client_secret: intent?.client_secret };
+  }
+
   // This method creates an intent to collect customer's subscription payment details and then store the payment
   // method so it can be reused later.
   async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    const cus = await customer.findById(customer_id).lean<Customer>().exec();
+    const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
+
+    // one_off allows users to toggle auto charge
+    dto.one_off = dto?.one_off ?? true;
+    // cancels the subscription when it ends when set to true
+    const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
+
+    const promo = cus?.pending_promo as PromoCode;
+    const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
 
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
@@ -93,6 +151,8 @@ export class BillingService {
       payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
+      cancel_at_period_end,
+      promotion_code: promo_code,
     });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
@@ -142,6 +202,27 @@ export class BillingHooks {
     return card;
   }
 
+  static async paymentIntentCreated(event: Stripe.Event) {
+    const data = event.data.object as any;
+    console.log("Payment Intent Created", data);
+  }
+
+  static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
+    const data = event.data.object as any;
+    console.log("Payment Intent Succeeded", data);
+    try {
+      switch (tx?.reason) {
+        case "order":
+          await OrderService.markOrderAsPaid(tx);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      consola.error(error?.message);
+    }
+  }
+
   static async paymentMethodAttached(event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Payment method attached", data);
@@ -185,10 +266,13 @@ export class BillingHooks {
     const data = event.data.object as any;
     console.log("Customer subscription updated", data);
 
-    const [_plan, _card] = await Promise.all([
+    const [_plan, _card, cus] = await Promise.all([
       plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),
       card.findOne({ token: data?.default_payment_method }).select("_id").lean<Card>().exec(),
+      customer.findOne({ stripe_id: data?.customer }).select(["_id", "pending_promo"]).populate("pending_promo").lean<Customer>().exec(),
     ]);
+
+    const promo = cus?.pending_promo as PromoCode;
 
     const sub = await SubscriptionService.createSubscription(data?.customer! as string, {
       stripe_id: data?.id!,
@@ -197,14 +281,25 @@ export class BillingHooks {
       status: data?.status!,
       plan: _plan?._id!,
       card: _card?._id!,
-      next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
+      next_billing_date: epochToCurrentTime(data?.current_period_end!),
     });
 
+    await Promise.all([
+      transaction
+        .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
+        .exec(),
 
-    await transaction.updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id }).exec();
+      customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
+    ]);
+
+    if (data?.status === "active" && !!promo && !!cus?._id) {
+      await Promise.all([
+        !!_plan?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),
+        customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec(),
+      ]);
+    }
 
     console.log("Subscription data", { _plan, _card, sub });
-
     return sub;
   }
 
@@ -213,7 +308,8 @@ export class BillingHooks {
     console.log("Customer subscription deleted", data);
 
     const sub = await subscription.findOne({ stripe_id: data?.id }).lean<Subscription>().exec();
-    if (!sub || (!!sub && sub.status === "cancelled")) return;
-    await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean().exec();
+    if (!sub || (!!sub && sub.status === "cancelled") || (!!sub && sub?.is_assigned_by_admin)) return;
+    // await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean().exec();
+    await SubscriptionService.updateSubscription(sub?._id!, { status: "cancelled" });
   }
 }

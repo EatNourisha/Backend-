@@ -1,12 +1,49 @@
 import { ReturnModelType, DocumentType } from "@typegoose/typegoose";
 import { createError } from "../utils";
-import { customer, meal, mealPack, card, transaction, notification, review, allergy, subscription, plan, referral } from "../models";
+import {
+  customer,
+  meal,
+  mealPack,
+  mealPackAnalysis,
+  card,
+  transaction,
+  notification,
+  review,
+  allergy,
+  subscription,
+  plan,
+  referral,
+  cartItem,
+  order,
+  orderItem,
+  promoCode,
+  earnings,
+  partyMealRequest,
+} from "../models";
 
 import capitalize from "lodash/capitalize";
 import consola from "consola";
 
 // TODO: Add accessible schema union types.
-export type SchemaTypes = "customer" | "meal" | "plan" | "mealPack" | "card" | "transaction" | "notification" | "allergy" | 'subscription' | "referral" | "review";
+export type SchemaTypes =
+  | "customer"
+  | "meal"
+  | "plan"
+  | "mealPack"
+  | "card"
+  | "transaction"
+  | "notification"
+  | "allergy"
+  | "subscription"
+  | "referral"
+  | "review"
+  | "cartItem"
+  | "orderItem"
+  | "order"
+  | "promoCode"
+  | "earnings"
+  | "partyMealRequest"
+  | "mealPackAnalysis";
 
 export class AccessService {
   static async documentBelongsToAccount(customer_id: string, docId: string, schema: SchemaTypes, key?: string): Promise<boolean> {
@@ -21,7 +58,26 @@ export class AccessService {
 
   static getModel(schema: SchemaTypes): ReturnModelType<DocumentType<any>, any> {
     // TODO: Add model coresponding to the accessible schema union types.
-    const map: { [key in SchemaTypes]: DocumentType<any> } = { plan, customer, meal, mealPack, card, transaction, notification, allergy, subscription, referral, review };
+    const map: { [key in SchemaTypes]: DocumentType<any> } = {
+      plan,
+      customer,
+      meal,
+      mealPack,
+      card,
+      transaction,
+      notification,
+      allergy,
+      subscription,
+      referral,
+      review,
+      mealPackAnalysis,
+      cartItem,
+      order,
+      promoCode,
+      orderItem,
+      earnings,
+      partyMealRequest,
+    };
 
     return map[schema];
   }

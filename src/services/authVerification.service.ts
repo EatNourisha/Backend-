@@ -24,8 +24,66 @@ export class AuthVerificationService {
     return await authVerification.findOneAndUpdate({ customer_id, reason }, { customer_id, reason, exp, token }, getUpdateOptions());
   }
 
+  /** Starting point for resetting password on mobile devices
+   ** A user requests an OTP
+   ** After receiving the OTP, the user sends a request to verify the OTP to make 
+      sure the user is valid and requesting to change his/her own account's password and not others.
+   ** After a successful validation, the backend sends the token and user's ID for changing the password
+  */
+  async requestResetPasswordOTP__Mobile(email: string) {
+    const reason = AuthVerificationReason.ACCOUNT_RESET_VERIFICATION;
+    const timeout = 60; // in minutes, should be 60 -> 1hr
+
+    const acc = await customer.findOne({ email }).lean<Customer>().exec();
+    if (!acc) throw createError("Customer not found", 404);
+
+    const customer_id = acc?._id!;
+    let verification = await this.getPreviousVerificationIfValid(customer_id, reason);
+
+    if (!verification) {
+      const exp = addMinutes(Date.now(), timeout).getTime(),
+        code = AuthVerificationService.generateCode();
+      verification = await authVerification.findOneAndUpdate(
+        { customer_id, reason },
+        { customer_id, reason, exp, code },
+        getUpdateOptions()
+      );
+    }
+
+    // send email here.
+    const payload = {
+      email: acc?.email!,
+      code: verification?.code!,
+      name: `${acc?.first_name}`,
+      link: `https://eatnourisha.com/verification?code=${verification?.code}`,
+    };
+
+    await NourishaBus.emit("customer:send_resetpassword_email_mobile", payload);
+    // EmailQueue.add({type: "send_verification_email", ...payload})
+    // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
+    console.log("\nEMAIL VERIFICATION CODE", verification?.code);
+
+    return verification as AuthVerification;
+  }
+
+  async validatePasswordResetOTP(code: string) {
+    const verification = await authVerification
+      .findOne({ code, reason: AuthVerificationReason.ACCOUNT_RESET_VERIFICATION })
+      .select(["exp", "code", "customer_id"])
+      .lean<AuthVerification>()
+      .exec();
+
+    if (!verification) throw createError("Password reset OTP invalid", 401);
+    else if (!!verification && Date.now() > verification?.exp!) throw createError("Password reset OTP expired", 401);
+
+    console.log("Verification", verification);
+
+    // Generate a reset password token and send it back to the mobile device.
+    return await this.requestResetPassword(verification?.customer_id as string, false);
+  }
+
   // TODO: Send an the requested reset token to the email address
-  async requestResetPassword(customer_id: string) {
+  async requestResetPassword(customer_id: string, send_email = true) {
     const reason = AuthVerificationReason.ACCOUNT_PASSWORD_RESET;
     let verification = await this.getPreviousVerificationIfValid(customer_id, reason);
 
@@ -38,13 +96,14 @@ export class AuthVerificationService {
 
     // send reset email here
     // /reset?token={{token}}&sub={{customer_id}}
-    await NourishaBus.emit("customer:send_resetpassword_email", {
-      email: acc?.email!,
-      name: acc?.first_name!,
-      token: verification?.token!,
-      sub: customer_id,
-      link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
-    });
+    if (send_email)
+      await NourishaBus.emit("customer:send_resetpassword_email_web", {
+        email: acc?.email!,
+        name: acc?.first_name!,
+        token: verification?.token!,
+        sub: customer_id,
+        link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
+      });
     // await EmailService.sendEmail("🥹 Reset password", acc?.email, Template.RESET_PASSWORD, {
     //   name: `${acc?.first_name}`,
     //   link: `https://eatnourisha.com/reset?token=${verification?.token}&sub=${customer_id}`,
@@ -137,7 +196,7 @@ export class AuthVerificationService {
   async getPreviousVerificationIfValid(customer_id: string, reason: AuthVerificationReason): Promise<AuthVerification | null> {
     const verification = await authVerification
       .findOne({ customer_id, reason })
-      .select(["exp", "code", "token"])
+      .select(["exp", "code", "token", "customer_id"])
       .lean<AuthVerification>()
       .exec();
     if (!verification) return null;

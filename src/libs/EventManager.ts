@@ -13,13 +13,16 @@ export default class EventManager extends Map<keyof NourishaEventTypes, (arg: an
   }
 
   static removeEvent<K extends keyof NourishaEventTypes>(key: K) {
-    if (this.store.has(key)) return this.store.delete(key);
+    if (this.store.has(key)) {
+      // NourishaBus.off(key, () => {});
+      return this.store.delete(key);
+    }
     return false;
   }
 
   static subscribeEvents() {
-    if(this.store.size < 1) return;
-    
+    if (this.store.size < 1) return;
+
     this.store.forEach((func, key) => {
       NourishaBus.on(key, func);
     });

@@ -1,9 +1,9 @@
 import { CreateLineupDto } from "../../interfaces";
-import {  customer, DayMeals, lineup, MealLineup, MealPack } from "../../models";
+import { customer, DayMeals, lineup, MealLineup, MealPack, MealPackAnalysis } from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import {  format, getDay } from "date-fns";
+import { format, getDay } from "date-fns";
 
 import omit from "lodash/omit";
 import pick from "lodash/pick";
@@ -14,15 +14,22 @@ import { DeliveryService } from "./delivery.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
-    validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+    validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-    if (await MealLineupService.checkLineupExists(customer_id) && !silent) throw createError("Customer's weekly lineup already exist", 400);
+    if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
+      throw createError("Customer's weekly lineup already exist", 400);
+
+    console.clear();
+    console.log("Lineup Dto", dto);
 
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
-    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id }).exec();
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
+    // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
 
-    await NourishaBus.emit('lineup:created', {owner: customer_id, lineup: _lineup});
+    // console.log("Lineup Analysis", analysis);
+
+    await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
     return _lineup;
   }
 
@@ -36,14 +43,21 @@ export class MealLineupService {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     await MealLineupService.validateLockedLineupChange(customer_id);
 
+    console.clear();
+    console.log("Lineup Dto", dto);
+
     const _lineup = await lineup
-      .findByIdAndUpdate(lineup_id, { ...omit(dto, ["customer"]) }, { new: true })
+      .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { ...omit(dto, ["customer"]) }, { new: true })
       .lean<MealLineup>()
       .exec();
     if (!_lineup && !dryRun) throw createError("Customer's weekly lineup does not exist", 404);
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
+    // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto as any);
 
-    await NourishaBus.emit('lineup:updated', {owner: customer_id, lineup: _lineup});
+    // console.log("Lineup Analysis", analysis);
+
+    await NourishaBus.emit("lineup:updated", { owner: customer_id, lineup: _lineup, dto: dto as any });
     return _lineup;
   }
 
@@ -85,6 +99,7 @@ export class MealLineupService {
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     let pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     const day_of_week_index = getDay(new Date());
+
     let _intersect = intersection(intersection(days, pops), Array.from(days).splice(day_of_week_index + 1));
 
     pops = pops.map((pop) => ({
@@ -119,13 +134,10 @@ export class MealLineupService {
     //   );
 
     const result = await DeliveryService.canUpdateLineup(customer_id);
-    if(!result) return;
+    if (!result) return;
 
-    if(result?.is_locked && Date.now() < result.next_change_date.getTime()) 
-      throw createError(
-        `Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`,
-        400
-      );
+    if (result?.is_locked && Date.now() < result.next_change_date.getTime())
+      throw createError(`Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`, 400);
   }
 
   static async lockLineupChange(customer_id: string, dryRun = true) {
@@ -137,32 +149,58 @@ export class MealLineupService {
     // if (!update && !dryRun) throw createError("Unable to lock lineup changes", 400);
     // return;
 
-    const info = await DeliveryService.updateNextLineupChangeDate(customer_id)
-    if(!info && !dryRun) throw createError("Unable to lock lineup changes", 400);
+    const info = await DeliveryService.updateNextLineupChangeDate(customer_id);
+    if (!info && !dryRun) throw createError("Unable to lock lineup changes", 400);
     return;
   }
 
   // Admin
   async getLineupById(customer_id: string, roles: string[], silent = false): Promise<MealLineup | null> {
-     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday"].map((pop) => ({
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
       path: pop,
       populate: ["breakfast", "lunch", "dinner"],
     }));
 
-    console.log("Silent", silent)
+    console.log("Silent", silent);
 
-    const _lineup = await lineup.findOne({customer: customer_id}).populate(pops).lean<MealLineup>().exec();
+    const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup ?? {};
   }
 
+  static async createLineupAnalysis(customer_id: string, dto: CreateLineupDto) {
+    const day_keys = Object.keys(dto).filter((k) => k !== "delivery_date");
+
+    const analysis_doc: MealPackAnalysis[] = [];
+    for (const day_key of day_keys) {
+      const meal_types = Object.keys(dto[day_key] ?? {});
+      const exist = meal_types.length > 0;
+      if (!exist) break;
+      for (const meal_type of meal_types) {
+        const analysis_construct: MealPackAnalysis = {
+          day: day_key,
+          customer: customer_id,
+          meal_type: meal_type as any,
+          pack: dto[day_key][meal_type],
+        };
+
+        analysis_doc.push(analysis_construct);
+      }
+    }
+
+    return analysis_doc;
+  }
+
+  // static async constructMealAnalysis()
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {
     new LineupEventListener();
   }
-
 }

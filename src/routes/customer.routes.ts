@@ -34,14 +34,12 @@ router.put("/:id/notes", authGuard, controller.updateCustomerNote); // ✅
 router.put("/:id/disable", authGuard, controller.disableCustomer); // ✅
 router.put("/:id/enable", authGuard, controller.enableCustomer); // ✅
 router.put("/:id/make_admin", authGuard, controller.makeCustomerAdmin); // ✅
+router.put("/toggle_auto_renew", authGuard, controller.toggleSubscriptionAutoRenewal); // ✅
 router.put("/:id/revoke_admin", authGuard, controller.revokeAdminPrivilege); // ✅
 // router.put("/:id/primaryRole", authGuard, controller.updatePrimaryRole); // ✅
 
 // DELETE
-router.delete("/:id", authGuard, controller.deleteCustomer); // ✅
+router.delete("/me", authGuard, controller.deleteCustomer); // ✅
 router.delete("/allergies", authGuard, controller.removeCustomerAllergy); // ✅
-
-
-
 
 export default router;

@@ -8,4 +8,6 @@ const controller = new TransactionController();
 router.get("/", authGuard, controller.getTransactions);
 router.get("/:id", authGuard, controller.getTransactionById);
 
+router.get("/customer/:id/", authGuard, controller.getCustomerTransactions);
+
 export default router;

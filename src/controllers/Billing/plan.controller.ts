@@ -54,4 +54,14 @@ export class PlanController {
       sendError(error, next);
     }
   }
+
+  async assignPlan(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body, params } = req;
+      const data = await service.assignPlan(params.id, body, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

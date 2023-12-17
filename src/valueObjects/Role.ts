@@ -33,5 +33,10 @@ export enum AvailableResource {
   SUBSCRIPTION = "subscription",
   BROADCAST = "broadcast",
   REFERRAL = "referral",
-  REVIEW = "referral"
+  REVIEW = "referral",
+  ORDER = "order",
+  TRANSACTION = "transaction",
+  ADMIN_SETTINGS = "settings",
+  MEAL_ANALYSIS = "meal_analysis",
+  DISCOUNT = "discount",
 }
