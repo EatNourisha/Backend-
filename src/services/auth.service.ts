@@ -15,6 +15,7 @@ export class AuthService {
   async login(data: loginDto, device_id: string, admin = false): Promise<Auth> {
     // validateFields(data);
     console.log("DEVICE ID", device_id);
+
     const acc = await this.customerService.findByLogin(data.email, data.password, admin);
     const payload = AuthService.transformUserToPayload(acc);
     const { token, expiration } = await this.addToken(payload, device_id);
@@ -77,7 +78,6 @@ export class AuthService {
 
   async validateAuthCode(token: string, device_id: string): Promise<AuthPayload> {
     const auth = await authToken.findOne({ token, device_id }).select("token").lean().exec();
-    // console.log("[validateAuthCode]", { auth, token, device_id });
     if (!auth) throw createError("Authorization code is invalid", 401);
     const payload: AuthPayload = verify(auth.token, config.JWT_SECRET, {
       audience: config.JWT_AUDIENCE,
