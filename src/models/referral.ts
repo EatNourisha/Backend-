@@ -1,12 +1,13 @@
 // @ts-nocheck
 
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { Ref, getModelForClass, index, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Plan } from "./plan";
+import { PromoCode } from "./promocode";
 
+@index({ "$**": "text" }) // to make the $text.$search work.
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Referral extends BaseEntity {
-
   @prop({ ref: () => "Customer" })
   inviter?: Ref<Customer>;
 
@@ -16,20 +17,26 @@ export class Referral extends BaseEntity {
   @prop({ ref: () => "Plan" })
   subscription_plan?: Ref<Plan>;
 
-  @prop({default: false})
+  @prop({ default: false })
   is_subscribed: boolean;
 
   @prop()
   ref_code: string;
 
-  @prop({default: 10})
+  @prop({ default: 10 })
   reward: number;
 
   @prop()
-  currency: 'gbp'
+  currency: "gbp";
 
-  @prop({default: false})
+  @prop({ default: false })
   is_paid: boolean;
+
+  @prop({ default: false })
+  is_promotion: boolean;
+
+  @prop({ ref: () => PromoCode })
+  promo: Ref<PromoCode>;
 }
 
 export default getModelForClass(Referral);

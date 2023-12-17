@@ -1,0 +1,1 @@
+return await EmailService.sendEmail("📧 Verify your email address", data?.email, Template.VERIFICATION, data);

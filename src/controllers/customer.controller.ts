@@ -96,8 +96,8 @@ export class CustomerController {
 
   async deleteCustomer(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      const result = await service.deleteCustomer(req.customer.sub, id, req.customer.roles);
+      const { body, customer } = req;
+      const result = await service.deleteCustomer(customer.sub, body, req.customer.roles);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);
@@ -194,6 +194,16 @@ export class CustomerController {
     }
   }
 
+  async toggleSubscriptionAutoRenewal(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body } = req;
+      const result = await service.toggleAutoRenewal(customer.sub, body, customer.roles);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async revokeAdminPrivilege(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params } = req;
@@ -217,7 +227,7 @@ export class CustomerController {
     try {
       const { body } = req;
       if (!body?.email) throw createError("email is required in body", 401);
-      const result = await EmailService.sendEmail_sendgrid("Test Email", body.email, Template.WELCOME, { name: body?.email });
+      const result = await EmailService.sendEmail("Test Email", body.email, Template.WELCOME, { name: body?.email });
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

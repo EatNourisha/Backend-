@@ -14,7 +14,7 @@ const defaultAccessControls: AccessControlType = {
     permissions: [
       {
         name: AvailableResource.CUSTOMER,
-        scopes: [PermissionScope.READ, PermissionScope.UPDATE, PermissionScope.VERIFY],
+        scopes: [PermissionScope.READ, PermissionScope.UPDATE, PermissionScope.VERIFY, PermissionScope.DELETE],
       },
       {
         name: AvailableResource.NOTIFICATION,
@@ -42,6 +42,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.REVIEW,
+        scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
+      },
+      {
+        name: AvailableResource.ORDER,
         scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
       },
     ],
@@ -82,6 +86,26 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.REVIEW,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.ORDER,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.MEAL_ANALYSIS,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.TRANSACTION,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.ADMIN_SETTINGS,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.DISCOUNT,
         scopes: [PermissionScope.ALL],
       },
     ],

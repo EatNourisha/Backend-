@@ -27,11 +27,15 @@ declare global {
 
 // setup express app
 const app = express();
+
 app.set("trust proxy", 1);
 
 // Configure view engine to render EJS templates.
+
 app.set("views", __dirname + "/src/views");
 app.set("view engine", "ejs");
+
+
 
 // setup middlewares
 

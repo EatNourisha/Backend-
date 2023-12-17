@@ -1,9 +1,10 @@
 import "dotenv/config";
 
 const config = {
-  PORT: process.env.PORT || 8090,
+  PORT: process.env.PORT || 8080,
   NAME: process.env.NAME as string,
-  VERSION: process.env.VERSION as string,
+  // VERSION: process.env.VERSION as string,
+  VERSION: "1.1.28",
   DB_URI: process.env.DATABASE_URL as string,
   // DB_URI: process.env.DATABASE_URL_PROD as string,
   JWT_SECRET: process.env.JWT_SECRET as string,
@@ -24,6 +25,10 @@ const config = {
 
   ENVIRONMENT: process.env.ENVIRONMENT as string,
   REDIS_URL: process.env.REDIS_URL as string,
+
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
+  GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN as string,
 };
 
 export const isTesting = ["staging", "development"].includes(config.ENVIRONMENT ?? "development");

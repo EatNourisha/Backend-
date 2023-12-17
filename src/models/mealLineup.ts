@@ -41,6 +41,9 @@ export class MealLineup extends BaseEntity {
 
   @prop({ type: () => DayMeals, _id: false })
   sunday: DayMeals;
+
+  @prop()
+  delivery_date: Date;
 }
 
 export default getModelForClass(MealLineup);

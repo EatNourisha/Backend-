@@ -11,6 +11,8 @@ router.get("/:id", authGuard, controller.getPlanById);
 router.post("/", authGuard, controller.createPlan);
 router.put("/:id", authGuard, controller.updatePlan);
 
+router.put("/:id/assign", authGuard, controller.assignPlan);
+
 router.delete("/:id", authGuard, controller.deletePlan);
 
 export default router;
