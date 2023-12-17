@@ -16,7 +16,7 @@ export class DeliveryController {
   async updateDeliveryDayOfWeek(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, customer } = req;
-      const data = await DeliveryService.updateDeliveryDayOfWeek(customer.sub, body.day);
+      const data = await DeliveryService.updateDeliveryDayOfWeek(customer.sub, body.day, body.date);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);

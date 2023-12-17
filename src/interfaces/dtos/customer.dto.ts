@@ -30,6 +30,7 @@ export class ResetPasswordDto {
 
 export class SetDeliveryDayDto {
   delivery_day: DeliveryDay;
+  delivery_date: Date;
 }
 
 export class AddCustomerAllergiesDto {

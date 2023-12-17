@@ -103,7 +103,7 @@ export class CustomerService {
   }
 
   async setDeliveryDay(customer_id: string, dto: SetDeliveryDayDto, roles: string[]): Promise<Customer> {
-    validateFields(dto, ["delivery_day"]);
+    validateFields(dto, ["delivery_day", "delivery_date"]);
 
     const supported_days = Object.values(DeliveryDay);
     if (!supported_days.includes(dto.delivery_day)) throw createError(`Available delivery days are ${supported_days.join(", ")}`, 400);
@@ -115,7 +115,7 @@ export class CustomerService {
         .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
         .lean<Customer>()
         .exec(),
-      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day),
+      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day, dto?.delivery_date),
     ]);
 
     if (!_customer) throw createError(`Customer not found`, 404);

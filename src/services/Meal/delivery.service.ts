@@ -12,20 +12,16 @@ export class DeliveryService {
   async getDeliveryInfo(customer_id: string, roles: string[], dry_run = false): Promise<DeliveryInfo> {
     if (!dry_run) await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     const info = await DeliveryService.updateNextLineupChangeDate(customer_id);
-    return await DeliveryService.updateNextDeliveryDate(customer_id, info?.delivery_day as any, true);
+    return await DeliveryService.updateNextDeliveryDate(customer_id, info, true);
   }
 
-  static async updateNextDeliveryDate(
-    customer_id: string,
-    delivery_day: DaysOfWeekType = "sunday",
-    skip_check?: boolean,
-    lineup_change_day_index?: number
-  ) {
+  static async updateNextDeliveryDate(customer_id: string, info: DeliveryInfo, skip_check?: boolean, lineup_change_day_index?: number) {
+    const { delivery_day, next_delivery_date: ndd } = info;
     const cus = await customer.findById(customer_id).select(["createdAt", "delivery_day"]).lean<Customer>().exec();
 
     const dd = cus?.delivery_day ?? delivery_day;
     const delivery_day_index = days_of_week.indexOf(dd);
-    let next_delivery_date = nextDay(new Date(), delivery_day_index as any);
+    let next_delivery_date = ndd ?? nextDay(new Date(), delivery_day_index as any);
 
     // skip check for existing customers, else check for new customers.
     const is_existing = isPast(add(cus?.createdAt!, { days: 7 }));
@@ -39,18 +35,22 @@ export class DeliveryService {
       next_delivery_date = when(has_past, nextDay(next_delivery_date, delivery_day_index as any), next_delivery_date);
     }
 
-    const info = await deliveryInfo
+    const dinfo = await deliveryInfo
       .findOneAndUpdate({ customer: customer_id }, { customer: customer_id, next_delivery_date, delivery_day: dd }, getUpdateOptions())
       .lean<DeliveryInfo>()
       .exec();
 
-    if (!cus?.delivery_info) await customer.updateOne({ _id: customer_id }, { delivery_info: info?._id }).exec();
-    return info;
+    if (!cus?.delivery_info) await customer.updateOne({ _id: customer_id }, { delivery_info: dinfo?._id }).exec();
+    return dinfo;
   }
 
-  static async updateDeliveryDayOfWeek(customer_id: string, delivery_day: DaysOfWeekType) {
+  static async updateDeliveryDayOfWeek(customer_id: string, delivery_day: DaysOfWeekType, delivery_date: Date) {
     const info = await deliveryInfo
-      .findOneAndUpdate({ customer: customer_id }, { customer: customer_id, delivery_day }, getUpdateOptions())
+      .findOneAndUpdate(
+        { customer: customer_id },
+        { customer: customer_id, delivery_day, next_delivery_date: delivery_date },
+        getUpdateOptions()
+      )
       .lean<DeliveryInfo>()
       .exec();
     await customer.findByIdAndUpdate(customer_id, { delivery_day, delivery_info: info }).lean<Customer>().exec();
