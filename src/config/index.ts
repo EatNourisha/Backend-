@@ -28,6 +28,7 @@ const config = {
 
   MAILCHIMP_API_KEY: process.env.MAILCHIMP_API_KEY as string,
   MAILCHIMP_SERVER: process.env.MAILCHIMP_SERVER as string,
+  MAILCHIMP_AUDIENCE_ID: process.env.MAILCHIMP_AUDIENCE_ID as string,
 
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,

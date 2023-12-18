@@ -12,7 +12,7 @@ import { Plan, Subscription } from "models";
 
 // let AUDIENCE_ID = when(isTesting, "ff0ac6ef9b", "edb6cbfd3d");
 
-let AUDIENCE_ID = "ff0ac6ef9b";
+let AUDIENCE_ID = config.MAILCHIMP_AUDIENCE_ID;
 
 // if (isTesting) {
 // Test Config
