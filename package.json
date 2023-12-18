@@ -22,6 +22,7 @@
     "@types/jest": "^29.5.3",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/lodash": "^4.14.191",
+    "@types/mailchimp__mailchimp_marketing": "^3.0.17",
     "@types/node": "^18.14.1",
     "@types/nodemailer": "^6.4.11",
     "@types/passport-local": "^1.0.35",
@@ -33,6 +34,7 @@
   },
   "dependencies": {
     "@bull-board/express": "^5.8.0",
+    "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@mailchimp/mailchimp_transactional": "^1.0.50",
     "@sendgrid/mail": "^7.7.0",
     "@typegoose/typegoose": "^10.2.0",

@@ -40,6 +40,7 @@ import { DeliveryService } from "./Meal/delivery.service";
 import { when } from "../utils/when";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
+import { MailchimpService } from "./mailchimp.service";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -74,6 +75,7 @@ export class CustomerService {
       PasswordService.addPassword(acc._id!, input.password),
       this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
       roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
+      MailchimpService.AddContact({ ...input, ref_code: acc?.ref_code }),
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
@@ -299,13 +301,16 @@ export class CustomerService {
   async updateCustomer(id: string, roles: string[], input: UpdateCustomerDto) {
     input = CustomerService.removeUpdateForcedInputs(input);
     if (isEmpty(input)) throw createError("No valid input", 404);
-
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    if (!!input?.address) validateFields(input?.address, ["address_", "city", "postcode", "country"]);
+
     const data = await customer
       .findOneAndUpdate({ _id: id }, { ...input }, { new: true })
       .lean()
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
+    if (!!input?.address && !!data?.email) await MailchimpService.updateContactAddr(data?.email, input?.address);
     return data;
   }
 
@@ -433,7 +438,6 @@ export class CustomerService {
   async findByLogin(email: string, password: string, admin = false): Promise<Customer> {
     const where: any = { email };
     // if (!admin) Object.assign(where, { primary_role: "customer" });
-    
 
     const acc = await customer.findOne(where).lean<Customer>().exec();
 
@@ -446,7 +450,7 @@ export class CustomerService {
     if (!(await PasswordService.checkPassword(acc._id!, password))) throw createError("Incorrect email or password", 401);
     await this.ascertainCustomerStripeId(acc);
     await CustomerService.updateLastSeen(acc?._id!);
-    console.log("Account"+acc)
+    console.log("Account" + acc);
     return acc;
   }
 

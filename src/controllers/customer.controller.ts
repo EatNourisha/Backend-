@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomerService, EmailService, Template } from "../services";
+import { CustomerService, EmailService, MailchimpService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
 
 const service = new CustomerService();
@@ -228,6 +228,16 @@ export class CustomerController {
       const { body } = req;
       if (!body?.email) throw createError("email is required in body", 401);
       const result = await EmailService.sendEmail("Test Email", body.email, Template.WELCOME, { name: body?.email });
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async syncCustomersToMailchimp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const result = await MailchimpService.syncCustomersToMailchimp(customer.roles);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

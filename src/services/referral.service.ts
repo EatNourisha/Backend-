@@ -72,7 +72,7 @@ export class ReferralService {
         console.log("Session Executing...");
 
         // await Promise.all([
-        EarningsService.updateEarnings(ref?.inviter, ref?.reward, ref?._id!, session);
+        EarningsService.updateEarnings(ref?.inviter, 10 ?? ref?.reward, ref?._id!, session);
         referral.findByIdAndUpdate(ref?._id, { is_subscribed: true, subscription_plan: plan_id }, { session }).lean<Referral>().exec();
         // ]);
 

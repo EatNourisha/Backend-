@@ -23,6 +23,7 @@ router.get("/:id", authGuard, controller.getCustomerById); // ✅
 // router.post("/", authGuard, controller.createCustomer); // ✅
 router.post("/test_mailgun", controller.testEmail); // ✅
 router.post("/test_sendgrid", controller.testSendgrid); // ✅
+router.post("/sync-contacts", authGuard, controller.syncCustomersToMailchimp); // ✅
 
 // PUT
 router.put("/me", authGuard, controller.updateCustomer); // ✅
