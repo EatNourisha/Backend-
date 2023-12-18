@@ -14,6 +14,7 @@ import consola from "consola";
 import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
 import { ReferralService } from "../../services/referral.service";
+import { MailchimpService } from "../../services/mailchimp.service";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -268,9 +269,14 @@ export class BillingHooks {
     console.log("Customer subscription updated", data);
 
     const [_plan, _card, cus] = await Promise.all([
-      plan.findOne({ product_id: data?.plan?.product }).select("_id").lean<Plan>().exec(),
+      plan.findOne({ product_id: data?.plan?.product }).select(["_id", "name"]).lean<Plan>().exec(),
       card.findOne({ token: data?.default_payment_method }).select("_id").lean<Card>().exec(),
-      customer.findOne({ stripe_id: data?.customer }).select(["_id", "pending_promo"]).populate("pending_promo").lean<Customer>().exec(),
+      customer
+        .findOne({ stripe_id: data?.customer })
+        .select(["_id", "email", "pending_promo", "address"])
+        .populate("pending_promo")
+        .lean<Customer>()
+        .exec(),
     ]);
 
     const promo = cus?.pending_promo as PromoCode;
@@ -289,12 +295,19 @@ export class BillingHooks {
       false
     );
 
+    console.log("[customerSubscriptionUpdated]", { _plan, _card, cus });
+
     await Promise.all([
       transaction
         .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
         .exec(),
 
       customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
+      MailchimpService.updateContactSubscription(cus?.email, {
+        plan_name: _plan?.name ?? "NO_PLAN",
+        sub_status: data?.status,
+        addr: cus?.address,
+      }),
     ]);
 
     // if (data?.status === "active" && !!promo && !!cus?._id) {

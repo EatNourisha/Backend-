@@ -9,7 +9,7 @@ import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
 // import { ReferralService } from "../../services/referral.service";
 import { DiscountService } from "./discount.service";
-
+import { MailchimpService } from "../../services/mailchimp.service";
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -47,15 +47,24 @@ export class SubscriptionService {
 
   async cancelSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.CANCEL, PermissionScope.ALL]);
-    const sub = await subscription.findOne({ customer: customer_id }).populate(["plan"]).lean<Subscription>().exec();
+    const sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "customer"]).lean<Subscription>().exec();
     if (!sub) throw createError("Subscription not found", 404);
+
+    const cus = sub?.customer as Customer;
 
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
       prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount,
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
     const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
-    await NourishaBus.emit("subscription:cancelled", { owner: customer_id, subscription: sub });
+
+    await MailchimpService.updateContactSubscription(cus?.email, {
+      plan_name: "NO_PLAN",
+      sub_status: "cancelled",
+      addr: cus?.address,
+    });
+
+    NourishaBus.emit("subscription:cancelled", { owner: customer_id, subscription: sub });
     return update;
   }
 
@@ -172,11 +181,16 @@ export class SubscriptionService {
   static async updateSubscription(id: string, dto: Partial<CreateSubscriptionDto>) {
     const sub = await subscription
       .findByIdAndUpdate(id, { ...dto }, { new: true })
+      // .populate(["plan", "customer"])
       .lean<Subscription>()
       .exec();
     if (!sub) return;
 
-    await customer.updateOne({ _id: sub?.customer }, { subscription_status: dto?.status }).exec();
+    // const pln = sub?.plan as Plan;
+    // const cus = sub?.customer as Customer;
+
+    await Promise.all([customer.updateOne({ _id: sub?.customer }, { subscription_status: dto?.status }).exec()]);
+
     return sub;
   }
 }
