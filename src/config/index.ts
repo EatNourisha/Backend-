@@ -26,6 +26,9 @@ const config = {
   ENVIRONMENT: process.env.ENVIRONMENT as string,
   REDIS_URL: process.env.REDIS_URL as string,
 
+  MAILCHIMP_API_KEY: process.env.MAILCHIMP_API_KEY as string,
+  MAILCHIMP_SERVER: process.env.MAILCHIMP_SERVER as string,
+
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
   GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN as string,
