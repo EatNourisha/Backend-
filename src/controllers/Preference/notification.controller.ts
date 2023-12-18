@@ -15,10 +15,30 @@ export class NotificationController {
     }
   }
 
+  async getAdminNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, customer } = req;
+      const data = await service.getAdminNotifications(customer.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async markAsRead(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params } = req;
       const data = await service.markAsRead(params.id, customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async markAsReadForAdmins(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, customer } = req;
+      const data = await service.markAsReadForAdmins(body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

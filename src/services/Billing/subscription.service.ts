@@ -7,7 +7,7 @@ import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
-import { ReferralService } from "../../services/referral.service";
+// import { ReferralService } from "../../services/referral.service";
 import { DiscountService } from "./discount.service";
 
 export class SubscriptionService {
@@ -29,7 +29,7 @@ export class SubscriptionService {
       .exec();
     await customer.updateOne({ _id: cus?._id }, { subscription: _sub?._id, subscription_status: _sub?.status }).lean<Customer>().exec();
 
-    if (!!_sub && !!cus?._id) await ReferralService.updateSubscribersInvite(cus?._id, (_sub?.plan as any)?._id!);
+    // if (!!_sub && !!cus?._id) await ReferralService.updateSubscribersInvite(cus?._id, (_sub?.plan as any)?._id!);
     if (!dryRun) await NourishaBus.emit("subscription:updated", { owner: cus, subscription: _sub });
     return _sub;
   }

@@ -13,6 +13,7 @@ import { OrderService } from "./order.service";
 import consola from "consola";
 import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
+import { ReferralService } from "../../services/referral.service";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -171,7 +172,7 @@ export class BillingService {
       }),
     ]);
 
-    const client_secret = payment_intent.client_secret;
+    const client_secret = payment_intent?.client_secret;
     return { client_secret, subscription_id: sub?.id };
   }
 }
@@ -242,7 +243,7 @@ export class BillingHooks {
   static async invoicePaid(event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Invoice Paid", data);
-    
+
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
       status: TransactionStatus.SUCCESSFUL,
@@ -274,15 +275,19 @@ export class BillingHooks {
 
     const promo = cus?.pending_promo as PromoCode;
 
-    const sub = await SubscriptionService.createSubscription(data?.customer! as string, {
-      stripe_id: data?.id!,
-      start_date: epochToCurrentTime(data?.current_period_start!),
-      end_date: epochToCurrentTime(data?.current_period_end!),
-      status: data?.status!,
-      plan: _plan?._id!,
-      card: _card?._id!,
-      next_billing_date: epochToCurrentTime(data?.current_period_end!),
-    });
+    const sub = await SubscriptionService.createSubscription(
+      data?.customer! as string,
+      {
+        stripe_id: data?.id!,
+        start_date: epochToCurrentTime(data?.current_period_start!),
+        end_date: epochToCurrentTime(data?.current_period_end!),
+        status: data?.status!,
+        plan: _plan?._id!,
+        card: _card?._id!,
+        next_billing_date: epochToCurrentTime(data?.current_period_end!),
+      },
+      false
+    );
 
     await Promise.all([
       transaction
@@ -292,11 +297,25 @@ export class BillingHooks {
       customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
     ]);
 
-    if (data?.status === "active" && !!promo && !!cus?._id) {
-      await Promise.all([
-        !!_plan?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),
-        customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec(),
-      ]);
+    // if (data?.status === "active" && !!promo && !!cus?._id) {
+    //   await Promise.all([
+    //     !!_plan?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),
+    //     !!sub && !!_plan?._id && ReferralService.updateSubscribersInvite(cus?._id, _plan?._id),
+    //     customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec(),
+    //   ]);
+    // }
+
+    if (data?.status === "active" && !!cus?._id) {
+      let to_run = [customer.updateOne({ _id: cus?._id }, { pending_promo: null }).exec()] as any[];
+      if (!!_plan?._id) {
+        to_run = [
+          ...to_run,
+          !!promo && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),
+          ReferralService.updateSubscribersInvite(cus?._id, _plan?._id),
+        ];
+      }
+
+      await Promise.all(to_run);
     }
 
     console.log("Subscription data", { _plan, _card, sub });
