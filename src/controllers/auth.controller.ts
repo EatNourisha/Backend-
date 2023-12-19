@@ -104,6 +104,7 @@ export class AuthController {
   async adminLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const body = req.body;
+      // admin login
       const deviceId = req.headers["device-id"] as string;
       const data = await service.login(body, deviceId, true);
       sendResponse(res, 200, data);
