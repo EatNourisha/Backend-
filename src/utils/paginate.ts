@@ -1,6 +1,6 @@
 import { IPaginationFilter, PaginatedDocument } from "../interfaces";
 import { SchemaTypes, AccessService } from "../services/access.service";
-import {QueryOptions} from 'mongoose'
+import { QueryOptions } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 
 const defaultFilters = { limit: "10", page: "1" };
@@ -14,9 +14,7 @@ export default async function paginate<T>(
   filters = { ...defaultFilters, ...filters };
   const model = AccessService.getModel(schemaType);
 
-  const skip = Math.abs(
-    (Math.max(parseInt(filters?.page!), 1) - 1) * parseInt(filters?.limit!)
-  );
+  const skip = Math.abs((Math.max(parseInt(filters?.page!), 1) - 1) * parseInt(filters?.limit!));
 
   console.log("SKIP", filters, skip);
 

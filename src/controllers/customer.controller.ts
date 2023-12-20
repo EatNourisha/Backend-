@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomerService, EmailService, MailchimpService, Template } from "../services";
+import { CustomerService, EmailService, MarketingService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
 
 const service = new CustomerService();
@@ -18,6 +18,16 @@ export class CustomerController {
     try {
       const { body } = req;
       const result = await service.createCustomer(body);
+      sendResponse(res, 201, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async addSubscriber(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const result = await MarketingService.addContact(body);
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
@@ -237,7 +247,7 @@ export class CustomerController {
   async syncCustomersToMailchimp(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer } = req;
-      const result = await MailchimpService.syncCustomersToMailchimp(customer.roles);
+      const result = await MarketingService.syncCustomersToContacts(customer.roles);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

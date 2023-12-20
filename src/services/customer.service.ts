@@ -40,7 +40,7 @@ import { DeliveryService } from "./Meal/delivery.service";
 import { when } from "../utils/when";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
-import { MailchimpService } from "./mailchimp.service";
+import { MarketingService } from "./Marketing/marketing.service";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -75,7 +75,7 @@ export class CustomerService {
       PasswordService.addPassword(acc._id!, input.password),
       this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
       roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
-      MailchimpService.AddContact({ ...input, ref_code: acc?.ref_code }),
+      MarketingService.addContact({ ...input, ref_code: acc?.ref_code }),
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
@@ -310,7 +310,7 @@ export class CustomerService {
       .lean()
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
-    if (!!input?.address && !!data?.email) await MailchimpService.updateContactAddr(data?.email, input?.address);
+    if (!!input?.address && !!data?.email) await MarketingService.updateContactAddr(data?.email, input?.address);
     return data;
   }
 

@@ -9,7 +9,8 @@ import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
 // import { ReferralService } from "../../services/referral.service";
 import { DiscountService } from "./discount.service";
-import { MailchimpService } from "../../services/mailchimp.service";
+import { MarketingService } from "../../services";
+import { sub } from "date-fns";
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -58,9 +59,10 @@ export class SubscriptionService {
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
     const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
 
-    await MailchimpService.updateContactSubscription(cus?.email, {
+    await MarketingService.updateContactSubscription(cus?.email, {
       plan_name: "NO_PLAN",
       sub_status: "cancelled",
+      plan_type: "subscription",
       addr: cus?.address,
     });
 
@@ -83,7 +85,7 @@ export class SubscriptionService {
 
   async getSubscriptions(
     roles: string[],
-    filters?: IPaginationFilter & { status: string; plan: string }
+    filters?: IPaginationFilter & { status: string; plan: string; sort?: "today" | "this_week" | "last_week" | "this_month" }
   ): Promise<PaginatedDocument<Subscription[]>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,
@@ -108,6 +110,14 @@ export class SubscriptionService {
       });
     }
 
+    if (!!filters?.sort) {
+      if (filters.sort === "today") Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 1 }) } });
+      else if (filters.sort === "this_week") Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 6 }) } });
+      else if (filters.sort === "last_week")
+        Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 12 }), $lte: sub(new Date(), { days: 6 }) } });
+      else if (filters.sort === "this_month") Object.assign(queries, { start_date: { $gte: sub(new Date(), { months: 1 }) } });
+    }
+
     // const aggregate =  await subscription.aggregate([
     //   // {$unwind: {path: '$plan'}},
     //   // {$lookup: {from: 'plan', as: 'plan', localField: 'plan', foreignField: '_id'}},
@@ -125,7 +135,16 @@ export class SubscriptionService {
 
     // console.log("Subscription Aggregate", aggregate)
 
-    return paginate("subscription", queries, filters, { populate: ["customer", "plan"] });
+    return paginate(
+      "subscription",
+      // { ...queries, start_date: { $gte: sub(new Date(), { months: 1 }) } },
+      queries,
+      filters,
+      {
+        populate: ["customer", "plan"],
+        sort: { start_date: -1 },
+      }
+    );
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.

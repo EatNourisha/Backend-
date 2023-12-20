@@ -1,14 +1,15 @@
 import crypto from "crypto";
 import { chunk, join } from "lodash";
 import marketing from "@mailchimp/mailchimp_marketing";
-import { CustomerDto } from "../interfaces";
-import customer, { Address, Customer } from "../models/customer";
-import { createError, validateFields } from "../utils";
-import { when } from "../utils/when";
-import { RoleService } from "./role.service";
-import { AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
-import config from "../config";
-import { Plan, Subscription } from "models";
+import { CustomerDto } from "../../interfaces";
+import customer, { Address, Customer } from "../../models/customer";
+import { createError, validateFields } from "../../utils";
+import { when } from "../../utils/when";
+import { RoleService } from "../role.service";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
+import config from "../../config";
+import { Plan, Subscription } from "../../models";
+import { TAGS } from "./marketing.service";
 
 // let AUDIENCE_ID = when(isTesting, "ff0ac6ef9b", "edb6cbfd3d");
 
@@ -26,8 +27,6 @@ marketing.setConfig({
 //     apiKey: "b90601c0a376a9125c61df11f28973af-us8",
 //     server: "us8",
 //   });
-
-const TAGS = ["customer", "nourisha-api"];
 
 interface UpdateContactSubscriptionDto {
   plan_name: string;
@@ -139,7 +138,7 @@ export class MailchimpService {
     return null;
   }
 
-  static async syncCustomersToMailchimp(roles: string[]) {
+  static async syncCustomersToContacts(roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.BROADCAST,
       PermissionScope.ALL,
@@ -163,7 +162,7 @@ export class MailchimpService {
     return results;
   }
 
-  static async batchContactsSyncToMailchimp(customers: Customer[]) {
+  private static async batchContactsSyncToMailchimp(customers: Customer[]) {
     try {
       const result = await marketing.lists.batchListMembers(
         AUDIENCE_ID,

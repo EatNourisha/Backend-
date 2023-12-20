@@ -14,7 +14,7 @@ import consola from "consola";
 import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
 import { ReferralService } from "../../services/referral.service";
-import { MailchimpService } from "../../services/mailchimp.service";
+import { MarketingService } from "../../services";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -303,9 +303,10 @@ export class BillingHooks {
         .exec(),
 
       customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
-      MailchimpService.updateContactSubscription(cus?.email, {
+      MarketingService.updateContactSubscription(cus?.email, {
         plan_name: _plan?.name ?? "NO_PLAN",
         sub_status: data?.status,
+        plan_type: "subscription",
         addr: cus?.address,
       }),
     ]);

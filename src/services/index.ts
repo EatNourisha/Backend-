@@ -25,4 +25,5 @@ export * from "./Preference/adminSettings.service";
 
 export * from "./referral.service";
 export * from "./earnings.service";
-export * from "./mailchimp.service";
+
+export * from "./Marketing/marketing.service";
