@@ -15,6 +15,7 @@ import { DeliveryService } from "./delivery.service";
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
       throw createError("Customer's weekly lineup already exist", 400);
