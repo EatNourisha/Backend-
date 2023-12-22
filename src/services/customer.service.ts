@@ -37,7 +37,6 @@ import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
 import CustomerEventListener from "../listeners/customer.listener";
 import { DeliveryService } from "./Meal/delivery.service";
-import { when } from "../utils/when";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
 import { MarketingService } from "./Marketing/marketing.service";
