@@ -110,6 +110,7 @@ export class BillingService {
         customer: cus?._id,
         amount: (intent.amount ?? 0) / 100,
         reference: intent?.id,
+        payment_intent: intent?.id,
         reason: TransactionReason.ORDER,
         stripe_customer_id: cus?.stripe_id,
       });
@@ -167,6 +168,7 @@ export class BillingService {
         subscription_reference: sub?.id,
         customer: cus?._id,
         amount: (payment_intent?.amount ?? 0) / 100,
+        payment_intent: payment_intent?.id,
         reference: invoice?.number,
         reason: TransactionReason.SUBSCRIPTION,
         stripe_customer_id: sub?.customer,
@@ -247,9 +249,11 @@ export class BillingHooks {
 
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
+      payment_intent: data?.payment_intent,
       status: TransactionStatus.SUCCESSFUL,
       invoice_url: data?.hosted_invoice_url,
       invoice_download_url: data?.invoice_pdf,
+      amount: data?.total / 100,
     });
   }
 
@@ -258,9 +262,11 @@ export class BillingHooks {
     console.log("Invoice Payment Failed!", data);
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
+      payment_intent: data?.payment_intent,
       status: TransactionStatus.DECLINED,
       invoice_url: data?.hosted_invoice_url,
       invoice_download_url: data?.invoice_pdf,
+      amount: data?.total / 100,
     });
   }
 

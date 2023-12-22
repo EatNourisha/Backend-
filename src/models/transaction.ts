@@ -63,6 +63,9 @@ export class Transaction extends BaseEntity {
   order_reference: string;
 
   @prop()
+  payment_intent: string;
+
+  @prop()
   currency: string;
 
   @prop()

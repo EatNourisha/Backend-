@@ -11,7 +11,7 @@ export class TransactionService {
     else if (!cus && !dryRun) throw createError("Customer does not exist", 404);
 
     const tx = await transaction.findOneAndUpdate(
-      { customer: cus?._id, reference: dto?.reference },
+      { customer: cus?._id, payment_intent: dto?.payment_intent },
       { ...dto, customer: cus?._id },
       getUpdateOptions()
     );
