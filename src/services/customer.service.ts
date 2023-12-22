@@ -98,9 +98,17 @@ export class CustomerService {
     const sub = cus?.subscription as Subscription;
 
     // https://stripe.com/docs/billing/subscriptions/pause
-    const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
+    // NOTE: This method of pausing stops invoices from been charged, and offers services for free.
+    // It causes draft invoices payments to be skipped and user subscriptions will be automatically active.
+    // const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
+    // if (!!sub?.stripe_id && sub?.stripe_id?.length > 2 && sub?.status === "active")
+    //   await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });
+
     if (!!sub?.stripe_id && sub?.stripe_id?.length > 2 && sub?.status === "active")
-      await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });
+      await this.stripe.subscriptions.update(sub?.stripe_id!, {
+        cancel_at_period_end: !dto?.auto_renew,
+      });
+
     return cus;
   }
 

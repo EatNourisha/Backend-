@@ -11,6 +11,7 @@ import SubscriptionEventListener from "../../listeners/subscription.listener";
 import { DiscountService } from "./discount.service";
 import { MarketingService } from "../../services";
 import { sub } from "date-fns";
+
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -31,7 +32,7 @@ export class SubscriptionService {
     await customer.updateOne({ _id: cus?._id }, { subscription: _sub?._id, subscription_status: _sub?.status }).lean<Customer>().exec();
 
     // if (!!_sub && !!cus?._id) await ReferralService.updateSubscribersInvite(cus?._id, (_sub?.plan as any)?._id!);
-    if (!dryRun) await NourishaBus.emit("subscription:updated", { owner: cus, subscription: _sub });
+    if (!dryRun) NourishaBus.emit("subscription:updated", { owner: cus, subscription: _sub });
     return _sub;
   }
 
@@ -111,7 +112,7 @@ export class SubscriptionService {
     }
 
     if (!!filters?.sort) {
-      if (filters.sort === "today") Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 1 }) } });
+      if (filters.sort === "today") Object.assign(queries, { start_date: { $gt: sub(new Date(), { days: 1 }) } });
       else if (filters.sort === "this_week") Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 6 }) } });
       else if (filters.sort === "last_week")
         Object.assign(queries, { start_date: { $gte: sub(new Date(), { days: 12 }), $lte: sub(new Date(), { days: 6 }) } });
@@ -134,6 +135,8 @@ export class SubscriptionService {
     // ]).exec();
 
     // console.log("Subscription Aggregate", aggregate)
+
+    // console.log("Queries", inspect(queries, true, 100, true), "\n");
 
     return paginate(
       "subscription",
