@@ -63,7 +63,7 @@ export class PromoCode extends BaseEntity {
   expires_at: Date;
 
   @prop()
-  max_redemptions: Date;
+  max_redemptions: number;
 
   @prop({ type: () => PromoCodeRetrictions, _id: false })
   restrictions: PromoCodeRetrictions;

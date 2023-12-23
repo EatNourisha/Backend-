@@ -1,5 +1,19 @@
 import Stripe from "stripe";
-import { Card, Customer, Order, Plan, PromoCode, Subscription, card, customer, order, plan, subscription, transaction } from "../../models";
+import {
+  Card,
+  Customer,
+  Order,
+  Plan,
+  PromoCode,
+  Subscription,
+  card,
+  customer,
+  order,
+  plan,
+  promoCode,
+  subscription,
+  transaction,
+} from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
@@ -87,16 +101,22 @@ export class BillingService {
     if (!_order) throw createError("Order does not exist", 404);
 
     if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
+    const amount_off = _order?.actual_discounted_amount ?? 0;
 
     const intent = await this.stripe.paymentIntents.create({
       customer: cus?.stripe_id,
       payment_method: dto?.card_token,
-      amount: Math.round(_order?.total * 100),
+      amount: Math.round((_order?.total - amount_off) * 100),
       currency: "gbp",
       off_session: !!dto?.card_token,
       receipt_email: cus?.email,
       expand: ["invoice"],
       confirm: !!dto?.card_token,
+      metadata: {
+        promo_id: _order?.promo,
+        customer_id: _order?.customer,
+        discount: amount_off,
+      },
     });
 
     // const invoice = intent?.invoice as Stripe.Invoice;
@@ -113,6 +133,7 @@ export class BillingService {
         payment_intent: intent?.id,
         reason: TransactionReason.ORDER,
         stripe_customer_id: cus?.stripe_id,
+        applied_promo: _order?.promo,
       });
     }
 
@@ -138,7 +159,11 @@ export class BillingService {
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
-    const promo = cus?.pending_promo as PromoCode;
+    let promo: PromoCode = cus?.pending_promo as PromoCode;
+    if (!cus?.pending_promo && !!dto?.promo_code) {
+      promo = await promoCode.findOne({ code: dto?.promo_code }).lean<PromoCode>().exec();
+    }
+
     const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
 
     const sub = await this.stripe.subscriptions.create({

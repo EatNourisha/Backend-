@@ -8,6 +8,6 @@ export interface PlaceOrderDto {
   phone_number?: string;
   card_token?: string;
   cart_session_id: string;
-  coupon_code?: string;
+  coupon?: string;
   delivery_date: Date;
 }

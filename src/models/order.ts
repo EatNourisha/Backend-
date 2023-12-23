@@ -4,6 +4,7 @@ import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Address, Customer } from "./customer";
 import { OrderItem } from "./orderItem";
+import { PromoCode } from "./promocode";
 
 export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
@@ -49,6 +50,12 @@ export class Order extends BaseEntity {
 
   @prop({ ref: () => OrderItem })
   items?: Ref<OrderItem>[];
+
+  @prop({ ref: () => PromoCode })
+  promo?: Ref<PromoCode>;
+
+  @prop()
+  actual_discounted_amount?: number;
 }
 
 export default getModelForClass(Order);

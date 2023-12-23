@@ -12,11 +12,13 @@ export interface InitiateSubscriptionDto {
   plan_id: string;
   card_token?: string;
   one_off?: boolean;
+  promo_code?: string;
 }
 
 export interface InitializePaymentDto {
   order_id: string;
   card_token?: string;
+  coupon?: string;
 }
 
 export interface CreateSubscriptionDto extends Omit<Subscription, "_id" | "createdAt" | "updatedAt"> {}
