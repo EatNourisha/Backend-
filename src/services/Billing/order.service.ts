@@ -10,6 +10,8 @@ import Stripe from "stripe";
 import config from "../../config";
 import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
+import { NourishaBus } from "../../libs";
+import OrderEventListener from "../../listeners/order.listener";
 
 export class OrderService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -216,6 +218,7 @@ export class OrderService {
     const _order = await order
       // .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
       .findByIdAndUpdate(item, { status: OrderStatus.PAID }, { new: true })
+      .populate("customer")
       .lean<Order>()
       .exec();
 
@@ -234,5 +237,13 @@ export class OrderService {
 
       cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
     ]);
+
+    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+  }
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new OrderEventListener();
   }
 }

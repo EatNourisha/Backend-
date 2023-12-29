@@ -17,7 +17,7 @@ interface IMethod {
 
 type IMethodName = keyof IMethod;
 
-export const TAGS = ["customer", "nourisha-api"];
+export const TAGS = ["customer", "nourisha-api", "api-test"];
 
 export class MarketingService {
   static channel: ChannelType = ChannelType.SENDER;

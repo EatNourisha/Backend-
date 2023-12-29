@@ -9,7 +9,7 @@ export async function getCustomerInfo(data: Customer | string): Promise<Customer
   if (typeof data === "object") (data as Customer)!;
   const cus = await customer
     .findById(data as string)
-    .select(["first_name", "last_name"])
+    .select(["first_name", "last_name", "email"])
     .lean<Customer>()
     .exec();
   if (!cus) return null;

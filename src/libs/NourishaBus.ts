@@ -1,5 +1,5 @@
 import _Emittery from "emittery";
-import { Customer, MealLineup, Subscription } from "../models";
+import { Customer, MealLineup, Order, Subscription } from "../models";
 import {
   CreateLineupDto,
   SendResetPasswordEmailMobileDto,
@@ -37,6 +37,8 @@ export type NourishaEventTypes = {
   "lineup:updated": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
 
   "referral:created": { owner: Customer | string };
+
+  "order:placed": { owner: Customer | string; order: Order }; // send went an order has been paid for;
 };
 
 export class _NourishaBus extends _Emittery<NourishaEventTypes> {

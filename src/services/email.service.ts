@@ -49,8 +49,8 @@ export enum Template {
   RESET_PASSWORD_WEB = "/emails/resetPassword__web.html", // {name: '', link: ''}
   RESET_PASSWORD_MOBILE = "/emails/resetPassword__mobile.html", // {name: '', code: ''}
   WELCOME = "/emails/welcome.html", // {name: ''}
-  ORDERCREATED = "/emails/orderCreated.html", // {name: ''}
-} 
+  ORDERCREATED = "/emails/orderCreated.html", // {name: '', order_ref_id: '', delivery_date: '', delivery_address: ''}
+}
 
 type SendViaType = "sendgrid" | "mailgun" | "nodemailer" | "postmark";
 

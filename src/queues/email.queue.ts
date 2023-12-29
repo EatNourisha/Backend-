@@ -2,6 +2,7 @@ import { Queue, Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { EmailService, Template } from "../services";
 import {
+  SendPlacedOrderEmail,
   SendResetPasswordEmailMobileDto,
   SendResetPasswordEmailWebDto,
   SendVerificationEmailDto,
@@ -16,6 +17,7 @@ export const known_email_jobs = [
   "send_welcome_email",
   "send_resetpassword_email_web",
   "send_resetpassword_email_mobile",
+  "send_placed_order_email",
 ] as const;
 export type KnowEmailJobType = (typeof known_email_jobs)[number];
 
@@ -45,6 +47,8 @@ async function emailProcessor(job: Job<any, any, KnowEmailJobType>) {
       return await sendResetPasswordEmail__Web(job);
     case "send_resetpassword_email_mobile":
       return await sendResetPasswordEmail__Mobile(job);
+    case "send_placed_order_email":
+      return await sendPlaceOrderEmail(job);
     default:
       throw new Error(`Job(EmailQueue) ${job.name} not processed!`);
   }
@@ -98,6 +102,12 @@ async function sendResetPasswordEmail__Mobile(job: Job<SendResetPasswordEmailMob
   const data = job.data;
   console.log("Send Reset Password Email - Mobile", job.data);
   return await EmailService.sendEmail("🥹 Reset password", data?.email, Template.RESET_PASSWORD_MOBILE, data);
+}
+
+async function sendPlaceOrderEmail(job: Job<SendPlacedOrderEmail, any, KnowEmailJobType>) {
+  const data = job.data;
+  console.log("🥳 Order successfully placed", job.data);
+  return await EmailService.sendEmail("🥳 Order successfully placed", data?.email, Template.ORDERCREATED, data);
 }
 
 export const EmailQ = { Queue: EmailQueue, Worker: EmailWorker };
