@@ -29,6 +29,7 @@ export default class LineupEventListener {
         ticker: "new",
         metadata: meta,
       }),
+      MealLineupService.decreaseAvailableMealpackQuantities(dto),
     ]);
 
     if (!!note) log("🚀 Notifications", `Sent ( ${content} ) to customer:${customer_id}`);
@@ -59,6 +60,7 @@ export default class LineupEventListener {
         ticker: "new",
         metadata: meta,
       }),
+      MealLineupService.decreaseAvailableMealpackQuantities(dto),
     ]);
 
     if (!!note) log("🚀 Notifications", `Sent ( ${content} ) to customer:${customer_id}`);

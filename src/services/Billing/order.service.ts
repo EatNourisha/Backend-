@@ -12,6 +12,7 @@ import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
 import { NourishaBus } from "../../libs";
 import OrderEventListener from "../../listeners/order.listener";
+import { MealService } from "../Meal/meal.service";
 
 export class OrderService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -226,6 +227,8 @@ export class OrderService {
       await DiscountService.createDiscount(_order?.customer!, _order?.promo!, "order");
 
     console.log("Paid Order", _order);
+
+    const order_item_dto = _order_items.map((item) => ({ meal_id: item?.item!, quantity: item?.quantity }));
     // TODO: remove the session_id on the cart here
     await Promise.all([
       cart
@@ -236,6 +239,7 @@ export class OrderService {
         .exec(),
 
       cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
+      MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
 
     NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });

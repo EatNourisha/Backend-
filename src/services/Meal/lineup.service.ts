@@ -11,6 +11,7 @@ import intersection from "lodash/intersection";
 import { NourishaBus } from "../../libs";
 import LineupEventListener from "../../listeners/lineup.listener";
 import { DeliveryService } from "./delivery.service";
+import { MealService } from "./meal.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
@@ -195,6 +196,29 @@ export class MealLineupService {
     }
 
     return analysis_doc;
+  }
+
+  static async decreaseAvailableMealpackQuantities(dto: CreateLineupDto) {
+    const day_keys = Object.keys(dto).filter((k) => !["delivery_date", "customer"].includes(k));
+    const mealpacks_and_quantities: { meal_id: string; quantity: number }[] = [];
+
+    for (const day_key of day_keys) {
+      const meal_types = Object.keys(dto[day_key] ?? {});
+      if (meal_types.length < 3) continue;
+      for (const meal_type of meal_types) {
+        const actual_meal_id = (dto[day_key] ?? {})[meal_type];
+        if (!Object.prototype.hasOwnProperty.call(dto[day_key], meal_type)) continue;
+        mealpacks_and_quantities.push({
+          meal_id: actual_meal_id,
+          quantity: 1,
+        });
+      }
+    }
+
+    // console.log("mealpacks_and_quantities", mealpacks_and_quantities);
+
+    if (mealpacks_and_quantities.length < 1) return;
+    return await MealService.decreaseAvailableMealpackQuantities(mealpacks_and_quantities);
   }
 
   // static async constructMealAnalysis()

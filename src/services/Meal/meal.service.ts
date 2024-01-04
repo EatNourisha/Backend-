@@ -158,8 +158,8 @@ export class MealService {
   async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean }): Promise<PaginatedDocument<MealPack[]>> {
     // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-    let queries: any = {};
-    if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
+    let queries = { /*available_quantity: { $gt: 0, $ne: null },*/ is_available: true };
+    // if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
 
     return await paginate("mealPack", queries, filters);
   }
@@ -274,5 +274,24 @@ export class MealService {
   ): Promise<PaginatedDocument<PartyMealRequest[]>> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     return await paginate("partyMealRequest", { customer: customer_id }, filters);
+  }
+
+  static async decreaseAvailableMealpackQuantities(dtos: { meal_id: string; quantity: number }[]) {
+    console.log("Decreasing value", dtos);
+
+    const to_run: ReturnType<typeof this.decreaseAvailableMealpackQuantity>[] = [];
+    dtos.forEach((dto) => to_run.push(this.decreaseAvailableMealpackQuantity(dto.meal_id, dto.quantity)));
+    const result = await Promise.all(to_run);
+    return result;
+  }
+
+  private static async decreaseAvailableMealpackQuantity(meal_id: string, quantity: number) {
+    const m = await mealPack.findById(meal_id).select(["_id", "available_quantity"]).lean<MealPack>().exec();
+    if (!m || !m?.available_quantity) return null;
+    if (m?.available_quantity <= 0) return null;
+    return await mealPack
+      .updateOne({ _id: meal_id }, { $inc: { available_quantity: quantity * -1 } })
+      .lean()
+      .exec();
   }
 }
