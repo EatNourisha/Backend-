@@ -1,5 +1,3 @@
-// import { DocumentType } from "@typegoose/typegoose";
-// import { Model } from "mongoose"
 import { customer } from '../models/index'; 
 import fetch from 'node-fetch';
 
