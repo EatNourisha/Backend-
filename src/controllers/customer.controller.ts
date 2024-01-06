@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService, EmailService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
+import  registerAddKlaviyo  from '../klaviyo/addUser'
 
 const service = new CustomerService();
 export class CustomerController {
@@ -18,6 +19,7 @@ export class CustomerController {
     try {
       const { body } = req;
       const result = await service.createCustomer(body);
+      await registerAddKlaviyo(result.email, result.phone);
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
