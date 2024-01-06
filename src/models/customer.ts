@@ -140,6 +140,8 @@ export class Customer extends BaseEntity {
 
   @prop({ ref: () => "PromoCode" })
   pending_promo: Ref<PromoCode>;
+
+ 
 }
 
 export default getModelForClass(Customer);
