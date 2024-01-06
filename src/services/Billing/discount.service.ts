@@ -4,6 +4,7 @@ import {
   AdminSettings,
   Coupon,
   Customer,
+  Discount,
   Earnings,
   //   Earnings,
   Plan,
@@ -12,11 +13,13 @@ import {
   adminSettings,
   coupon,
   customer,
+  discount,
   earnings,
   //   earnings,
   plan,
   promoCode,
   referral,
+  transaction,
 } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
@@ -25,6 +28,7 @@ import config from "../../config";
 import { toLower, omit } from "lodash";
 import { when } from "../../utils/when";
 import { InfluencerRewardType } from "../../models/adminSettings";
+import { TransactionStatus } from "../../models/transaction";
 
 export class DiscountService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -287,9 +291,59 @@ export class DiscountService {
       .exec();
 
     if (!!ref) refs.push(ref?._id!);
-    return await earnings
-      .findOneAndUpdate({ promo: promo?._id }, { $inc: { balance: reward }, $push: { refs }, promo: promo?._id }, getUpdateOptions())
-      .lean<Earnings>()
+
+    const [_earnings] = await Promise.all([
+      earnings
+        .findOneAndUpdate({ promo: promo?._id }, { $inc: { balance: reward }, $push: { refs }, promo: promo?._id }, getUpdateOptions())
+        .lean<Earnings>()
+        .exec(),
+
+      this.createDiscount(customer_id, promo?._id!, "subscription"),
+    ]);
+
+    return _earnings;
+  }
+
+  static async checkPromoForCustomer(customer_id: string, amount: number, code?: string, dryRun = false) {
+    code = toLower(code);
+    if (!code) return { amount_off: 0 };
+
+    const promo = await promoCode.findOne({ code, no_discount: false }).populate("coupon").lean<PromoCode>().exec();
+    if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
+    if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun) throw createError("Promo code / coupon expired", 403);
+
+    const coup = promo?.coupon as Coupon;
+    const disc = await discount.findOne({ customer: customer_id, promo: promo?._id }).lean<Discount>().exec();
+
+    /// Check for promo restrictions
+    const cus_txs_count = await transaction
+      .countDocuments({ customer: customer_id, status: TransactionStatus.SUCCESSFUL })
+      .lean<number>()
       .exec();
+    if (!!promo?.restrictions?.first_time_transaction && cus_txs_count > 0 && !dryRun)
+      throw createError("Promo code / Coupon can only be used on your first transaction", 403);
+
+    const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
+    if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
+      throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
+    /// End restriction checks
+
+    const times_redeemed = coup?.times_redeemed ?? promo?.times_redeemed ?? 0;
+    const max_redemptions = coup?.max_redemptions ?? promo?.max_redemptions ?? 0;
+    if (max_redemptions > 0 && times_redeemed >= max_redemptions && !dryRun)
+      throw createError("Max redemptions for the applied promo code / coupon reached");
+
+    return { amount_off, promo, disc };
+  }
+
+  static async createDiscount(customer_id: string, promo_id: string, used_on: "subscription" | "order") {
+    const promo = promoCode
+      .findByIdAndUpdate(promo_id, { $inc: { times_redeemed: 1 } })
+      .lean<PromoCode>()
+      .exec();
+    if (!promo) return;
+
+    const disc = await discount.create({ customer: customer_id, promo: promo_id, used_on, used: true });
+    return disc;
   }
 }

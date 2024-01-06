@@ -24,5 +24,12 @@ export interface SendResetPasswordEmailMobileDto {
   name: string;
   code: string;
 }
+export interface SendPlacedOrderEmail {
+  order_ref_id: string;
+  name: string;
+  email: string;
+  delivery_date: string;
+  delivery_address: string;
+}
 
 export interface CreateMealPackAnalysisData extends Omit<MealPackAnalysis, "_id" | "createdAt" | "updatedAt"> {}

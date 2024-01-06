@@ -37,9 +37,9 @@ import { join, uniq } from "lodash";
 import { NotificationService } from "./Preference/notification.service";
 import CustomerEventListener from "../listeners/customer.listener";
 import { DeliveryService } from "./Meal/delivery.service";
-import { when } from "../utils/when";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
+import { MarketingService } from "./Marketing/marketing.service";
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -74,6 +74,7 @@ export class CustomerService {
       PasswordService.addPassword(acc._id!, input.password),
       this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
       roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
+      MarketingService.addContact({ ...input, ref_code: acc?.ref_code }),
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
@@ -96,14 +97,22 @@ export class CustomerService {
     const sub = cus?.subscription as Subscription;
 
     // https://stripe.com/docs/billing/subscriptions/pause
-    const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
+    // NOTE: This method of pausing stops invoices from been charged, and offers services for free.
+    // It causes draft invoices payments to be skipped and user subscriptions will be automatically active.
+    // const param = when<any>(!!dto?.auto_renew, "", { behavior: "void" });
+    // if (!!sub?.stripe_id && sub?.stripe_id?.length > 2 && sub?.status === "active")
+    //   await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });
+
     if (!!sub?.stripe_id && sub?.stripe_id?.length > 2 && sub?.status === "active")
-      await this.stripe.subscriptions.update(sub?.stripe_id, { pause_collection: param });
+      await this.stripe.subscriptions.update(sub?.stripe_id!, {
+        cancel_at_period_end: !dto?.auto_renew,
+      });
+
     return cus;
   }
 
   async setDeliveryDay(customer_id: string, dto: SetDeliveryDayDto, roles: string[]): Promise<Customer> {
-    validateFields(dto, ["delivery_day"]);
+    validateFields(dto, ["delivery_day", "delivery_date"]);
 
     const supported_days = Object.values(DeliveryDay);
     if (!supported_days.includes(dto.delivery_day)) throw createError(`Available delivery days are ${supported_days.join(", ")}`, 400);
@@ -115,7 +124,7 @@ export class CustomerService {
         .findByIdAndUpdate(customer_id, { ...dto }, { new: true })
         .lean<Customer>()
         .exec(),
-      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day),
+      DeliveryService.updateDeliveryDayOfWeek(customer_id, dto?.delivery_day, dto?.delivery_date),
     ]);
 
     if (!_customer) throw createError(`Customer not found`, 404);
@@ -299,13 +308,16 @@ export class CustomerService {
   async updateCustomer(id: string, roles: string[], input: UpdateCustomerDto) {
     input = CustomerService.removeUpdateForcedInputs(input);
     if (isEmpty(input)) throw createError("No valid input", 404);
-
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    if (!!input?.address) validateFields(input?.address, ["address_", "city", "postcode", "country"]);
+
     const data = await customer
       .findOneAndUpdate({ _id: id }, { ...input }, { new: true })
       .lean()
       .exec();
     if (!data) throw createError(`Customer not found`, 404);
+    if (!!input?.address && !!data?.email) await MarketingService.updateContactAddr(data?.email, input?.address);
     return data;
   }
 
@@ -433,7 +445,6 @@ export class CustomerService {
   async findByLogin(email: string, password: string, admin = false): Promise<Customer> {
     const where: any = { email };
     // if (!admin) Object.assign(where, { primary_role: "customer" });
-    
 
     const acc = await customer.findOne(where).lean<Customer>().exec();
 
@@ -446,7 +457,7 @@ export class CustomerService {
     if (!(await PasswordService.checkPassword(acc._id!, password))) throw createError("Incorrect email or password", 401);
     await this.ascertainCustomerStripeId(acc);
     await CustomerService.updateLastSeen(acc?._id!);
-    console.log("Account"+acc)
+    console.log("Account" + acc);
     return acc;
   }
 

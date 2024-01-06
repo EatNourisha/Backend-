@@ -5,6 +5,7 @@ import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { Subscription } from "./subscription";
 import { Plan } from "./plan";
+import { PromoCode } from "./promocode";
 
 export enum TransactionStatus {
   PENDING = "pending",
@@ -63,6 +64,9 @@ export class Transaction extends BaseEntity {
   order_reference: string;
 
   @prop()
+  payment_intent: string;
+
+  @prop()
   currency: string;
 
   @prop()
@@ -73,6 +77,9 @@ export class Transaction extends BaseEntity {
 
   @prop()
   invoice_download_url: string;
+
+  @prop({ ref: () => PromoCode })
+  applied_promo: Ref<PromoCode>;
 }
 
 export default getModelForClass(Transaction);

@@ -22,3 +22,5 @@ export * from "./dtos/order.dto";
 export * from "./dtos/settings.dto";
 
 export * from "./dtos/discount.dto";
+
+export * from "./dtos/marketing.dto";

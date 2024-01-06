@@ -2,7 +2,7 @@ import { IPaginationFilter, NotifyDto, PaginatedDocument } from "../../interface
 import { FCMToken, Notification, NotificationStatus, customer, fcmToken, notification } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, getUpdateOptions, paginate, validateFields } from "../../utils";
-import { AvailableResource, PermissionScope } from "../../valueObjects";
+import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 
 import sdk from "firebase-admin";
 import { MulticastMessage } from "firebase-admin/lib/messaging/messaging-api";
@@ -34,6 +34,27 @@ export class NotificationService {
     return await paginate("notification", queries, filters);
   }
 
+  async getAdminNotifications(
+    roles: string[],
+    filters: IPaginationFilter & { status?: NotificationStatus }
+  ): Promise<{ read: number; unread: number; notifications: PaginatedDocument<Notification[]> }> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.NOTIFICATION, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    let queries: any = { is_admin: true };
+    if (!!filters?.status) Object.assign(queries, { status: filters.status });
+
+    const [note, read, unread] = await Promise.all([
+      paginate<Notification[]>("notification", queries, filters),
+      notification.countDocuments({ status: "read", is_admin: true }).lean<number>().exec(),
+      notification.countDocuments({ status: "unread", is_admin: true }).lean<number>().exec(),
+    ]);
+
+    return { read, unread, notifications: note };
+  }
+
   async getSentBroadcasts(
     roles: string[],
     filters: IPaginationFilter & { status?: NotificationStatus }
@@ -54,6 +75,22 @@ export class NotificationService {
     return note;
   }
 
+  async markAsReadForAdmins(dto: { ids: string[] }, roles: string[]) {
+    validateFields(dto, ["ids"]);
+
+    console.log("Dto", dto);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.NOTIFICATION, [
+      PermissionScope.MARK,
+      PermissionScope.ALL,
+    ]);
+
+    const result = await notification
+      .updateMany({ _id: { $in: dto?.ids } }, { status: "read", delivered: true })
+      .lean<any>()
+      .exec();
+    return result;
+  }
+
   async updateFCMToken(customer_id: string, dto: { token: string; deviceId: string }, roles: string[]) {
     validateFields(dto, ["token", "deviceId"]);
     await RoleService.hasPermission(roles, AvailableResource.NOTIFICATION, [PermissionScope.READ, PermissionScope.ALL]);
@@ -71,6 +108,14 @@ export class NotificationService {
     const tokens = dto?.tokens ?? customer_tokens ?? [];
     if (!tokens || tokens.length < 1) return;
     return await this.send({ ...dto, tokens });
+  }
+
+  static async notifyAdmins(dto: Omit<NotifyDto, "_">) {
+    validateFields(dto, ["tag", "content", "title", "ticker"]);
+    // const admin_tokens = (await NotificationService.getCustomerDeviceTokens(customer_id)) ?? undefined;
+    const tokens = dto?.tokens ?? [];
+    // if (!tokens || tokens.length < 1) return;
+    return await this.sendToAdmins({ ...dto, tokens });
   }
 
   static async broadcast(dto: Omit<NotifyDto, "tokens">, roles: string[]) {
@@ -108,6 +153,37 @@ export class NotificationService {
     }
 
     return { note, ...response };
+  }
+
+  private static async sendToAdmins(dto: NotifyDto) {
+    const tokens = dto?.tokens!;
+    if (!tokens) return null;
+
+    const message = await this.pushNotificationConfig(dto);
+
+    const [, /*response */ note] = await Promise.all([
+      false && admin.messaging().sendEachForMulticast({ tokens, ...message }),
+      notification.create({ ...dto, is_admin: true }),
+    ]);
+
+    // if (!!response && response?.failureCount > 0) {
+    //   const possible_error_codes = [
+    //     "messaging/registration-token-not-registered",
+    //     "messaging/mismatched-credential",
+    //     "messaging/invalid-registration-token",
+    //   ];
+    //   let failed_tokens: string[] = [];
+    //   response.responses.forEach((res, idx) => {
+    //     if (!!res.error && possible_error_codes.includes(res.error.code)) {
+    //       failed_tokens.push(tokens[idx]);
+    //     }
+    //   });
+
+    //   if (failed_tokens.length > 0) await this.removeFailedDeviceTokens(failed_tokens);
+    // }
+
+    // return { note, ...response };
+    return note;
   }
 
   static async getCustomerDeviceTokens(customer_id: string): Promise<string[] | null> {

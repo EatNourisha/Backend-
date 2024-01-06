@@ -24,15 +24,16 @@ export { default as orderItem, OrderItem } from "./orderItem";
 export { default as adminSettings, AdminSettings } from "./adminSettings";
 
 export { default as coupon, Coupon } from "./coupon";
+export { default as discount, Discount } from "./discount";
 export { default as promoCode, PromoCode } from "./promocode";
 
 export { default as plan, Plan } from "./plan";
 export { default as card, Card } from "./card";
 export { default as allergy, Allergy } from "./allergy";
-export { default as transaction, Transaction } from "./transaction";
-export { default as subscription, Subscription } from "./subscription";
 export { default as referral, Referral } from "./referral";
 export { default as earnings, Earnings } from "./earnings";
+export { default as transaction, Transaction } from "./transaction";
+export { default as subscription, Subscription } from "./subscription";
 export { default as deliveryInfo, DeliveryInfo } from "./deliveryInfo";
 export { default as withdrawalRequest, WithdrawalRequest } from "./withdrawalRequest";
 export { default as notification, Notification, NotificationStatus, NotificationType } from "./notification";

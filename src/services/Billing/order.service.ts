@@ -8,6 +8,11 @@ import { OrderStatus } from "../../models/order";
 import { TransactionReason, TransactionStatus } from "../../models/transaction";
 import Stripe from "stripe";
 import config from "../../config";
+import { DiscountService } from "./discount.service";
+import { when } from "../../utils/when";
+import { NourishaBus } from "../../libs";
+import OrderEventListener from "../../listeners/order.listener";
+import { MealService } from "../Meal/meal.service";
 
 export class OrderService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -124,6 +129,8 @@ export class OrderService {
 
     const cus = _cart?.customer as Customer;
 
+    const { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
+
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
     console.log("Customer", cus?.address, dto?.delivery_address);
@@ -140,6 +147,8 @@ export class OrderService {
       phone_number: dto?.phone_number ?? cus?.phone,
       cart_id: _cart?._id!,
       delivery_date: dto?.delivery_date,
+      promo: when(!!promo, promo?._id, undefined),
+      actual_discounted_amount: amount_off,
     });
 
     const { order: _order, items } = result;
@@ -155,7 +164,7 @@ export class OrderService {
       card_token: dto?.card_token,
     });
 
-    return { order: _order, ...payment_intent };
+    return { order: _order, discount: amount_off, ...payment_intent };
     // return _order;
   }
 
@@ -210,10 +219,16 @@ export class OrderService {
     const _order = await order
       // .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
       .findByIdAndUpdate(item, { status: OrderStatus.PAID }, { new: true })
+      .populate("customer")
       .lean<Order>()
       .exec();
 
+    if (!!_order?.promo && !!_order?.actual_discounted_amount && _order?.actual_discounted_amount > 0)
+      await DiscountService.createDiscount(_order?.customer!, _order?.promo!, "order");
+
     console.log("Paid Order", _order);
+
+    const order_item_dto = _order_items.map((item) => ({ meal_id: item?.item!, quantity: item?.quantity }));
     // TODO: remove the session_id on the cart here
     await Promise.all([
       cart
@@ -224,6 +239,15 @@ export class OrderService {
         .exec(),
 
       cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
+      MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
+
+    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+  }
+
+  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
+  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
+  static mountEventListener() {
+    new OrderEventListener();
   }
 }

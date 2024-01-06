@@ -3,9 +3,12 @@ export interface NotifyDto {
   ticker: string;
   title: string;
   content: string;
-  tokens?: string[]
+  tokens?: string[];
 
   // options for broadcasting
   customer_ids?: string[];
-  roles?: string[]
+  roles?: string[];
+  metadata?: {
+    [key: string]: any;
+  };
 }

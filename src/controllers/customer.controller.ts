@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomerService, EmailService, Template } from "../services";
+import { CustomerService, EmailService, MarketingService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
 import  registerAddKlaviyo  from '../klaviyo/addUser'
 
@@ -20,6 +20,16 @@ export class CustomerController {
       const { body } = req;
       const result = await service.createCustomer(body);
       await registerAddKlaviyo(result.email, result.phone);
+      sendResponse(res, 201, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async addSubscriber(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const result = await MarketingService.addContact(body);
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
@@ -230,6 +240,16 @@ export class CustomerController {
       const { body } = req;
       if (!body?.email) throw createError("email is required in body", 401);
       const result = await EmailService.sendEmail("Test Email", body.email, Template.WELCOME, { name: body?.email });
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async syncCustomersToMailchimp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const result = await MarketingService.syncCustomersToContacts(customer.roles);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

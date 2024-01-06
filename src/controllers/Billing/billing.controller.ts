@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { BillingService, EmailService, Template } from "../../services";
+import { BillingService } from "../../services";
 import { sendError, sendResponse } from "../../utils";
 
 const service = new BillingService();
@@ -29,7 +29,7 @@ export class BillingController {
     try {
       const { body, customer } = req;
       const data = await service.createSetupIntent(customer.sub, body, customer.roles);
-      
+
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
@@ -41,7 +41,7 @@ export class BillingController {
       const { body, customer } = req;
       const data = await service.initializeSubscription(customer.sub, body, customer.roles);
       //I added this now (Hezekiah)
-      await EmailService.sendEmail("📧 Meal order recieved", customer?.email, Template.ORDERCREATED, customer);
+      // await EmailService.sendEmail("📧 Meal order recieved", customer?.email, Template.ORDERCREATED, customer);
       //I added this (hezekiah)
       sendResponse(res, 201, data);
     } catch (error) {
