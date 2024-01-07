@@ -1,4 +1,6 @@
- async function registerAddKlaviyo(email: string, phone: string): Promise<void> {
+import fetch from 'node-fetch';
+ 
+async function registerAddKlaviyo(email: string, phone: string): Promise<void> {
     const listId: string = "VNhLtY"
   
     try {
