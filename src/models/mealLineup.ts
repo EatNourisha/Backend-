@@ -46,4 +46,10 @@ export class MealLineup extends BaseEntity {
   delivery_date: Date;
 }
 
+
+
 export default getModelForClass(MealLineup);
+
+export const deleteMealLineupById = async (mealLineupId: string) => {
+  await MealLineup.deleteOne({ _id: mealLineupId });
+};
