@@ -61,7 +61,7 @@ export class SubscriptionService {
     }  
 
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
-      prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount,
+      prorate: false, 
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
     const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
