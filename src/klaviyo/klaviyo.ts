@@ -6,7 +6,7 @@ const listId: string = 'TvnkRj';
 async function addUserToKlaviyoList(): Promise<void> {
   try {
     const customers = await customer.find({});
-    
+
     const endpoint: string = `https://a.klaviyo.com/api/v2/list/${listId}/members`;
     const apiKey: string | undefined = process.env.klaviyoApiKey;
 
@@ -18,9 +18,9 @@ async function addUserToKlaviyoList(): Promise<void> {
       const batch = customers.slice(i, i + batchSize);
       const payload = {
         api_key: apiKey,
-        profiles: batch.map(({ email, phone }) => ({ email, phone })),
+        profiles: batch.map(({ email, phone, first_name, last_name, subscription_status, }) => ({ email, phone, first_name, last_name, subscription_status, })),
       };
-      
+      console.log(payload, "sent")
       let retries = 0;
       let success = false;
 
@@ -37,7 +37,7 @@ async function addUserToKlaviyoList(): Promise<void> {
           const result = await response.json();
           console.log('Result from Klaviyo:', result);
 
-          success = true; 
+          success = true;
         } catch (error) {
           console.error(`Error adding users to Klaviyo list (Batch ${i + 1}-${i + batchSize}):`, error);
           retries++;
@@ -47,7 +47,7 @@ async function addUserToKlaviyoList(): Promise<void> {
 
       if (!success) {
         console.error(`Failed to add users to Klaviyo list after ${maxRetries} attempts (Batch ${i + 1}-${i + batchSize}).`);
-       
+
       }
     }
 

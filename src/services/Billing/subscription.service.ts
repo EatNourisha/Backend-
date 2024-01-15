@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction, deleteMealLineupById, MealLineup } from "../../models";
 import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
@@ -53,6 +53,12 @@ export class SubscriptionService {
     if (!sub) throw createError("Subscription not found", 404);
 
     const cus = sub?.customer as Customer;
+
+    const lineupId = cus?.lineup as string;
+
+    if (lineupId) {
+      await deleteMealLineupById(lineupId)
+    }  
 
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
       prorate: false, // TODO: confirm if the client would like to refund the unused subscription amount,
