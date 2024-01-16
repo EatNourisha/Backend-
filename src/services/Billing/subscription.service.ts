@@ -55,6 +55,7 @@ export class SubscriptionService {
     const cus = sub?.customer as Customer;
     
     await customer.updateOne({ _id: cus._id }, { $unset: { lineup: 1 } });
+    
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
       prorate: false, 
     });
