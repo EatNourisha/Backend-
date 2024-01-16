@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction, deleteMealLineupById, MealLineup } from "../../models";
+import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction, deleteMealLineupById} from "../../models";
 import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
