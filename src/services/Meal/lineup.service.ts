@@ -3,7 +3,7 @@ import { customer, DayMeals, lineup, MealLineup, MealPack, MealPackAnalysis } fr
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { format, getDay } from "date-fns";
+import { getDay } from "date-fns";
 
 import omit from "lodash/omit";
 import pick from "lodash/pick";
@@ -138,8 +138,8 @@ export class MealLineupService {
     const result = await DeliveryService.canUpdateLineup(customer_id);
     if (!result) return;
 
-    if (result?.is_locked && Date.now() < result.next_change_date.getTime())
-      throw createError(`Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`, 400);
+    // if (result?.is_locked && Date.now() < result.next_change_date.getTime())
+    //   throw createError(`Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`, 400);
   }
 
   static async lockLineupChange(customer_id: string, dryRun = true) {
