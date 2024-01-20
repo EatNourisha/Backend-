@@ -93,6 +93,19 @@ export class DeliveryService {
     return;
   }
 
+  static async resetCustomerDeliveryInfo(customer_id: string) {
+    await customer.updateOne({ _id: customer_id }, { $unset: { lineup: 1 } });
+    const dinfo = await deliveryInfo
+      .findOneAndUpdate(
+        { customer: customer_id },
+        { is_lineup_change_locked: false, next_lineup_change_date: null, next_delivery_date: null }
+      )
+      .lean<DeliveryInfo>()
+      .exec();
+
+    return dinfo;
+  }
+
   static async canUpdateLineup(customer_id: string) {
     const info = await this.updateNextLineupChangeDate(customer_id);
     return { is_locked: info.is_lineup_change_locked, next_change_date: info.next_lineup_change_date };

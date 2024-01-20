@@ -2,14 +2,14 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction,} from "../../models";
+import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction } from "../../models";
 import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
 import SubscriptionEventListener from "../../listeners/subscription.listener";
 // import { ReferralService } from "../../services/referral.service";
 import { DiscountService } from "./discount.service";
-import { MarketingService } from "../../services";
+import { DeliveryService, MarketingService } from "../../services";
 import { sub } from "date-fns";
 
 export class SubscriptionService {
@@ -39,10 +39,11 @@ export class SubscriptionService {
   async getCurrentUsersSubscription(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.SUBSCRIPTION, [PermissionScope.READ, PermissionScope.ALL]);
     let sub = await subscription.findOne({ customer: customer_id }).populate(["plan", "card"]).lean<Subscription>().exec();
+
+    // TODO: Unset / Reset delivery info and customer lineup
+
     if (!sub || ["incomplete_expired", "cancelled", "canceled"].includes(sub?.status)) {
       ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
-      // const reconcilled_sub = ((await new SubscriptionService().reconcileSubscription(customer_id)) as Subscription) ?? null;
-      // if (!reconcilled_sub) throw createError("Subscription not found!", 404);
     }
     return sub;
   }
@@ -53,14 +54,14 @@ export class SubscriptionService {
     if (!sub) throw createError("Subscription not found", 404);
 
     const cus = sub?.customer as Customer;
-    
-    await customer.updateOne({ _id: cus._id }, { $unset: { lineup: 1 } });
-    
+
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
-      prorate: false, 
+      prorate: false,
     });
     if (!stripe_sub) throw createError(`Failed to cancel customer's subscription on stripe`, 400);
     const update = await subscription.updateOne({ _id: sub?._id }, { status: "cancelled" }).lean<Subscription>().exec();
+
+    await DeliveryService.resetCustomerDeliveryInfo(customer_id);
 
     await MarketingService.updateContactSubscription(cus?.email, {
       plan_name: "NO_PLAN",

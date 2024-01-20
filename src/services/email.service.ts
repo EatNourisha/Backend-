@@ -189,7 +189,7 @@ export class EmailService {
       console.log(result);
       return result;
     } catch (error) {
-      console.error("[MAILGUN::ERROR]", error);
+      console.error("[NODEMAILER::ERROR]", error);
     }
 
     return result;
