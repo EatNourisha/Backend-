@@ -1,13 +1,13 @@
 import fetch from 'node-fetch';
  
-async function registerAddKlaviyo(email: string, phone: string): Promise<void> {
+async function registerAddKlaviyo(email: string, phone: string, first_name: string, last_name: string): Promise<void> {
     const listId: string = "VNhLtY"
   
     try {
       const endpoint: string = `https://a.klaviyo.com/api/v2/list/${listId}/members`;
       const payload = {
         api_key: process.env.klaviyoApiKey,
-        profiles: [{ email, phone }],
+        profiles: [{ email, phone, first_name, last_name }],
       };
   
       const response = await fetch(endpoint, {

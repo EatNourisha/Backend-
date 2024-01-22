@@ -24,6 +24,7 @@ export class SenderService {
           groups: TAGS,
           phone: dto?.phone,
           // fields: {},
+          "trigger_automation": false
         },
       });
 

@@ -40,6 +40,7 @@ import { DeliveryService } from "./Meal/delivery.service";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
 import { MarketingService } from "./Marketing/marketing.service";
+import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
 
 export class CustomerService {
@@ -75,6 +76,7 @@ export class CustomerService {
       this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
       roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
       MarketingService.addContact({ ...input, ref_code: acc?.ref_code }),
+      await registerAddKlaviyo(input?.email, input?.phone, input?.first_name, input?.last_name ),
     ]);
 
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
