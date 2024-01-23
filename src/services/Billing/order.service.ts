@@ -178,6 +178,8 @@ export class OrderService {
     console.log("Cart Items", items);
     if (items.length < 1) throw createError("Cart items cannot be empty", 400);
 
+    await MealService.validateAvailableMealpackQuantities(items.map((item) => ({ meal_id: item?.item, quantity: item.quantity })));
+
     let result = {} as { order: Order; items: OrderItem[] };
 
     try {

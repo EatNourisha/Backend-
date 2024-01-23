@@ -21,6 +21,7 @@ import {
 import { RoleService } from "../../services/role.service";
 import { createError, createSlug, getUpdateOptions, paginate, removeForcedInputs, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
+import { when } from "../../utils/when";
 // import config from "../../config";
 
 export class MealService {
@@ -285,6 +286,15 @@ export class MealService {
     return result;
   }
 
+  static async validateAvailableMealpackQuantities(dtos: { meal_id: string; quantity: number }[]) {
+    console.log("Validating meals", dtos);
+
+    const to_run: ReturnType<typeof this.validateAvailableMealpackQuantity>[] = [];
+    dtos.forEach((dto) => to_run.push(this.validateAvailableMealpackQuantity(dto.meal_id, dto.quantity)));
+    const result = await Promise.all(to_run);
+    return result;
+  }
+
   private static async decreaseAvailableMealpackQuantity(meal_id: string, quantity: number) {
     const m = await mealPack.findById(meal_id).select(["_id", "available_quantity"]).lean<MealPack>().exec();
     if (!m || !m?.available_quantity) return null;
@@ -293,5 +303,18 @@ export class MealService {
       .updateOne({ _id: meal_id }, { $inc: { available_quantity: quantity * -1 } })
       .lean()
       .exec();
+  }
+
+  private static async validateAvailableMealpackQuantity(meal_id: string, selected_quantity: number) {
+    const m = await mealPack.findById(meal_id).select(["_id", "name", "available_quantity"]).lean<MealPack>().exec();
+    if (!m || !m?.available_quantity || !m?.name) throw createError(`${m?.name} is out of stock!`);
+    if (m?.available_quantity <= 0) throw createError(`${m?.name} is out of stock!`);
+    if (m?.available_quantity < selected_quantity)
+      throw createError(
+        `There ${when(m?.available_quantity > 1, "are", "is")} only ${m?.available_quantity ?? 0} (${
+          m?.name
+        }) meal in stock at the moment, you selected ${selected_quantity}`
+      );
+    return true;
   }
 }
