@@ -16,6 +16,7 @@ router.get("/admins", authGuard, controller.getAdmins); // ✅
 router.get("/", authGuard, controller.getCustomers); // ✅
 router.get("/:id", authGuard, controller.getCustomerById); // ✅
 router.post("/add-country", authGuard, controller.addCountry); // ✅
+router.get("/countries", authGuard, controller.getCountries); // ✅
 
 // GET
 router.get("/", authGuard, controller.getCustomers); // ✅
