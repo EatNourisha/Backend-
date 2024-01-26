@@ -156,6 +156,17 @@ export class CustomerController {
     }
   }
 
+  async addCountry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const result = await service.addCountry(body.name, body.code);
+      sendResponse(res, 201, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+
   async getAdmins(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, query } = req;
