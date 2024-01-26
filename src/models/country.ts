@@ -8,7 +8,7 @@ export class Country extends BaseEntity {
   name: string;
 
   @prop()
-  code: string;
+  code?: string;
 }
 
 export default getModelForClass(Country);
