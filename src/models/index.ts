@@ -15,6 +15,8 @@ export { default as lineup, MealLineup, DayMeals} from "./mealLineup";
 export { default as mealPackAnalysis, MealPackAnalysis } from "./mealPackAnalysis";
 export { default as partyMealRequest, PartyMealRequest } from "./partyMealRequest";
 
+export { default as country, Country} from "./country"
+
 export { default as cart, Cart } from "./cart";
 export { default as cartItem, CartItem } from "./cartItem";
 

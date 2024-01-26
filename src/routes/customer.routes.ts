@@ -1,6 +1,7 @@
+import { authGuard } from './../middlewares/guards';
 import { Router } from "express";
 import { CustomerController } from "../controllers";
-import { authGuard } from "../middlewares";
+
 
 const router = Router();
 const controller = new CustomerController();
@@ -14,6 +15,7 @@ router.get("/me", authGuard, controller.getCurrentUserCustomer); // ✅
 router.get("/admins", authGuard, controller.getAdmins); // ✅
 router.get("/", authGuard, controller.getCustomers); // ✅
 router.get("/:id", authGuard, controller.getCustomerById); // ✅
+router.post("/add-country", authGuard, controller.addCountry); // ✅
 
 // GET
 router.get("/", authGuard, controller.getCustomers); // ✅

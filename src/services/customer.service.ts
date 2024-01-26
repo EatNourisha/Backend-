@@ -23,6 +23,7 @@ import {
   order,
   Subscription,
   subscription,
+  country,
 } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
@@ -62,6 +63,19 @@ export class CustomerService {
     return { meals, customers, subscriptions, orders };
   }
 
+  async addCountry(countryData: { name: string; code?: string }[]) {
+    const createdCountries: { [key: string]: string | undefined } = {};
+
+    for (const data of countryData) {
+      const { name, code } = data;
+      const newCountry = (await country.create({ name: name.toLowerCase(), code }));
+      createdCountries[name] = newCountry.code;
+    }
+
+    return createdCountries;
+  }
+
+
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({
       ...input,
@@ -84,6 +98,8 @@ export class CustomerService {
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
   }
+
+ 
 
   async toggleAutoRenewal(customer_id: string, dto: { auto_renew: boolean }, roles: string[]) {
     validateFields(dto, ["auto_renew"]);
