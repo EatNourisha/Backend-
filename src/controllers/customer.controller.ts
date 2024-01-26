@@ -173,7 +173,7 @@ export class CustomerController {
     }
   }
 
-  async getCountries(req: Request, res: Response, next: NextFunction) {
+  async getCountries(_req: Request, res: Response, next: NextFunction) {
     try {
       const result = await service.getCountries();
       sendResponse(res, 200, result);
