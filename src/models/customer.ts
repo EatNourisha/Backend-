@@ -8,6 +8,7 @@ import { Allergy } from "./allergy";
 import { MealLineup } from "./mealLineup";
 import { PromoCode } from "./promocode";
 import { DeliveryInfo } from "./deliveryInfo";
+import { Country } from "./country";
 
 export class AccountControl {
   @prop({ default: false })
@@ -119,6 +120,9 @@ export class Customer extends BaseEntity {
 
   @prop()
   delivery_date: Date;
+
+  @prop({ ref: () => Country }) 
+  country: Ref<Country>;
 
   @prop({ ref: () => Subscription })
   subscription: Ref<Subscription>;

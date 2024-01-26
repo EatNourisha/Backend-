@@ -63,9 +63,16 @@ export class CustomerService {
     return { meals, customers, subscriptions, orders };
   }
 
-  async addCountry(name: string, code: string) {
-    const Country = await country.create({ name: name.toLowerCase(), code });
-    return Country;
+  async addCountry(countryData: { name: string; code?: string }[]) {
+    const createdCountries: { [key: string]: string | undefined } = {};
+
+    for (const data of countryData) {
+      const { name, code } = data;
+      const newCountry = (await country.create({ name: name.toLowerCase(), code }));
+      createdCountries[name] = newCountry.code;
+    }
+
+    return createdCountries;
   }
 
 

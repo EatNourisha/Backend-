@@ -159,8 +159,15 @@ export class CustomerController {
   async addCountry(req: Request, res: Response, next: NextFunction) {
     try {
       const { body } = req;
-      const result = await service.addCountry(body.name, body.code);
-      sendResponse(res, 201, result);
+      
+      if (Array.isArray(body)) {
+        const result = await service.addCountry(body);
+        sendResponse(res, 201, result);
+      } else {
+        
+        const result = await service.addCountry([{ name: body.name, code: body.code }]);
+        sendResponse(res, 201, result);
+      }
     } catch (error) {
       sendError(error, next);
     }
