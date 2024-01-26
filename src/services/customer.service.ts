@@ -75,6 +75,11 @@ export class CustomerService {
     return createdCountries;
   }
 
+  async getCountries() {
+    const countries = await country.find().lean().exec();
+    return countries;
+  }
+
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({
