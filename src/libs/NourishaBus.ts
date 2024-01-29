@@ -6,6 +6,7 @@ import {
   SendResetPasswordEmailWebDto,
   SendVerificationEmailDto,
   SendWelcomeEmailDto,
+  SendPromoEmailDto,
 } from "../interfaces";
 
 _Emittery.isDebugEnabled = false;
@@ -27,6 +28,7 @@ export type NourishaEventTypes = {
 
   "customer:send_verification_email": SendVerificationEmailDto;
   "customer:send_welcome_email": SendWelcomeEmailDto;
+  "customer:send_promo_email": SendPromoEmailDto;
   "customer:send_resetpassword_email_web": SendResetPasswordEmailWebDto;
   "customer:send_resetpassword_email_mobile": SendResetPasswordEmailMobileDto;
 
