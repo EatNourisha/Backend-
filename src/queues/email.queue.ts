@@ -1,12 +1,14 @@
 import { Queue, Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { EmailService, Template } from "../services";
+import NourishaBus from '../libs/NourishaBus';
 import {
   SendPlacedOrderEmail,
   SendResetPasswordEmailMobileDto,
   SendResetPasswordEmailWebDto,
   SendVerificationEmailDto,
   SendWelcomeEmailDto,
+  SendPromoEmailDto,
 } from "../interfaces";
 // import Bull, { Job } from "bull";
 
@@ -18,6 +20,7 @@ export const known_email_jobs = [
   "send_resetpassword_email_web",
   "send_resetpassword_email_mobile",
   "send_placed_order_email",
+  "send_promo_email",
 ] as const;
 export type KnowEmailJobType = (typeof known_email_jobs)[number];
 
@@ -43,6 +46,8 @@ async function emailProcessor(job: Job<any, any, KnowEmailJobType>) {
       return await sendVerificationEmail(job);
     case "send_welcome_email":
       return await sendWelcomeEmail(job);
+    case "send_promo_email":
+      return await sendPromoMail(job);
     case "send_resetpassword_email_web":
       return await sendResetPasswordEmail__Web(job);
     case "send_resetpassword_email_mobile":
@@ -109,6 +114,27 @@ async function sendPlaceOrderEmail(job: Job<SendPlacedOrderEmail, any, KnowEmail
   console.log("🥳 Order successfully placed", job.data);
   return await EmailService.sendEmail("🥳 Order successfully placed", data?.email, Template.ORDERCREATED, data);
 }
+
+async function sendPromoMail(job: Job<SendPromoEmailDto, any, KnowEmailJobType>) {
+  const data = job.data;
+  console.log("Send Promo Email", data);
+  return await EmailService.sendEmail("🥳promo sent successfully", data?.email, Template.Marketing, data);
+}
+
+async function runEveryTwoHours() {
+  const intervalInMilliseconds = 2 * 60 * 60 * 1000; 
+
+  setInterval(async () => {
+      const jobData: SendPromoEmailDto = {
+          email: '',
+          name: ''
+      };
+
+      NourishaBus.emit('customer:send_promo_email', jobData);
+  }, intervalInMilliseconds);
+}
+
+runEveryTwoHours();
 
 export const EmailQ = { Queue: EmailQueue, Worker: EmailWorker };
 // export const EmailQ = { Queue: EmailQueue };

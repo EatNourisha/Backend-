@@ -50,6 +50,7 @@ export enum Template {
   RESET_PASSWORD_MOBILE = "/emails/resetPassword__mobile.html", // {name: '', code: ''}
   WELCOME = "/emails/welcome.html", // {name: ''}
   ORDERCREATED = "/emails/orderCreated.html", // {name: '', order_ref_id: '', delivery_date: '', delivery_address: ''}
+  Marketing = "/emails/promo.html",
 }
 
 type SendViaType = "sendgrid" | "mailgun" | "nodemailer" | "postmark";

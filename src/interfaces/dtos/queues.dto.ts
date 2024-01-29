@@ -32,4 +32,10 @@ export interface SendPlacedOrderEmail {
   delivery_address: string;
 }
 
+export interface SendPromoEmailDto {
+  email: string;
+  name: string;
+  
+}
+
 export interface CreateMealPackAnalysisData extends Omit<MealPackAnalysis, "_id" | "createdAt" | "updatedAt"> {}
