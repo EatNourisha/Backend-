@@ -28,6 +28,7 @@ router.post("/test_mailgun", controller.testEmail); // ✅
 router.post("/add", controller.addSubscriber); // ✅
 router.post("/test_sendgrid", controller.testSendgrid); // ✅
 router.post("/sync-contacts", authGuard, controller.syncCustomersToMailchimp); // ✅
+router.post("/send_mail", authGuard, controller.sendMail)
 
 // PUT
 router.put("/me", authGuard, controller.updateCustomer); // ✅

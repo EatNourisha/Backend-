@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService, EmailService, MarketingService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
+import sendMessageToUsers from "../services/Marketing/sendMessage.service";
 
 
 const service = new CustomerService();
@@ -19,7 +20,7 @@ export class CustomerController {
     try {
       const { body } = req;
       const result = await service.createCustomer(body);
-    
+
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
@@ -159,12 +160,12 @@ export class CustomerController {
   async addCountry(req: Request, res: Response, next: NextFunction) {
     try {
       const { body } = req;
-      
+
       if (Array.isArray(body)) {
         const result = await service.addCountry(body);
         sendResponse(res, 201, result);
       } else {
-        
+
         const result = await service.addCountry([{ name: body.name, code: body.code }]);
         sendResponse(res, 201, result);
       }
@@ -282,4 +283,14 @@ export class CustomerController {
       sendError(error, next);
     }
   }
+  async sendMail(req: Request, res: Response, next: NextFunction) {
+    const { subscriptionStatus, subject, message } = req.body;
+    try {
+     const result = await sendMessageToUsers(subscriptionStatus, subject, message)
+     res.status(200).json({ success: true, message: 'Emails sent successfully', result });
+    } catch (error) {
+      sendError(error, next)
+    }
+  }
+
 }

@@ -602,6 +602,27 @@ export class CustomerService {
     if (!stripe_cus) await this.attachStripeId(cus?._id!, cus?.email, join([cus?.first_name, cus?.last_name], " "));
   }
 
+  static async getCustomersByEmailAndFirstNameUnrestricted(
+    filters?: {
+      email?: string;
+      firstName?: string;
+    }
+  ): Promise<Customer[]> {
+    let queries: any = {};
+  
+    // Add email filter if provided
+    if (!!filters?.email) Object.assign(queries, { email: filters.email });
+  
+    // Add first name filter if provided
+    if (!!filters?.firstName) Object.assign(queries, { firstName: filters.firstName });
+  
+    // Use the find method to retrieve customers without pagination or permission checks
+    const customers = await customer.find(queries).exec();
+  
+    return customers;
+  }
+  
+
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {

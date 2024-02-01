@@ -1,7 +1,6 @@
 import { Queue, Worker, Job } from "bullmq";
 import { connection } from "./connection";
 import { EmailService, Template } from "../services";
-import NourishaBus from '../libs/NourishaBus';
 import {
   SendPlacedOrderEmail,
   SendResetPasswordEmailMobileDto,
@@ -121,20 +120,6 @@ async function sendPromoMail(job: Job<SendPromoEmailDto, any, KnowEmailJobType>)
   return await EmailService.sendEmail("🥳promo sent successfully", data?.email, Template.Marketing, data);
 }
 
-async function runEveryTwoHours() {
-  const intervalInMilliseconds = 2 * 60 * 60 * 1000; 
-
-  setInterval(async () => {
-      const jobData: SendPromoEmailDto = {
-          email: '',
-          name: ''
-      };
-
-      NourishaBus.emit('customer:send_promo_email', jobData);
-  }, intervalInMilliseconds);
-}
-
-runEveryTwoHours();
 
 export const EmailQ = { Queue: EmailQueue, Worker: EmailWorker };
 // export const EmailQ = { Queue: EmailQueue };

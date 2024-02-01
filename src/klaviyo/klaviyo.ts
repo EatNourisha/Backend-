@@ -20,7 +20,7 @@ async function addUserToKlaviyoList(): Promise<void> {
         api_key: apiKey,
         profiles: batch.map(({ email, phone, first_name, last_name, subscription_status, }) => ({ email, phone, first_name, last_name, subscription_status, })),
       };
-      console.log(payload, "sent")
+    
       let retries = 0;
       let success = false;
 

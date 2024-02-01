@@ -19,5 +19,6 @@ export * from "./Preference/notification.controller";
 export * from "./Preference/review.controller";
 export * from "./Preference/adminSettings.controller";
 
+
 export * from "./earnings.controller";
 export * from "./referral.controller";
