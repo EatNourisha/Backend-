@@ -8,10 +8,11 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
   consola.info("Authenticating...");
   let token = (req.headers["x-access-token"] || req.headers.authorization) as string;
   let deviceId = req.headers["device-id"] as string;
-
+  
   if (!token) return next(createError("Authorization field is missing", 401));
   if (!deviceId) return next(createError("device-id header field is missing", 401));
   token = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
+ 
   try {
     let payload = await authService.validateAuthCode(token, deviceId);
     if (!payload) return next(createError("Authorization failed", 401));

@@ -25,7 +25,7 @@ async function sendMessageToUsers  ( subscriptionStatus: string, subject : strin
        
       for (const user of targetUser) {
         const mailOptions = {
-            from: "support@eatnourisha.com",
+            from: "devcharles40@gmail.com",
             to: user.email, 
             subject: subject,
             text: message,

@@ -284,9 +284,9 @@ export class CustomerController {
     }
   }
   async sendMail(req: Request, res: Response, next: NextFunction) {
-    const { subscriptionStatus, subject, message } = req.body;
+    const { subscriptionStatus, subject, message } = req.body;  
     try {
-     const result = await sendMessageToUsers(subscriptionStatus, subject, message)
+     const result = await sendMessageToUsers(subscriptionStatus, subject, message, )
      res.status(200).json({ success: true, message: 'Emails sent successfully', result });
     } catch (error) {
       sendError(error, next)
