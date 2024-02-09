@@ -33,6 +33,8 @@ import { authGuard } from "../middlewares";
 import { Transaction, transaction } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
+import AppUpdate from "./appupdate.routes";
+
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -58,6 +60,7 @@ routes.use("/notifications", NotificationRouter);
 routes.use("/referrals", ReferralRouter);
 routes.use("/earnings", EarningsRouter);
 routes.use("/deliveries", DeliveryRouter);
+routes.use("/appupdate",  AppUpdate)
 
 routes.get("/configs", authGuard, (_, res) => {
   return sendResponse(res, 200, config);
@@ -66,6 +69,7 @@ routes.get("/configs", authGuard, (_, res) => {
 routes.get("/healthcheck", (_, res, __) => {
   sendResponse(res, 200, { message: "OK" });
 });
+
 
 routes.post("/webhook", async (req, res, __) => {
   const payload = req.body;

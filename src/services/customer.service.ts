@@ -523,6 +523,32 @@ export class CustomerService {
     ]);
   }
 
+   async updateUserLineup(email: string): Promise<string> {
+    try {
+      const user = await customer.findOne({ email });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (!user.lineup) {
+        throw new Error("User lineup not found");
+      }
+
+     const updatedResult = await customer.updateOne({ email }, { $unset: { lineup: 1 } });
+      
+      if (updatedResult.matchedCount === 1) {
+
+        return "User lineup updated successfully";
+      } else {
+        throw new Error("User lineup update failed");
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error("Internal Server Error");
+    }
+  }
+
   async getAdmins(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string }): Promise<PaginatedDocument<Customer>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,

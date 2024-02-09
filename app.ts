@@ -128,7 +128,7 @@ app.use(handleError);
 (async () => {
   try {
     mongoose.set("strictQuery", true);
-    await mongoose.connect(config.DB_URI, {});
+     await mongoose.connect(config.DB_URI, {});
     new SystemService().ensureSystemServices();
     EventManager.subscribeEvents();
 
@@ -138,6 +138,8 @@ app.use(handleError);
     console.error(error);
     process.exit(1);
   }
+
+
 
   // startPromoCronJob();
 
