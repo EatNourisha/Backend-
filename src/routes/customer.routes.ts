@@ -15,7 +15,7 @@ router.get("/me", authGuard, controller.getCurrentUserCustomer); // ✅
 router.get("/admins", authGuard, controller.getAdmins); // ✅
 router.get("/", authGuard, controller.getCustomers); // ✅
 router.get("/:id", authGuard, controller.getCustomerById); // ✅
-router.post("/add-country", authGuard, controller.addCountry); // ✅
+
 router.get("/countries", authGuard, controller.getCountries); // ✅
 
 // GET
@@ -28,6 +28,8 @@ router.post("/test_mailgun", controller.testEmail); // ✅
 router.post("/add", controller.addSubscriber); // ✅
 router.post("/test_sendgrid", controller.testSendgrid); // ✅
 router.post("/sync-contacts", authGuard, controller.syncCustomersToMailchimp); // ✅
+router.post("/add-country", authGuard, controller.addCountry); // ✅
+router.post("/send_mail", authGuard, controller.sendMail)
 
 // PUT
 router.put("/me", authGuard, controller.updateCustomer); // ✅
@@ -41,6 +43,7 @@ router.put("/:id/enable", authGuard, controller.enableCustomer); // ✅
 router.put("/:id/make_admin", authGuard, controller.makeCustomerAdmin); // ✅
 router.put("/toggle_auto_renew", authGuard, controller.toggleSubscriptionAutoRenewal); // ✅
 router.put("/:id/revoke_admin", authGuard, controller.revokeAdminPrivilege); // ✅
+router.put("/update_lineup",  controller.updateUserLineup); // ✅
 // router.put("/:id/primaryRole", authGuard, controller.updatePrimaryRole); // ✅
 
 // DELETE

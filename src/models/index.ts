@@ -29,6 +29,8 @@ export { default as coupon, Coupon } from "./coupon";
 export { default as discount, Discount } from "./discount";
 export { default as promoCode, PromoCode } from "./promocode";
 
+export { default as appupdate,  AppUpdate } from "./appupdate"
+
 export { default as plan, Plan } from "./plan";
 export { default as card, Card } from "./card";
 export { default as allergy, Allergy } from "./allergy";

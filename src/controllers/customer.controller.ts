@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomerService, EmailService, MarketingService, Template } from "../services";
 import { createError, sendError, sendResponse } from "../utils";
+import sendMessageToUsers from "../services/Marketing/sendMessage.service";
+import AppUpdate from "../models/appupdate"
 
 
 const service = new CustomerService();
@@ -19,7 +21,7 @@ export class CustomerController {
     try {
       const { body } = req;
       const result = await service.createCustomer(body);
-    
+
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
@@ -159,12 +161,12 @@ export class CustomerController {
   async addCountry(req: Request, res: Response, next: NextFunction) {
     try {
       const { body } = req;
-      
+
       if (Array.isArray(body)) {
         const result = await service.addCountry(body);
         sendResponse(res, 201, result);
       } else {
-        
+
         const result = await service.addCountry([{ name: body.name, code: body.code }]);
         sendResponse(res, 201, result);
       }
@@ -282,4 +284,119 @@ export class CustomerController {
       sendError(error, next);
     }
   }
+  async sendMail(req: Request, res: Response, next: NextFunction) {
+    const { subscriptionStatus, subject, message } = req.body;
+    try {
+      const result = await sendMessageToUsers(subscriptionStatus, subject, message,)
+      res.status(200).json({ success: true, message: 'Emails sent successfully', result });
+    } catch (error) {
+      sendError(error, next)
+    }
+  }
+
+  async updateUserLineup(req: Request, res: Response): Promise<void> {
+    try {
+
+      // if (!req.user || req.user.role !== 'admin') {
+      //   res.status(403).json({ message: "Unauthorized" });
+      //   return;
+      // }
+
+      const email = req.body.email;
+
+      const message = await service.updateUserLineup(email);
+      res.status(200).json({ message });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async getAppUpdates(_req: Request, res: Response) {
+    try {
+      const appUpdates = await AppUpdate.find({});
+      res.json(appUpdates);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  async addAppUpdate(req: Request, res: Response): Promise<void> {
+    try {
+
+      const { android, ios } = req.body;
+
+      // Create a new document using the provided data
+      const newAppUpdate = new AppUpdate({
+        android: {
+          update: android.update,
+          version: android.version,
+          force: android.force,
+          build: android.build,
+          link: android.link
+        },
+        ios: {
+          update: ios.update,
+          version: ios.version,
+          force: ios.force,
+          build: ios.build,
+          link: ios.link
+        },
+      });
+
+
+      await newAppUpdate.save();
+
+      // Send a success response
+      res.status(201).json({ message: 'App update added successfully' });
+    } catch (error) {
+      // Handle errors
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  async updateAppUpdate(req: Request, res: Response): Promise<void> {
+    try {
+      
+      const { updateId } = req.params; 
+      const { android, ios } = req.body; 
+
+      const updated = await AppUpdate.findOneAndUpdate(
+        { _id: updateId }, 
+        {
+          $set: {
+            android: {
+              update: android.update,
+              version: android.version,
+              force: android.force,
+              build: android.build,
+              link: android.link
+            },
+            ios: {
+              update: ios.update,
+              version: ios.version,
+              force: ios.force,
+              build: ios.build,
+              link: ios.link
+            }
+          }
+        },
+        { new: true } 
+      );
+
+     
+      if (updated) {
+        res.status(200).json({ message: 'App update updated successfully', updated });
+      } else {
+        res.status(404).json({ message: 'App update not found' });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
 }

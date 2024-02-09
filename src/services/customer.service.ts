@@ -523,6 +523,32 @@ export class CustomerService {
     ]);
   }
 
+   async updateUserLineup(email: string): Promise<string> {
+    try {
+      const user = await customer.findOne({ email });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (!user.lineup) {
+        throw new Error("User lineup not found");
+      }
+
+     const updatedResult = await customer.updateOne({ email }, { $unset: { lineup: 1 } });
+      
+      if (updatedResult.matchedCount === 1) {
+
+        return "User lineup updated successfully";
+      } else {
+        throw new Error("User lineup update failed");
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error("Internal Server Error");
+    }
+  }
+
   async getAdmins(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string }): Promise<PaginatedDocument<Customer>> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,
@@ -601,6 +627,27 @@ export class CustomerService {
     // console.log("Customer", stripe_cus);
     if (!stripe_cus) await this.attachStripeId(cus?._id!, cus?.email, join([cus?.first_name, cus?.last_name], " "));
   }
+
+  static async getCustomersByEmailAndFirstNameUnrestricted(
+    filters?: {
+      email?: string;
+      firstName?: string;
+    }
+  ): Promise<Customer[]> {
+    let queries: any = {};
+  
+    // Add email filter if provided
+    if (!!filters?.email) Object.assign(queries, { email: filters.email });
+  
+    // Add first name filter if provided
+    if (!!filters?.firstName) Object.assign(queries, { firstName: filters.firstName });
+  
+    // Use the find method to retrieve customers without pagination or permission checks
+    const customers = await customer.find(queries).exec();
+  
+    return customers;
+  }
+  
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.

@@ -4,6 +4,10 @@ import { getModelForClass, modelOptions, prop, Ref } from "@typegoose/typegoose"
 import BaseEntity from "./base";
 import { Meal } from "./meal";
 
+enum OrderType {
+  Subscription = "subscription",
+  SingleOrder = "single order",
+}
 class MealPackPrice {
   @prop({ default: 0 })
   amount: number;
@@ -49,6 +53,9 @@ export class MealPack extends BaseEntity {
 
   @prop()
   available_quantity: number;
+
+  @prop({ enum: OrderType})
+  orderType: OrderType;
 }
 
 export default getModelForClass(MealPack);

@@ -9,7 +9,6 @@ import Routes from "./src/routes";
 import SystemService from "./src/services/system.service";
 import { EventManager } from "./src/libs";
 import { closeWorkers, serverAdapter } from "./src/queues";
-
 import session from "express-session";
 import passport from "passport";
 import { Strategy } from "passport-local";
@@ -17,6 +16,7 @@ import { ensureLoggedIn } from "connect-ensure-login";
 import { AuthService } from "./src/services";
 import { connection } from "./src/queues/connection";
 import addUserToKlaviyoList from "./src/klaviyo/klaviyo";
+// import  startPromoCronJob  from "./src/services/Marketing/cron.service";
 
 declare global {
   namespace Express {
@@ -128,7 +128,7 @@ app.use(handleError);
 (async () => {
   try {
     mongoose.set("strictQuery", true);
-    await mongoose.connect(config.DB_URI, {});
+     await mongoose.connect(config.DB_URI, {});
     new SystemService().ensureSystemServices();
     EventManager.subscribeEvents();
 
@@ -138,6 +138,10 @@ app.use(handleError);
     console.error(error);
     process.exit(1);
   }
+
+
+
+  // startPromoCronJob();
 
   app.listen(config.PORT, () => {
     // app.use(Sentry.Handlers.errorHandler());
