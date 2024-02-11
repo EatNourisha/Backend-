@@ -56,6 +56,9 @@ export class MealPack extends BaseEntity {
 
   @prop({ enum: OrderType})
   orderType: OrderType;
+
+  @prop()
+  country: string;
 }
 
 export default getModelForClass(MealPack);

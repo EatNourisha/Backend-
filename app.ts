@@ -16,7 +16,8 @@ import { ensureLoggedIn } from "connect-ensure-login";
 import { AuthService } from "./src/services";
 import { connection } from "./src/queues/connection";
 import addUserToKlaviyoList from "./src/klaviyo/klaviyo";
-// import  startPromoCronJob  from "./src/services/Marketing/cron.service";
+import  startPromoCronJob  from "./src/services/Marketing/cron.service";
+import startSubscriptionCronJob from "./src/services/Marketing/cron.user.sub.expire"
 
 declare global {
   namespace Express {
@@ -141,7 +142,8 @@ app.use(handleError);
 
 
 
-  // startPromoCronJob();
+  startPromoCronJob();
+  startSubscriptionCronJob();
 
   app.listen(config.PORT, () => {
     // app.use(Sentry.Handlers.errorHandler());

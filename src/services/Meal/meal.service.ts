@@ -39,7 +39,7 @@ export class MealService {
   }
 
   async createMealPack(dto: CreateMealPackDto, roles: string[]): Promise<MealPack> {
-    validateFields(dto, ["name", "meals", "images", "price"]);
+    validateFields(dto, ["name", "meals", "images", "price", "orderType", "country"]);
     if (!!dto?.price) validateFields(dto.price, ["amount", "deliveryFee"]);
     if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
 
