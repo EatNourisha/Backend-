@@ -2,10 +2,11 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import config from "../../config";
 
-const emailTemplate = fs.readFileSync(`./src/emails/promo.html`, 'utf-8');
+const emailTemplate = fs.readFileSync(`./src/emails/referal.html`, 'utf-8');
 
-function generateEmailContent(name: string): string {
-    return emailTemplate.replace('{{ name }}', name);
+function generateEmailContent(firstname: string,): string {
+    return emailTemplate.replace('{{ firstname }}', firstname)
+                       
 }
 
 
@@ -17,20 +18,18 @@ const transporter = nodemailer.createTransport({
         clientId: config.GOOGLE_CLIENT_ID,
         clientSecret: config.GOOGLE_CLIENT_SECRET,
         refreshToken: config.GOOGLE_REFRESH_TOKEN,
-        // user: "devcharles40@gmail.com",
-        // pass: "jdritvarmedarrht"
     },
 } as any);
 
-export function sendDailyEmail(userEmail: string): void {
+export function sendDailyEmail(userEmail: string, firstname: string, ): void {
     const mailOptions = {
         from: {
             name: "Nourisha",
-            address: "devcharles40@gmail.com",
+            address: "support@eatnourisha.com",
         },
         to: userEmail,
-        subject: 'Daily Email',
-        html: generateEmailContent(userEmail.split('@')[0]),
+        subject: 'Share the Nourisha love! Get £10 off your next order',
+        html: generateEmailContent(firstname),
     };
 
     transporter.sendMail(mailOptions, (error, info) => {

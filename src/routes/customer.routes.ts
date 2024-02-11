@@ -29,7 +29,7 @@ router.post("/add", controller.addSubscriber); // ✅
 router.post("/test_sendgrid", controller.testSendgrid); // ✅
 router.post("/sync-contacts", authGuard, controller.syncCustomersToMailchimp); // ✅
 router.post("/add-country", authGuard, controller.addCountry); // ✅
-router.post("/send_mail", authGuard, controller.sendMail)
+router.post("/send_mail", controller.sendMail)
 
 // PUT
 router.put("/me", authGuard, controller.updateCustomer); // ✅
