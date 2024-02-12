@@ -1,9 +1,18 @@
 import { customer } from '../../models/index';
 import nodemailer from 'nodemailer';
 import config from "../../config";
+
 import fs from 'fs';
 
-const emailTemplate = fs.readFileSync(`./src/emails/promotional.html`, 'utf-8');
+let path = ""
+
+if(__dirname === "app") {
+ path = "./dist/src/emails/promo.html"
+} else{
+ path =`./src/emails/promo.html`
+}
+
+const emailTemplate = fs.readFileSync(path, 'utf-8');
 
 
 function generateEmailContent( firstName: string, message :string): string {
