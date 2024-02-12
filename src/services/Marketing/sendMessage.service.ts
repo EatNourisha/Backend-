@@ -8,8 +8,7 @@ const emailTemplate = fs.readFileSync(`./src/emails/promotional.html`, 'utf-8');
 
 function generateEmailContent( firstName: string, message :string): string {
     return emailTemplate.replace(/{{firstName}}/g, firstName)
-                         .replace(/{{message}}/g, message);
-                       
+                        .replace(/{{message}}/g, message);                      
 }
 
 
