@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 import config from "../../config";
 import fs from 'fs';
 
-const emailTemplate = fs.readFileSync(`./src/emails/promo.html`, 'utf-8');
+const emailTemplate = fs.readFileSync(`./src/emails/promotional.html`, 'utf-8');
 
 function generateEmailContent( firstName: string, message :string): string {
     return emailTemplate.replace(/{{firstName}}/g, firstName)
