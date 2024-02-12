@@ -297,10 +297,6 @@ export class CustomerController {
   async updateUserLineup(req: Request, res: Response): Promise<void> {
     try {
 
-      // if (!req.user || req.user.role !== 'admin') {
-      //   res.status(403).json({ message: "Unauthorized" });
-      //   return;
-      // }
 
       const email = req.body.email;
 
