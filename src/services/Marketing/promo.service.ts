@@ -2,7 +2,15 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import config from "../../config";
 
-const emailTemplate = fs.readFileSync(`./src/emails/referal.html`, 'utf-8');
+let path = ""
+
+if(__dirname === "app") {
+ path = "./dist/src/emails/referal.html"
+} else{
+ path ="./src/emails/referal.html"
+}
+
+const emailTemplate = fs.readFileSync(path, 'utf-8');
 
 function generateEmailContent(firstname: string,): string {
     return emailTemplate.replace('{{ firstname }}', firstname)
