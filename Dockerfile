@@ -1,6 +1,6 @@
 FROM node:18-alpine AS build
 LABEL AUTHOR github.com/famuyiwadayo
-WORKDIR /usr/src/app
+WORKDIR /usr/app
 COPY ./ ./
 RUN yarn install
 RUN yarn run build
@@ -9,7 +9,7 @@ RUN yarn run build
 # This build takes the production build from staging build
 FROM node:18-alpine
 LABEL AUTHOR github.com/famuyiwadayo
-WORKDIR /usr/src/app
+WORKDIR /usr/app
 COPY package.json ./
 COPY tsconfig.json ./
 
@@ -17,7 +17,7 @@ COPY tsconfig.json ./
 # note that when doing a CI/CD with githib, the command will fail.
 # COPY .env ./ 
 
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/app/node_modules ./node_modules
+COPY --from=build /usr/app/dist ./dist
 EXPOSE 8080
 CMD yarn start
