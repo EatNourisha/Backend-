@@ -1,15 +1,14 @@
 import { customer } from '../../models/index';
 import nodemailer from 'nodemailer';
 import config from "../../config";
-
 import fs from 'fs';
 
 let path = ""
 
 if(__dirname === "app") {
- path = "./dist/src/emails/promo.html"
+    path = "./dist/src/emails/promo.html"
 } else{
- path =`./src/emails/promo.html`
+    path =`./src/emails/promo.html`
 }
 
 const emailTemplate = fs.readFileSync(path, 'utf-8');
