@@ -6,19 +6,14 @@ import fs from 'fs';
 
 let path = require("path");
 
-const absolutePath = path?.resolve(__dirname, "../../emails/promo.html");
-console.log("--------", absolutePath);
-console.log("********: ", process.cwd())
-// const absolutePathAWS = path?.resolve(process.cwd(), "../../emails/promo.html");
-// if(__dirname === "app") {
-//     path = `./dist/src/emails/promo.html`
-// } else{
-//     path =`./src/emails/promo.html`
-// }
-// console.log("**************************************path: ", path)
-// console.log("**************************************directory: ", __dirname)
+let promoFile = path?.resolve(__dirname, "../../emails/promo.html");
 
-const emailTemplate = fs.readFileSync(absolutePath, 'utf-8');
+if(process.env.ENVIRONMENT !== "development") {
+    promoFile = `/usr/app/dist/src/emails/promo.html`
+}
+
+
+const emailTemplate = fs.readFileSync(promoFile, 'utf-8');
 
 
 function generateEmailContent( firstName: string, message :string): string {
