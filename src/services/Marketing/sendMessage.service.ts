@@ -8,6 +8,7 @@ let path = require("path");
 
 const absolutePath = path?.resolve(__dirname, "../../emails/promo.html");
 console.log("--------", absolutePath);
+console.log("********: ", process.cwd())
 // const absolutePathAWS = path?.resolve(process.cwd(), "../../emails/promo.html");
 // if(__dirname === "app") {
 //     path = `./dist/src/emails/promo.html`
