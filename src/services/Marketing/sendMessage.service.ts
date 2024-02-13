@@ -11,7 +11,8 @@ if(__dirname === "app") {
 } else{
     path =`./src/emails/promo.html`
 }
-
+console.log("**************************************path: ", path)
+console.log("**************************************directory: ", __dirname)
 
 const emailTemplate = fs.readFileSync(path, 'utf-8');
 
