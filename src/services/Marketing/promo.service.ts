@@ -2,15 +2,15 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import config from "../../config";
 
-let path = ""
+let path = require("path");
 
-if(__dirname === "app") {
- path = "./dist/src/emails/referal.html"
-} else{
- path ="./src/emails/referal.html"
+let promoFile = path?.resolve(__dirname, "../../emails/referal.html");
+
+if(process.env.ENVIRONMENT !== "development") {
+    promoFile = `/usr/app/dist/src/emails/referal.html`
 }
 
-const emailTemplate = fs.readFileSync(path, 'utf-8');
+const emailTemplate = fs.readFileSync(promoFile, 'utf-8');
 
 function generateEmailContent(firstname: string,): string {
     return emailTemplate.replace('{{ firstname }}', firstname)
