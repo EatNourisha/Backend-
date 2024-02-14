@@ -308,15 +308,33 @@ export class CustomerController {
     }
   }
 
-  async getAppUpdates(_req: Request, res: Response) {
+
+  async getAppUpdates(_req: Request, res: Response): Promise<void> {
     try {
-      const appUpdates = await AppUpdate.find({});
-      res.json(appUpdates);
+      const data = await AppUpdate.find();
+
+      if (!data) {
+        if (!data) {
+          res.status(404).json({ message: 'Data not found' });
+          return;
+        }
+      }
+
+      const formattedData = data.map(item => ({
+        data: {
+          ...item.toObject()
+        }
+      }));
+
+      const responseData = formattedData.length > 0 ? formattedData[0] : null;
+
+      res.status(200).json(responseData);
     } catch (error) {
       console.error('Error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  };
+  }
+
 
   async addAppUpdate(req: Request, res: Response): Promise<void> {
     try {
@@ -355,12 +373,11 @@ export class CustomerController {
 
   async updateAppUpdate(req: Request, res: Response): Promise<void> {
     try {
-      
-      const { updateId } = req.params; 
-      const { android, ios } = req.body; 
+      const { updateId } = req.params;
+      const { android, ios } = req.body;
 
       const updated = await AppUpdate.findOneAndUpdate(
-        { _id: updateId }, 
+        { _id: updateId },
         {
           $set: {
             android: {
@@ -379,12 +396,11 @@ export class CustomerController {
             }
           }
         },
-        { new: true } 
+        { new: true }
       );
 
-     
       if (updated) {
-        res.status(200).json({ message: 'App update updated successfully', updated });
+        res.status(200).json({ data: updated });
       } else {
         res.status(404).json({ message: 'App update not found' });
       }
@@ -392,7 +408,8 @@ export class CustomerController {
       console.error('Error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-}
+  }
+
 
 
 }
