@@ -7,6 +7,7 @@ import { Meal } from "./meal";
 enum OrderType {
   Subscription = "subscription",
   SingleOrder = "single order",
+  Both = "both",
 }
 class MealPackPrice {
   @prop({ default: 0 })
