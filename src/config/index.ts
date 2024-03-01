@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 const config = {
-  PORT: process.env.PORT || 8080,
+  PORT: process.env.PORT || 8082,
   NAME: process.env.NAME as string,
   // VERSION: process.env.VERSION as string,
   VERSION: "1.1.28",
