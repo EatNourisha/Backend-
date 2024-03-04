@@ -95,6 +95,10 @@ export class PlanService {
     const queries: any = {};
 
     if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+
+    if (filters?.country) {
+      Object.assign(queries, { "country": filters.country });
+    }
     return paginate("plan", queries, filters);
   }
 
