@@ -137,6 +137,7 @@ export class PlanService {
       start_date: new Date(),
       next_billing_date: next_sub_date,
       plan: _plan?._id!,
+      country: _plan?.country,
       status: "active",
       customer: cus?._id,
       card: prev_sub?.card ?? cus?._id!,
