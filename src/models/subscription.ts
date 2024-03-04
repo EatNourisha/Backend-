@@ -18,6 +18,9 @@ export class Subscription extends BaseEntity {
   customer?: Ref<Customer>;
 
   @prop()
+  country?: string;
+
+  @prop()
   start_date: Date;
 
   @prop()

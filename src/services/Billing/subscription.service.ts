@@ -20,10 +20,6 @@ export class SubscriptionService {
     if (!cus && dryRun) return;
     else if (!cus && !dryRun) throw createError("Customer does not exist", 404);
 
-    // const already_exist = await this.checkSubscriptionExists(dto?.stripe_id);
-    // if (already_exist && dryRun) return;
-    // if (already_exist && !dryRun) throw createError("Subscription already exist", 404);
-
     const _sub = await subscription
       .findOneAndUpdate({ customer: cus?._id }, { ...dto, customer: cus?._id }, getUpdateOptions())
       .populate(["plan", "card"])
@@ -54,6 +50,8 @@ export class SubscriptionService {
     if (!sub) throw createError("Subscription not found", 404);
 
     const cus = sub?.customer as Customer;
+
+    await customer.updateOne({ customer_id }, { $unset: { lineup: 1 } });
 
     const stripe_sub = await this.stripe.subscriptions.del(sub?.stripe_id!, {
       prorate: false,
@@ -210,9 +208,6 @@ export class SubscriptionService {
       .lean<Subscription>()
       .exec();
     if (!sub) return;
-
-    // const pln = sub?.plan as Plan;
-    // const cus = sub?.customer as Customer;
 
     await Promise.all([customer.updateOne({ _id: sub?.customer }, { subscription_status: dto?.status }).exec()]);
 

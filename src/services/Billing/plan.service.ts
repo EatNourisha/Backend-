@@ -14,7 +14,7 @@ export class PlanService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
   async createPlan(dto: CreatePlanDto, roles: string[]) {
-    validateFields(dto, ["name", "description", "perks", "amount", "currency", "subscription_interval"]);
+    validateFields(dto, ["name", "description", "perks", "amount", "country", "currency", "subscription_interval"]);
 
     const supportedIntervals = Object.values(SubscriptionInterval);
     if (!supportedIntervals.includes(dto.subscription_interval)) throw createError(`Support interval are ${supportedIntervals.join(", ")}`);
@@ -22,6 +22,8 @@ export class PlanService {
 
     const slug = createSlug(dto.name);
     if (await PlanService.checkPlanExists("slug", slug)) throw createError("Plan already exist", 400);
+
+    dto.country = dto.country.toLowerCase();
 
     const result = await this.stripe.products.create({
       name: dto.name,
@@ -61,10 +63,6 @@ export class PlanService {
           interval_count: 1,
         },
       });
-      // [price] = await Promise.all([
-
-      //   this.stripe.prices.update(_plan?.price_id, { active: false }),
-      // ]);
     }
 
     if (!!dto?.name || !!dto?.perks || (!!dto?.amount && price)) {

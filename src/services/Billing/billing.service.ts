@@ -40,8 +40,6 @@ export class BillingService {
     const cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
-    await customer.updateOne({ customer_id }, { $unset: { lineup: 1 } });
-
     const session = await this.stripe.checkout.sessions.create({
       mode: "subscription",
       customer: cus?.stripe_id,
@@ -81,8 +79,6 @@ export class BillingService {
     const cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
-    console.log("Cus", cus);
-
     const intent = await this.stripe.setupIntents.create({
       customer: cus?.stripe_id,
       usage: "off_session",
@@ -120,9 +116,6 @@ export class BillingService {
         discount: amount_off,
       },
     });
-
-    // const invoice = intent?.invoice as Stripe.Invoice;
-
     if (!!intent.id) {
       await transaction.create({
         itemRefPath: "Order",
