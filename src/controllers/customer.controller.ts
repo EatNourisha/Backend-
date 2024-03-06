@@ -374,7 +374,7 @@ export class CustomerController {
   async updateAppUpdate(req: Request, res: Response): Promise<void> {
     try {
       const { updateId } = req.params;
-      const { android, ios } = req.body;
+      const { android, ios,  additionalObject } = req.body;
 
       const updated = await AppUpdate.findOneAndUpdate(
         { _id: updateId },
@@ -393,7 +393,8 @@ export class CustomerController {
               force: ios.force,
               build: ios.build,
               link: ios.link
-            }
+            }, 
+            additionalObject: additionalObject
           }
         },
         { new: true }
