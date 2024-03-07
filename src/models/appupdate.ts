@@ -34,6 +34,7 @@ class IOS {
   @prop({ required: true })
   link!: string;
 }
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class AppUpdate extends BaseEntity  {
   @prop({ required: true })
@@ -41,6 +42,9 @@ export class AppUpdate extends BaseEntity  {
 
   @prop({ required: true })
   ios!: IOS;
+
+  @prop({ type: Map })
+  additionalObject?: Map<string, string>;
 }
 
 export default getModelForClass(AppUpdate);

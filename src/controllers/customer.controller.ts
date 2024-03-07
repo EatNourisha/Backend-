@@ -394,7 +394,10 @@ export class CustomerController {
               build: ios.build,
               link: ios.link
             }, 
-            additionalObject: additionalObject
+            
+            additionalObject: {
+              ...additionalObject,
+            },
           }
         },
         { new: true }
