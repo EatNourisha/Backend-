@@ -63,18 +63,30 @@ export class CustomerService {
     return { meals, customers, subscriptions, orders };
   }
 
-  async addCountry(countryData: { name: string; code?: string }[]) {
-    const createdCountries: { [key: string]: string | undefined } = {};
+  async addCountry(data) {
+      const { name, code, weeklyPrice, monthlyPrice } = data;
+      const newCountry = (await country.create({ name: name.toLowerCase(), code, weeklyPrice, monthlyPrice}));
+      return newCountry;
 
-    for (const data of countryData) {
-      const { name, code } = data;
-      const newCountry = (await country.create({ name: name.toLowerCase(), code }));
-      createdCountries[name] = newCountry.code;
-    }
-
-    return createdCountries;
   }
 
+  async  updateCountry(id: string, data: any) {
+    let existingCountry: any; 
+  
+    const { name, code, weeklyPrice, monthlyPrice } = data;
+    try {
+      existingCountry = await country.findOneAndUpdate(
+        { _id: id, name: name.toLowerCase() },
+        { $set: { code, weeklyPrice, monthlyPrice } },
+        { new: true }
+      );
+    } catch (error) {
+      console.error(`Failed to update country ${name}: ${error.message}`);
+      // Handle any error that might occur during the update
+    }
+    return existingCountry;
+  }
+    
   async getCountries() {
     const countries = await country.find().lean().exec();
     return countries;

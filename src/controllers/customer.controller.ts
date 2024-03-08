@@ -161,15 +161,9 @@ export class CustomerController {
   async addCountry(req: Request, res: Response, next: NextFunction) {
     try {
       const { body } = req;
-
-      if (Array.isArray(body)) {
         const result = await service.addCountry(body);
         sendResponse(res, 201, result);
-      } else {
-
-        const result = await service.addCountry([{ name: body.name, code: body.code }]);
-        sendResponse(res, 201, result);
-      }
+      
     } catch (error) {
       sendError(error, next);
     }
@@ -182,6 +176,17 @@ export class CustomerController {
     } catch (error) {
       sendError(error, next);
     }
+  }
+
+  async updateCountry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, params } = req;
+      const result = await service.updateCountry(params.id, body);
+      sendResponse(res, 200, result);
+    } catch (error){
+      sendError(error, next);
+    }
+
   }
 
 
@@ -313,28 +318,12 @@ export class CustomerController {
     try {
       const data = await AppUpdate.find();
 
-      if (!data) {
-        if (!data) {
-          res.status(404).json({ message: 'Data not found' });
-          return;
-        }
-      }
-
-      const formattedData = data.map(item => ({
-        data: {
-          ...item.toObject()
-        }
-      }));
-
-      const responseData = formattedData.length > 0 ? formattedData[0] : null;
-
-      res.status(200).json(responseData);
+      res.status(200).json(data);
     } catch (error) {
       console.error('Error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  }
-
+  }    
 
   async addAppUpdate(req: Request, res: Response): Promise<void> {
     try {
