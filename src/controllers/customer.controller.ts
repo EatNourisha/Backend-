@@ -317,13 +317,21 @@ export class CustomerController {
   async getAppUpdates(_req: Request, res: Response): Promise<void> {
     try {
       const data = await AppUpdate.find();
-
-      res.status(200).json(data);
+  
+      if (!data || data.length === 0) {
+        res.status(404).json({ message: 'Data not found' });
+        return;
+      }
+  
+      const responseData = data[0]; // Assuming you want the first document
+  
+      res.status(200).json(responseData);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching app updates:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  }    
+  }
+      
 
   async addAppUpdate(req: Request, res: Response): Promise<void> {
     try {
