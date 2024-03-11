@@ -92,6 +92,11 @@ export class CustomerService {
     return countries;
   }
 
+  async getCountriesById(_id: string) {
+    const result = await country.findById(_id);
+    return result;
+  }
+
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
     let acc = (await customer.create({

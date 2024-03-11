@@ -178,6 +178,16 @@ export class CustomerController {
     }
   }
 
+  async getCountryById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await service.getCountriesById(req.params.id);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+
+  }
+
   async updateCountry(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, params } = req;
