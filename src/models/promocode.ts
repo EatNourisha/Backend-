@@ -74,7 +74,7 @@ export class PromoCode extends BaseEntity {
   @prop({ type: () => Influencer, _id: false })
   influencer: Influencer;
 
-  @prop({ default: true })
+  @prop({ default: false })
   /// Means this promo code document doesn't give the customers any discounts.
   no_discount: boolean;
 }

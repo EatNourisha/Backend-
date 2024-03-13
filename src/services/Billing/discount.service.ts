@@ -62,6 +62,18 @@ export class DiscountService {
     return { promo, earnings: earnings_, referrals };
   }
 
+  async getPromoCodeByCode(code: string) {
+    try {
+      
+      const promo = await promoCode.findOne({ "code": code }).exec();
+      return promo; 
+    } catch (error) {
+      // Handle any errors that occur during the database query
+      console.error("Error fetching promo code:", error.message);
+      throw error;
+    }
+  }
+
   async createPromoCode(admin_id: string, dto: CreatePromoCodeDto, roles: string[]) {
     validateFields(dto, ["code", "coupon", "influencer"]);
 
@@ -308,7 +320,7 @@ export class DiscountService {
     code = toLower(code);
     if (!code) return { amount_off: 0 };
 
-    const promo = await promoCode.findOne({ code, no_discount: false }).populate("coupon").lean<PromoCode>().exec();
+    const promo = await promoCode.findOne({ "code":code, "no_discount": false }).populate("coupon").lean<PromoCode>().exec();
     if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
     if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun) throw createError("Promo code / coupon expired", 403);
 

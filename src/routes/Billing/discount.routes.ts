@@ -7,6 +7,7 @@ const controller = new DiscountController();
 
 router.get("/promos", authGuard, controller.getPromoCodes);
 router.get("/promos/:id", authGuard, controller.getPromoCodeById);
+router.get("/promos/code/:code", controller.getPromoCodeByCode);
 router.post("/promos", authGuard, controller.createPromoCode);
 
 router.put("/promos/:id", authGuard, controller.updatePromoCode);

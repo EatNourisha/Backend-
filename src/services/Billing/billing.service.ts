@@ -156,7 +156,7 @@ export class BillingService {
 
     let promo: PromoCode = cus?.pending_promo as PromoCode;
     if (!cus?.pending_promo && !!dto?.promo_code) {
-      promo = await promoCode.findOne({ code: dto?.promo_code }).lean<PromoCode>().exec();
+      promo = await promoCode.findOne({ "code": dto?.promo_code }).lean<PromoCode>().exec();
     }
 
     const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
