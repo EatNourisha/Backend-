@@ -27,3 +27,4 @@ export * from "./referral.service";
 export * from "./earnings.service";
 
 export * from "./Marketing/marketing.service";
+export * from "./mobileUse.service";

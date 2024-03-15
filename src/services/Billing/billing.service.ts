@@ -143,6 +143,12 @@ export class BillingService {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
+    const app_version = dto?.version?.replace(/\./g, '');
+
+    if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 154) {
+      throw new Error('Please update your app to continue.');
+    }
+
     const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 

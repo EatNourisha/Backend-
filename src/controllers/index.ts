@@ -22,3 +22,4 @@ export * from "./Preference/adminSettings.controller";
 
 export * from "./earnings.controller";
 export * from "./referral.controller";
+export * from "./mobileUse.controller";

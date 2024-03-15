@@ -41,3 +41,4 @@ export { default as subscription, Subscription } from "./subscription";
 export { default as deliveryInfo, DeliveryInfo } from "./deliveryInfo";
 export { default as withdrawalRequest, WithdrawalRequest } from "./withdrawalRequest";
 export { default as notification, Notification, NotificationStatus, NotificationType } from "./notification";
+export { default as mobileUse, MobileUse } from "./mobileUse";

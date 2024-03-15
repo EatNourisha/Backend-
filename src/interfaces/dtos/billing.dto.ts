@@ -13,6 +13,8 @@ export interface InitiateSubscriptionDto {
   card_token?: string;
   one_off?: boolean;
   promo_code?: string;
+  os?: string;
+  version?: string;
 }
 
 export interface InitializePaymentDto {

@@ -20,7 +20,8 @@ import TransactionRouter from "./Billing/transaction.routes";
 import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
 import AdminSettingsRouter from "./Preference/adminSettings.route";
-import CountryRouter from "./countries.route"
+import CountryRouter from "./countries.route";
+import MobileUseRouter from "./mobileUse.routes"
 
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
@@ -61,7 +62,8 @@ routes.use("/countries", CountryRouter);
 routes.use("/referrals", ReferralRouter);
 routes.use("/earnings", EarningsRouter);
 routes.use("/deliveries", DeliveryRouter);
-routes.use("/appupdate",  AppUpdate)
+routes.use("/appupdate",  AppUpdate);
+routes.use("/mobileuse", MobileUseRouter);
 
 routes.get("/configs", authGuard, (_, res) => {
   return sendResponse(res, 200, config);
