@@ -15,7 +15,7 @@ import { Strategy } from "passport-local";
 import { ensureLoggedIn } from "connect-ensure-login";
 import { AuthService } from "./src/services";
 import { connection } from "./src/queues/connection";
-import addUserToKlaviyoList from "./src/klaviyo/klaviyo";
+// import addUserToKlaviyoList from "./src/klaviyo/klaviyo";
 import  startPromoCronJob  from "./src/services/Marketing/cron.service";
 import startSubscriptionCronJob from "./src/services/Marketing/cron.user.sub.expire"
 
@@ -133,7 +133,7 @@ app.use(handleError);
     new SystemService().ensureSystemServices();
     EventManager.subscribeEvents();
 
-    await addUserToKlaviyoList();
+    // await addUserToKlaviyoList();
     console.log(`\n🐕‍🦺 db connected on localhost:${config.PORT}`);
   } catch (error) {
     console.error(error);

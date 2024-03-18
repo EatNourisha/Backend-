@@ -145,7 +145,7 @@ export class BillingService {
 
     const app_version = dto?.version?.replace(/\./g, '');
 
-    if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 154) {
+    if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 155) {
       throw new Error('Please update your app to continue.');
     }
 
