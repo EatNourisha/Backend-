@@ -29,6 +29,8 @@ import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
 import { ReferralService } from "../../services/referral.service";
 import { MarketingService } from "../../services";
+import { mongoose } from "@typegoose/typegoose";
+const ObjectId = mongoose.Types.ObjectId;
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -150,23 +152,21 @@ export class BillingService {
     }
 
     const existingCustomer = await customer.findById(customer_id);
+   
     if (existingCustomer?.lineup) {
+      
       const updateResult = await customer.updateOne(
-        { customer_id },
-        { $unset: { lineup: 1 } }
+        { _id: new ObjectId(customer_id) }, 
+        { $unset: { lineup: "" } }
       );
+     
       if (!updateResult.acknowledged) {
         throw new Error("Failed to clear the lineup field for the customer");
       }
     }
 
-    // const updateResult = await customer.updateOne({ customer_id }, { $unset: { lineup: 1 } });
-
-    // if (!updateResult || updateResult.modifiedCount === 0) {
-    //   throw new Error("Failed to clear the lineup field for the customer");
-    // }
-
-    const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
+    const cus = await customer.findById( { _id: new ObjectId(customer_id) }).populate("pending_promo").lean<Customer>().exec();
+  
     if (!cus) throw createError("Customer does not exist", 404);
 
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
