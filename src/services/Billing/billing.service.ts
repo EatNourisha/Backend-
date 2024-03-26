@@ -149,11 +149,22 @@ export class BillingService {
       throw new Error('Please update your app to continue.');
     }
 
-    const updateResult = await customer.updateOne({ customer_id }, { $unset: { lineup: 1 } });
-
-    if (!updateResult || updateResult.modifiedCount === 0) {
-      throw new Error("Failed to clear the lineup field for the customer");
+    const existingCustomer = await customer.findById(customer_id);
+    if (existingCustomer?.lineup) {
+      const updateResult = await customer.updateOne(
+        { customer_id },
+        { $unset: { lineup: 1 } }
+      );
+      if (!updateResult.acknowledged) {
+        throw new Error("Failed to clear the lineup field for the customer");
+      }
     }
+
+    // const updateResult = await customer.updateOne({ customer_id }, { $unset: { lineup: 1 } });
+
+    // if (!updateResult || updateResult.modifiedCount === 0) {
+    //   throw new Error("Failed to clear the lineup field for the customer");
+    // }
 
     const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
