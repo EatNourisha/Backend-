@@ -185,6 +185,7 @@ export class BillingService {
     const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
 
     const sub = await this.stripe.subscriptions.create({
+      // Possible Break Point
       customer: cus?.stripe_id,
       default_payment_method: dto?.card_token,
       collection_method: "charge_automatically",

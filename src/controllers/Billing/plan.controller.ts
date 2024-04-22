@@ -8,7 +8,7 @@ export class PlanController {
   async createPlan(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, customer } = req;
-      const data = await service.createPlan(body, customer.roles);
+      const data = await service.createPlan( body, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);

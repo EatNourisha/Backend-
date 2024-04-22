@@ -90,8 +90,9 @@ export class DiscountService {
     const amount_or_percent = coupon_data?.percent_off ?? coupon_data.amount_off;
 
     console.log("Amount", amount_or_percent);
-    if (amount_or_percent === undefined || amount_or_percent < 0)
-      throw createError("coupon.percent_off or coupon.amount_off is required", 400);
+    
+    // if (amount_or_percent === undefined || amount_or_percent < 0)
+    //   throw createError("coupon.percent_off or coupon.amount_off is required", 400);
 
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
       PermissionScope.CREATE,
@@ -175,6 +176,8 @@ export class DiscountService {
 
     return null;
   }
+
+
 
   async updatePromoCode(id: string, dto: Partial<CreatePromoCodeDto>, roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
