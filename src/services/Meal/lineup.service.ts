@@ -31,7 +31,7 @@ export class MealLineupService {
 
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
     return _lineup;
-  }
+  } 
 
   async updateLineup(
     customer_id: string,

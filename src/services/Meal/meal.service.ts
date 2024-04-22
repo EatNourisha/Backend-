@@ -273,6 +273,6 @@ export class MealService {
     filters?: IPaginationFilter
   ): Promise<PaginatedDocument<PartyMealRequest[]>> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-    return await paginate("partyMealRequest", { customer: customer_id }, filters);
+    return await paginate("partyMealRequest", { customer: customer_id }, filters); 
   }
 }

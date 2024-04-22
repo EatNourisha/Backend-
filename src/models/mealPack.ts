@@ -46,6 +46,9 @@ export class MealPack extends BaseEntity {
 
   @prop()
   description: string;
+
+  // @prop()
+  // country: string;
 }
 
 export default getModelForClass(MealPack);

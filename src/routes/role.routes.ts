@@ -7,7 +7,7 @@ const controller = new RoleController();
 
 router.get("/", authGuard, controller.getRoles);
 // router.post("/", controller.createRole);
-// router.put("/:roleId/assign", controller.assignRole);
+router.put("/:roleId/assign", controller.assignRole);
 // router.put("/:roleId/unassign", controller.unassignRole);
 
 router.get("/:roleId/scopes", controller.getResources);
