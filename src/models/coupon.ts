@@ -11,7 +11,7 @@ enum CouponDuration {
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Coupon extends BaseEntity {
-  @prop()
+  @prop({ default: 0 })
   amount_off: number;
 
   @prop({ default: "gbp" })
@@ -29,7 +29,7 @@ export class Coupon extends BaseEntity {
   @prop()
   name: string;
 
-  @prop()
+  @prop({ default: 0 })
   percent_off: number;
 
   @prop()
