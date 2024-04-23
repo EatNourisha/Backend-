@@ -2,17 +2,17 @@ import Stripe from "stripe";
 import {
   Card,
   Customer,
-  Earnings,
+  // Earnings,
   Order,
   Plan,
   PromoCode,
   Subscription,
   card,
   customer,
-  earnings,
+  // earnings,
   order,
   plan,
-  // promoCode,
+  promoCode,
   // promoCode,
   subscription,
   transaction,
@@ -29,7 +29,7 @@ import { Transaction, TransactionReason, TransactionStatus } from "../../models/
 import { OrderService } from "./order.service";
 import consola from "consola";
 import { DiscountService } from "./discount.service";
-// import { when } from "../../utils/when";
+import { when } from "../../utils/when";
 import { ReferralService } from "../../services/referral.service";
 import { MarketingService } from "../../services";
 import { mongoose } from "@typegoose/typegoose";
@@ -146,189 +146,70 @@ export class BillingService {
   // method so it can be reused later.
 
 
-  // async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
-  //   validateFields(dto, ["plan_id"]);
-  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   const app_version = dto?.version?.replace(/\./g, '');
-
-  //   if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 155) {
-  //     throw new Error('Please update your app to continue.');
-  //   }
-
-  //   const existingCustomer = await customer.findById(customer_id);
-   
-  //   if (existingCustomer?.lineup) {
-      
-  //     const updateResult = await customer.updateOne(
-  //       { _id: new ObjectId(customer_id) }, 
-  //       { $unset: { lineup: "" } }
-  //     );
-     
-  //     if (!updateResult.acknowledged) {
-  //       throw new Error("Failed to clear the lineup field for the customer");
-  //     }
-  //   }
-
-  //   const cus = await customer.findById( { _id: new ObjectId(customer_id) }).populate("pending_promo").lean<Customer>().exec();
-  
-  //   if (!cus) throw createError("Customer does not exist", 404);
-
-  //   const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
-  //   if (!_plan) throw createError("Plan does not exist", 404);
-
-  //   // one_off allows users to toggle auto charge
-  //   dto.one_off = dto?.one_off ?? true;
-  //   // cancels the subscription when it ends when set to true
-  //   const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
-
-  //   let promo: PromoCode = cus?.pending_promo as PromoCode;
-  //   if (!cus?.pending_promo && !!dto?.promo_code) {
-  //     promo = await promoCode.findOne({ "code": dto?.promo_code }).lean<PromoCode>().exec();
-  //   }
-
-  //   const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
-
-  //   const sub = await this.stripe.subscriptions.create({
-  //     // Possible Break Point
-  //     customer: cus?.stripe_id,
-  //     default_payment_method: dto?.card_token,
-  //     collection_method: "charge_automatically",
-  //     items: [
-  //       {
-  //         price: _plan.price_id,
-  //         quantity: 1,
-  //       },
-  //     ],
-  //     payment_behavior: "default_incomplete",
-  //     payment_settings: { save_default_payment_method: "on_subscription" },
-  //     expand: ["latest_invoice.payment_intent"],
-  //     cancel_at_period_end,
-  //     promotion_code: promo_code,
-  //   });
-
-  //   const invoice = sub?.latest_invoice as Stripe.Invoice;
-  //   const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
-
-  //   await Promise.all([
-  //     transaction.create({
-  //       itemRefPath: "Subscription",
-  //       currency: sub?.currency,
-  //       subscription_reference: sub?.id,
-  //       customer: cus?._id,
-  //       amount: (payment_intent?.amount ?? 0) / 100,
-  //       payment_intent: payment_intent?.id,
-  //       reference: invoice?.number,
-  //       reason: TransactionReason.SUBSCRIPTION,
-  //       stripe_customer_id: sub?.customer,
-  //     }),
-  //   ]);
-
-  //   const client_secret = payment_intent?.client_secret;
-  //   return { client_secret, subscription_id: sub?.id };
-  // }    
-
   async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-  
+
     const app_version = dto?.version?.replace(/\./g, '');
-  
+
     if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 155) {
       throw new Error('Please update your app to continue.');
     }
-  
+
     const existingCustomer = await customer.findById(customer_id);
-  
+   
     if (existingCustomer?.lineup) {
+      
       const updateResult = await customer.updateOne(
-        { _id: new ObjectId(customer_id) },
+        { _id: new ObjectId(customer_id) }, 
         { $unset: { lineup: "" } }
       );
-  
+     
       if (!updateResult.acknowledged) {
         throw new Error("Failed to clear the lineup field for the customer");
       }
     }
-  
-    const cus = await customer.findById({ _id: new ObjectId(customer_id) }).populate("pending_promo").lean<Customer>().exec();
+
+    const cus = await customer.findById( { _id: new ObjectId(customer_id) }).populate("pending_promo").lean<Customer>().exec();
   
     if (!cus) throw createError("Customer does not exist", 404);
-  
+
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
-  
+
     // one_off allows users to toggle auto charge
     dto.one_off = dto?.one_off ?? true;
     // cancels the subscription when it ends when set to true
-    // const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
-  
-    // let promo: PromoCode = cus?.pending_promo as PromoCode;
-    // if (!cus?.pending_promo && !!dto?.promo_code) {
-    //   promo = await promoCode.findOne({ "code": dto?.promo_code }).lean<PromoCode>().exec();
-    // }
-  
-    let stripeAmountToPay = _plan.amount;
-  
-    const earningBalance = await earnings.findOne({ customer_id: new ObjectId(customer_id) }).lean<Earnings>().exec();
-  
-    if (earningBalance && earningBalance.balance >= 100) {
-      const balanceDifference = earningBalance.balance - _plan.amount;
-  
-      if (balanceDifference < 0) {
-        stripeAmountToPay = Math.abs(balanceDifference);
-        earningBalance.balance = 0;
-  
-        await earnings.findOneAndUpdate({ customer_id }, { balance: 0 }, { new: true }).lean().exec();
-      } else if (balanceDifference > 0) {
-        return true;
-      }
-    }
-  
-    // const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
+    const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
-  
-    // const sub = await this.stripe.subscriptions.create({
-    //   customer: cus?.stripe_id,
-    //   default_payment_method: dto?.card_token,
-    //   collection_method: "charge_automatically",
-    //   items: [
-    //     {
-    //       price: stripeAmountToPay.toString(),
-    //       quantity: 1,
-    //     },
-    //   ],
-    //   payment_behavior: "default_incomplete",
-    //   payment_settings: { save_default_payment_method: "on_subscription" },
-    //   expand: ["latest_invoice.payment_intent"],
-    //   cancel_at_period_end,
-    //   promotion_code: promo_code,
-    // });
-  
-    const sub = await this.stripe.checkout.sessions.create({
+    let promo: PromoCode = cus?.pending_promo as PromoCode;
+    if (!cus?.pending_promo && !!dto?.promo_code) {
+      promo = await promoCode.findOne({ "code": dto?.promo_code }).lean<PromoCode>().exec();
+    }
+
+    const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
+
+    const sub = await this.stripe.subscriptions.create({
+      // Possible Break Point
       customer: cus?.stripe_id,
-      line_items: [
+      default_payment_method: dto?.card_token,
+      collection_method: "charge_automatically",
+      items: [
         {
-          price_data: {
-            currency: 'gbp',
-            unit_amount: stripeAmountToPay * 100, // Amount should be in cents
-            product_data: {
-              name: 'Make payment',
-              // Other product information as needed
-            },
-          },
+          price: _plan.price_id,
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      success_url: 'https://localvenda.com/success',
-      cancel_url: 'https://localvenda.com/cancel',
+      payment_behavior: "default_incomplete",
+      payment_settings: { save_default_payment_method: "on_subscription" },
+      expand: ["latest_invoice.payment_intent"],
+      cancel_at_period_end,
+      promotion_code: promo_code,
     });
-  
 
-    const invoice = sub?.invoice as Stripe.Invoice;
+    const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
-  
+
     await Promise.all([
       transaction.create({
         itemRefPath: "Subscription",
@@ -342,10 +223,132 @@ export class BillingService {
         stripe_customer_id: sub?.customer,
       }),
     ]);
-  
+
     const client_secret = payment_intent?.client_secret;
     return { client_secret, subscription_id: sub?.id };
-  }
+  }    
+
+
+  // async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
+  //   validateFields(dto, ["plan_id"]);
+  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+  
+  //   const app_version = dto?.version?.replace(/\./g, '');
+  
+  //   if ((dto.os === "ios" || dto.os === "android") && app_version && parseInt(app_version, 10) < 155) {
+  //     throw new Error('Please update your app to continue.');
+  //   }
+  
+  //   const existingCustomer = await customer.findById(customer_id);
+  
+  //   if (existingCustomer?.lineup) {
+  //     const updateResult = await customer.updateOne(
+  //       { _id: new ObjectId(customer_id) },
+  //       { $unset: { lineup: "" } }
+  //     );
+  
+  //     if (!updateResult.acknowledged) {
+  //       throw new Error("Failed to clear the lineup field for the customer");
+  //     }
+  //   }
+  
+  //   const cus = await customer.findById({ _id: new ObjectId(customer_id) }).populate("pending_promo").lean<Customer>().exec();
+  
+  //   if (!cus) throw createError("Customer does not exist", 404);
+  
+  //   const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
+  //   if (!_plan) throw createError("Plan does not exist", 404);
+  
+  //   // one_off allows users to toggle auto charge
+  //   dto.one_off = dto?.one_off ?? true;
+  //   // cancels the subscription when it ends when set to true
+  //   // const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
+  
+  //   // let promo: PromoCode = cus?.pending_promo as PromoCode;
+  //   // if (!cus?.pending_promo && !!dto?.promo_code) {
+  //   //   promo = await promoCode.findOne({ "code": dto?.promo_code }).lean<PromoCode>().exec();
+  //   // }
+  
+  //   let stripeAmountToPay = _plan.amount;
+  
+  //   const earningBalance = await earnings.findOne({ customer_id: new ObjectId(customer_id) }).lean<Earnings>().exec();
+  
+  //   if (earningBalance && earningBalance.balance >= 100) {
+  //     const balanceDifference = earningBalance.balance - _plan.amount;
+  
+  //     if (balanceDifference < 0) {
+  //       stripeAmountToPay = Math.abs(balanceDifference);
+  //       earningBalance.balance = 0;
+  
+  //       await earnings.findOneAndUpdate({ customer_id }, { balance: 0 }, { new: true }).lean().exec();
+  //     } else if (balanceDifference > 0) {
+  //       return true;
+  //     }
+  //   }
+  
+  //   // const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
+
+  
+  //   // const sub = await this.stripe.subscriptions.create({
+  //   //   customer: cus?.stripe_id,
+  //   //   default_payment_method: dto?.card_token,
+  //   //   collection_method: "charge_automatically",
+  //   //   items: [
+  //   //     {
+  //   //       price: stripeAmountToPay.toString(),
+  //   //       quantity: 1,
+  //   //     },
+  //   //   ],
+  //   //   payment_behavior: "default_incomplete",
+  //   //   payment_settings: { save_default_payment_method: "on_subscription" },
+  //   //   expand: ["latest_invoice.payment_intent"],
+  //   //   cancel_at_period_end,
+  //   //   promotion_code: promo_code,
+  //   // });
+  
+  //   const sub = await this.stripe.checkout.sessions.create({
+  //     customer: cus?.stripe_id,
+  //     line_items: [
+  //       {
+  //         price_data: {
+  //           currency: 'gbp',
+  //           unit_amount: stripeAmountToPay * 100, // Amount should be in cents
+  //           product_data: {
+  //             name: 'Make payment',
+  //             // Other product information as needed
+  //           },
+  //         },
+  //         quantity: 1,
+  //       },
+  //     ],
+  //     mode: 'payment',
+  //     success_url: 'https://localvenda.com/success',
+  //     cancel_url: 'https://localvenda.com/cancel',
+  //   });
+  
+
+  //   const invoice = sub?.invoice as Stripe.Invoice;
+  //   const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
+  
+  //   await Promise.all([
+  //     transaction.create({
+  //       itemRefPath: "Subscription",
+  //       currency: sub?.currency,
+  //       subscription_reference: sub?.id,
+  //       customer: cus?._id,
+  //       amount: (payment_intent?.amount ?? 0) / 100,
+  //       payment_intent: payment_intent?.id,
+  //       reference: invoice?.number,
+  //       reason: TransactionReason.SUBSCRIPTION,
+  //       stripe_customer_id: sub?.customer,
+  //     }),
+  //   ]);
+  
+  //   const client_secret = payment_intent?.client_secret;
+  //   return { client_secret, subscription_id: sub?.id };
+  // }
+  
+
 
 }
 
