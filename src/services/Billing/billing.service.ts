@@ -180,10 +180,11 @@ export class BillingService {
       await referrals.updateOne({ is_subscribed: true }).exec();
 
       // Find the inviter in the earning database
-      const inviterEarning = await earnings.findOne({ customer_id: referrals.inviter }).exec();
+      const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
       if (inviterEarning) {
         // Reward the inviter, e.g., adding £10 to their earning balance
-        inviterEarning.balance += 10; // £10 in pence
+        inviterEarning.balance += 10; 
+        inviterEarning.refs.push(cus?._id);
         await inviterEarning.save();
       }
     }
