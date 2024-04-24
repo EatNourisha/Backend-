@@ -149,7 +149,7 @@ export class BillingService {
           quantity: 1,
         },
       ],
-      payment_behavior: "default_incomplete",
+      // payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
