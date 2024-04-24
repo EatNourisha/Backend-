@@ -149,29 +149,50 @@ export class BillingService {
           quantity: 1,
         },
       ],
-      // payment_behavior: "default_incomplete",
+      payment_behavior: "default_incomplete",
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
       promotion_code: promo_code,
     });
-
+    
     const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
-
-    await Promise.all([
-      transaction.create({
-        itemRefPath: "Subscription",
-        currency: sub?.currency,
-        subscription_reference: sub?.id,
-        customer: cus?._id,
-        amount: (payment_intent?.amount ?? 0) / 100,
-        reference: invoice?.number,
-        reason: TransactionReason.SUBSCRIPTION,
-        stripe_customer_id: sub?.customer,
-      }),
-    ]);
-
+    
+    // Confirm the PaymentIntent if it requires action
+    if (payment_intent.status === "requires_action") {
+      const confirmedPaymentIntent = await this.stripe.paymentIntents.confirm(payment_intent.id);
+      if (confirmedPaymentIntent.status === "succeeded") {
+        // Create the transaction with the succeeded payment intent
+        await Promise.all([
+          transaction.create({
+            itemRefPath: "Subscription",
+            currency: sub?.currency,
+            subscription_reference: sub?.id,
+            customer: cus?._id,
+            amount: (confirmedPaymentIntent?.amount ?? 0) / 100,
+            reference: invoice?.number,
+            reason: TransactionReason.SUBSCRIPTION,
+            stripe_customer_id: sub?.customer,
+          }),
+        ]);
+      }
+    } else if (payment_intent.status === "succeeded") {
+      // Create the transaction directly if payment is successful
+      await Promise.all([
+        transaction.create({
+          itemRefPath: "Subscription",
+          currency: sub?.currency,
+          subscription_reference: sub?.id,
+          customer: cus?._id,
+          amount: (payment_intent?.amount ?? 0) / 100,
+          reference: invoice?.number,
+          reason: TransactionReason.SUBSCRIPTION,
+          stripe_customer_id: sub?.customer,
+        }),
+      ]);
+    }
+    
     console.log(payment_intent.status)
     // Check if the customer is an invitee in the referral table
     const referrals = await referral.findOne({ invitee: cus?._id }).exec();
