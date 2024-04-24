@@ -12,7 +12,6 @@ import {
   // earnings,
   order,
   plan,
-  promoCode,
   // promoCode,
   subscription,
   transaction,
@@ -161,14 +160,11 @@ export class BillingService {
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
-    let promo: PromoCode = cus?.pending_promo as PromoCode;
-    if (!cus?.pending_promo && !!dto?.promo_code) {
-      promo = await promoCode.findOne({ code: dto?.promo_code }).lean<PromoCode>().exec();
-    }
-
+    const promo = cus?.pending_promo as PromoCode;
     const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
 
     const sub = await this.stripe.subscriptions.create({
+      // Possible Break Point
       customer: cus?.stripe_id,
       default_payment_method: dto?.card_token,
       collection_method: "charge_automatically",
@@ -195,14 +191,13 @@ export class BillingService {
         subscription_reference: sub?.id,
         customer: cus?._id,
         amount: (payment_intent?.amount ?? 0) / 100,
-        payment_intent: payment_intent?.id,
         reference: invoice?.number,
         reason: TransactionReason.SUBSCRIPTION,
         stripe_customer_id: sub?.customer,
       }),
     ]);
 
-    const client_secret = payment_intent?.client_secret;
+    const client_secret = payment_intent.client_secret;
     return { client_secret, subscription_id: sub?.id };
   }
 
