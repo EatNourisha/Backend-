@@ -196,7 +196,7 @@ export class BillingService {
       collection_method: "charge_automatically",
       items: [
         {
-          price: _plan.price_id,
+          price: _plan?.price_id,
           quantity: 1,
         },
       ],
@@ -226,8 +226,7 @@ export class BillingService {
 
     const client_secret = payment_intent?.client_secret;
     return { client_secret, subscription_id: sub?.id };
-  }    
-
+  }
 
   // async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
   //   validateFields(dto, ["plan_id"]);
