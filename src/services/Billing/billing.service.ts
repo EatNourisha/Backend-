@@ -86,10 +86,46 @@ export class BillingService {
 
     if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
 
+        // Check if the customer has an earning balance
+        const cusBalance = await earnings.findOne({ customer: cus?._id });
+
+        let amountToPay = _order.total; // Initialize amountToPay with the cart total
+    
+        if (cusBalance) {
+          const remainingBalance = cusBalance.balance - _order.total;
+    
+          if (remainingBalance >= 0) {
+            amountToPay = 0; // Set amountToPay to 0 if the balance covers the cart total
+            cusBalance.balance = remainingBalance; // Update the remaining balance
+            await cusBalance.save(); // Save the updated balance
+          } else {
+            amountToPay = Math.abs(remainingBalance); // Calculate the amount to pay after deducting the balance
+            cusBalance.balance = 0; // Set the balance to 0
+            await cusBalance.save(); // Save the updated balance
+          }
+        }
+    
+        if (_order?.total > 100) {
+          const referrals = await referral.findOne({ invitee: cus?._id }).exec();
+          // Check if the customer_id exists in inviter.refs
+          const isCustomerReferred = await earnings.exists({ refs: cus?._id });
+    
+          if (!isCustomerReferred && referrals) {
+            // Find the inviter in the earning database
+            const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
+            if (inviterEarning) {
+              // Reward the inviter, e.g., adding £10 to their earning balance
+              inviterEarning.balance += 10;
+              inviterEarning.refs.push(cus?._id);
+              await inviterEarning.save();
+            }
+          }
+        }    
+
     const intent = await this.stripe.paymentIntents.create({
       customer: cus?.stripe_id,
       payment_method: dto?.card_token,
-      amount: Math.round(_order?.total * 100),
+      amount: Math.round(amountToPay * 100),
       currency: "gbp",
       off_session: !!dto?.card_token,
       receipt_email: cus?.email,
