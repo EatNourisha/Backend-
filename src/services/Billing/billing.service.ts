@@ -96,25 +96,18 @@ export class BillingService {
 
         if (remainingBalance >= 0) {
             amountToPay = 0; // Set amountToPay to 0 if the balance covers the cart total
-            cusBalance.balance = remainingBalance; // Update the remaining balance
-            await cusBalance.save(); // Save the updated balance
         } else {
             amountToPay = Math.abs(remainingBalance); // Calculate the amount to pay after deducting the balance
-            cusBalance.balance = 0; // Set the balance to 0
-            await cusBalance.save(); // Save the updated balance
         }
     }
 
     if (_order?.total > 100) {
         const referrals = await referral.findOne({ invitee: cus?._id }).exec();
-        // Check if the customer_id exists in inviter.refs
         const isCustomerReferred = await earnings.exists({ refs: cus?._id });
 
         if (!isCustomerReferred && referrals) {
-            // Find the inviter in the earning database
             const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
             if (inviterEarning) {
-                // Reward the inviter, e.g., adding £10 to their earning balance
                 inviterEarning.balance += 10;
                 inviterEarning.refs.push(cus?._id);
                 await inviterEarning.save();
@@ -133,11 +126,16 @@ export class BillingService {
         confirm: !!dto?.card_token,
     });
 
-    // If payment is successful
     if (intent.status === "succeeded") {
         if (cusBalance) {
-            cusBalance.balance = 0; // Set the balance to 0 after successful payment
-            await cusBalance.save(); // Save the updated balance
+            const remainingBalance = cusBalance.balance - _order.total;
+
+            if (remainingBalance >= 0) {
+                cusBalance.balance = remainingBalance; // Update the remaining balance
+            } else {
+                cusBalance.balance = 0; // Set the balance to 0
+            }
+            await cusBalance.save(); // Save the updated balance after successful payment
         }
     }
 
@@ -159,6 +157,8 @@ export class BillingService {
 
     return { client_secret: intent?.client_secret };
 }
+
+
 
   // This method creates an intent to collect customer's subscription payment details and then store the payment
   // method so it can be reused later.
