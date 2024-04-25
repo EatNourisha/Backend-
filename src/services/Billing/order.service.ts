@@ -1,7 +1,7 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, earnings, order, orderItem, referral, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
@@ -131,6 +131,24 @@ export class OrderService {
 
     const { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
 
+    // Check if the customer has an earning balance
+    const cusBalance = await earnings.findOne({ customer: cus?._id });
+
+    let amountToPay = _cart.total; // Initialize amountToPay with the cart total
+    
+    if (cusBalance) {
+        const remainingBalance = cusBalance.balance - _cart.total;
+    
+        if (remainingBalance >= 0) {
+            amountToPay = 0; // Set amountToPay to 0 if the balance covers the cart total
+            cusBalance.balance = remainingBalance; // Update the remaining balance
+            await cusBalance.save(); // Save the updated balance
+        } else {
+            amountToPay = Math.abs(remainingBalance); // Calculate the amount to pay after deducting the balance
+            cusBalance.balance = 0; // Set the balance to 0
+            await cusBalance.save(); // Save the updated balance
+        }
+      }
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
     console.log("Customer", cus?.address, dto?.delivery_address);
@@ -138,12 +156,30 @@ export class OrderService {
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
+
+    if(_cart?.total >100){
+      const referrals = await referral.findOne({ invitee: cus?._id }).exec();
+      // Check if the customer_id exists in inviter.refs
+       const isCustomerReferred = await earnings.exists({ refs: cus?._id });
+    
+        if (!isCustomerReferred && referrals) {  
+          // Find the inviter in the earning database
+          const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
+          if (inviterEarning) {
+            // Reward the inviter, e.g., adding £10 to their earning balance
+            inviterEarning.balance += 10; 
+            inviterEarning.refs.push(cus?._id);
+            await inviterEarning.save();
+          }
+        }
+    }
+
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
       delivery_fee: _cart?.deliveryFee,
       subtotal: _cart?.subtotal,
-      total: _cart?.total,
+      total: amountToPay,
       phone_number: dto?.phone_number ?? cus?.phone,
       cart_id: _cart?._id!,
       delivery_date: dto?.delivery_date,
