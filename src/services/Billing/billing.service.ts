@@ -175,8 +175,11 @@ export class BillingService {
     console.log(payment_intent.status)
     // Check if the customer is an invitee in the referral table
     const referrals = await referral.findOne({ invitee: cus?._id }).exec();
-    if (referrals) {
-      // Update the is_subscribed field to true
+  // Check if the customer_id exists in inviter.refs
+   const isCustomerReferred = await earnings.exists({ refs: cus?._id });
+
+    if (!isCustomerReferred && referrals) {
+    // Update the is_subscribed field to true
       await referrals.updateOne({ is_subscribed: true }).exec();
 
       // Find the inviter in the earning database
