@@ -100,7 +100,6 @@ export class BillingService {
             amountToPay = Math.abs(remainingBalance); // Calculate the amount to pay after deducting the balance
         }
     }
-
     if (_order?.total > 100) {
         const referrals = await referral.findOne({ invitee: cus?._id }).exec();
         const isCustomerReferred = await earnings.exists({ refs: cus?._id });
