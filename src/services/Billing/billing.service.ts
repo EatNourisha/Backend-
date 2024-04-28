@@ -126,7 +126,6 @@ export class BillingService {
         confirm: !!dto?.card_token,
     });
 
-    if (intent.status === "succeeded") {
         if (cusBalance) {
             const remainingBalance = cusBalance.balance - _order.total;
 
@@ -136,7 +135,6 @@ export class BillingService {
                 cusBalance.balance = 0; // Set the balance to 0
             }
             await cusBalance.save(); // Save the updated balance after successful payment
-        }
     }
 
     if (!!intent.id) {
