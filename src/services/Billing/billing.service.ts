@@ -125,16 +125,6 @@ export class BillingService {
         confirm: !!dto?.card_token,
     });
 
-        if (cusBalance) {
-            const remainingBalance = cusBalance.balance - _order.total;
-
-            if (remainingBalance >= 0) {
-                cusBalance.balance = remainingBalance; // Update the remaining balance
-            } else {
-                cusBalance.balance = 0; // Set the balance to 0
-            }
-            await cusBalance.save(); // Save the updated balance after successful payment
-    }
 
     if (!!intent.id) {
         await transaction.create({
@@ -149,6 +139,18 @@ export class BillingService {
             stripe_customer_id: cus?.stripe_id,
         });
     }
+
+    if (cusBalance) {
+      const remainingBalance = cusBalance.balance - _order.total;
+
+      if (remainingBalance >= 0) {
+          cusBalance.balance = remainingBalance; // Update the remaining balance
+      } else {
+          cusBalance.balance = 0; // Set the balance to 0
+      }
+      await cusBalance.save(); // Save the updated balance after successful payment
+}
+
 
     console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
