@@ -125,7 +125,12 @@ export class BillingService {
         confirm: !!dto?.card_token,
     });
 
+    // Check if payment intent is successful
+    if (intent.status !== 'succeeded') {
+        throw createError("Payment failed", 400);
+    }
 
+    // Create a transaction record for the payment
     if (!!intent.id) {
         await transaction.create({
             itemRefPath: "Order",
@@ -140,17 +145,12 @@ export class BillingService {
         });
     }
 
+    // Update customer balance after payment
     if (cusBalance) {
-      const remainingBalance = cusBalance.balance - _order.total;
-
-      if (remainingBalance >= 0) {
-          cusBalance.balance = remainingBalance; // Update the remaining balance
-      } else {
-          cusBalance.balance = 0; // Set the balance to 0
-      }
-      await cusBalance.save(); // Save the updated balance after successful payment
-}
-
+        const remainingBalance = cusBalance.balance - _order.total;
+        cusBalance.balance = remainingBalance >= 0 ? remainingBalance : 0;
+        await cusBalance.save(); // Save the updated balance after successful payment
+    }
 
     console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
