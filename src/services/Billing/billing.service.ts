@@ -86,37 +86,78 @@ export class BillingService {
 
     if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
 
+    // Check if the customer has an earning balance
+    const cusBalance = await earnings.findOne({ customer: cus?._id });
+
+    let amountToPay = _order.total;
+
+    if (cusBalance) {
+        const remainingBalance = cusBalance.balance - _order.total;
+
+        if (remainingBalance >= 0) {
+            amountToPay = 0; // Set amountToPay to 0 if the balance covers the cart total
+        } else {
+            amountToPay = Math.abs(remainingBalance); // Calculate the amount to pay after deducting the balance
+        }
+    }
+    if (_order?.total > 100) {
+        const referrals = await referral.findOne({ invitee: cus?._id }).exec();
+        const isCustomerReferred = await earnings.exists({ refs: cus?._id });
+
+        if (!isCustomerReferred && referrals) {
+            const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
+            if (inviterEarning) {
+                inviterEarning.balance += 10;
+                inviterEarning.refs.push(cus?._id);
+                await inviterEarning.save();
+            }
+        }
+    }
+
     const intent = await this.stripe.paymentIntents.create({
-      customer: cus?.stripe_id,
-      payment_method: dto?.card_token,
-      amount: Math.round(_order?.total * 100),
-      currency: "gbp",
-      off_session: !!dto?.card_token,
-      receipt_email: cus?.email,
-      expand: ["invoice"],
-      confirm: !!dto?.card_token,
+        customer: cus?.stripe_id,
+        payment_method: dto?.card_token,
+        amount: Math.round(amountToPay * 100),
+        currency: "gbp",
+        off_session: !!dto?.card_token,
+        receipt_email: cus?.email,
+        expand: ["invoice"],
+        confirm: !!dto?.card_token,
     });
 
-    // const invoice = intent?.invoice as Stripe.Invoice;
 
     if (!!intent.id) {
-      await transaction.create({
-        itemRefPath: "Order",
-        item: _order?._id,
-        currency: intent.currency,
-        order_reference: intent?.id,
-        customer: cus?._id,
-        amount: (intent.amount ?? 0) / 100,
-        reference: intent?.id,
-        reason: TransactionReason.ORDER,
-        stripe_customer_id: cus?.stripe_id,
-      });
+        await transaction.create({
+            itemRefPath: "Order",
+            item: _order?._id,
+            currency: intent.currency,
+            order_reference: intent?.id,
+            customer: cus?._id,
+            amount: (intent.amount ?? 0) / 100,
+            reference: intent?.id,
+            reason: TransactionReason.ORDER,
+            stripe_customer_id: cus?.stripe_id,
+        });
     }
+
+    if (cusBalance) {
+      const remainingBalance = cusBalance.balance - _order.total;
+
+      if (remainingBalance >= 0) {
+          cusBalance.balance = remainingBalance; // Update the remaining balance
+      } else {
+          cusBalance.balance = 0; // Set the balance to 0
+      }
+      await cusBalance.save(); // Save the updated balance after successful payment
+}
+
 
     console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
     return { client_secret: intent?.client_secret };
-  }
+}
+
+
 
   // This method creates an intent to collect customer's subscription payment details and then store the payment
   // method so it can be reused later.
@@ -124,8 +165,6 @@ export class BillingService {
   async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-
-    console.log("checking if it is working ~~~~~~~~~~")
 
     const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
@@ -161,7 +200,6 @@ export class BillingService {
     const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
 
-    console.log(payment_intent)
     await Promise.all([
       transaction.create({
         itemRefPath: "Subscription",
@@ -175,15 +213,14 @@ export class BillingService {
       }),
     ]);
 
-    console.log("~~~~~~~~~~~~", payment_intent.status)
+    console.log(payment_intent.status)
     // Check if the customer is an invitee in the referral table
     const referrals = await referral.findOne({ invitee: cus?._id }).exec();
-
   // Check if the customer_id exists in inviter.refs
-    const isCustomerReferred = await earnings.exists({ refs: cus?._id });
+   const isCustomerReferred = await earnings.exists({ refs: cus?._id });
 
     if (!isCustomerReferred && referrals) {
-      // Update the is_subscribed field to true
+    // Update the is_subscribed field to true
       await referrals.updateOne({ is_subscribed: true }).exec();
 
       // Find the inviter in the earning database

@@ -156,20 +156,43 @@ export class MealService {
     return await paginate("meal", queries, filters);
   }
 
-  async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country: string }): Promise<PaginatedDocument<MealPack[]>> {
-    // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  /**
+ Remove this comment 
+ */
 
-    let queries = { available_quantity: { $gt: 0, $ne: null }, is_available: true, country: filters?.country,  };
+  // async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country: string }): Promise<PaginatedDocument<MealPack[]>> {
+  //   // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+  //   let queries = { available_quantity: { $gt: 0, $ne: null }, is_available: true, country: filters?.country,  };
     
-    // if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
+  //   // if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
 
+  //   if (filters?.country) {
+  //     queries.country = filters.country;
+  // }
+
+  //   return await paginate("mealPack", queries, filters);
+  // }
+
+  async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country?: string }): Promise<PaginatedDocument<MealPack[]>> {
+    // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  
+    let queries: any = {};
+  
+    if (!!filters?.is_available && Boolean(filters.is_available)) {
+      Object.assign(queries, { is_available: true });
+    }
+  
     if (filters?.country) {
-      queries.country = filters.country;
-  }
-
+      Object.assign(queries, { country: filters.country });
+    }
+  
     return await paginate("mealPack", queries, filters);
   }
 
+/**
+ Remove this comment 
+ */
 
   // async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean }): Promise<PaginatedDocument<MealPack[]>> {
   //   // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
