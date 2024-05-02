@@ -44,6 +44,9 @@ export class MealLineup extends BaseEntity {
 
   @prop()
   delivery_date: Date;
+
+  @prop({default:0})
+  week: number;
 }
 
 

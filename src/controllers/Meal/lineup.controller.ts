@@ -7,8 +7,10 @@ const service = new MealLineupService();
 export class MealLineupController {
   async createLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body, customer } = req;
-      const data = await service.createLineup(customer.sub, body, customer.roles);
+      const { body, customer, query } = req;
+      const { week } = query;
+      const newBody = { ...body, week };
+      const data = await service.createLineup(customer.sub, newBody, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);

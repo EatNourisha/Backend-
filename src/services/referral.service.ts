@@ -59,6 +59,33 @@ export class ReferralService {
     };
   }
 
+    // static async updateSubscribersInvite(subscriber_id: string, plan_id?: string) {
+  //   const cus = await customer.findById(subscriber_id).populate("pending_promo").lean<Customer>().exec();
+  //   if (!cus) throw createError("Customer does not exist", 404);
+  //   const _plan = await plan.findById(plan_id).lean<Plan>().exec();
+  //   if (!_plan) throw createError("Plan does not exist", 404);
+
+  //         // Check if the customer is an invitee in the referral table
+  //     const referrals = await referral.findOne({ invitee: cus?._id }).exec();
+  //   // Check if the customer_id exists in inviter.refs
+  //    const isCustomerReferred = await earnings.exists({ refs: referrals?._id });
+
+  //     if (!isCustomerReferred && referrals) {
+  //     // Update the is_subscribed field to true
+  //       // await referrals.updateOne({ is_subscribed: true }).exec();
+
+  //       // Find the inviter in the earning database
+  //       const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
+  //       if (inviterEarning) {
+  //         // Reward the inviter, e.g., adding £10 to their earning balance
+  //         inviterEarning.balance += 10;
+  //         inviterEarning.refs.push(referrals?._id);
+  //         await inviterEarning.save();
+  //       }
+  //     }
+
+  // }
+
   static async updateSubscribersInvite(subscriber_id: string, plan_id?: string) {
     console.log("Update Subscriber's Invite", { subscriber_id, plan_id });
     let ref = await referral.findOne({ invitee: subscriber_id, is_subscribed: false }).lean<Referral>().exec();

@@ -1,7 +1,7 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, earnings, order, orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
@@ -53,7 +53,6 @@ export class OrderService {
       .populate("item")
       .lean<Transaction[]>()
       .exec();
-    console.log("Transactions", txs);
 
     const to_run = txs.map((tx) => this.ascertainOrderPayment(tx));
     await Promise.all(to_run);
@@ -217,7 +216,7 @@ export class OrderService {
     if (!item) return;
     const _order_items = await orderItem.find({ order: item, customer: tx?.customer }).lean<OrderItem[]>().exec();
 
-    console.log("Order items", _order_items);
+    // console.log("Order items", _order_items);
     const _order = await order
       // .findByIdAndUpdate(item, { status: OrderStatus.PAID, items: _order_items.map((i) => i._id) })
       .findByIdAndUpdate(item, { status: OrderStatus.PAID }, { new: true })
@@ -228,7 +227,20 @@ export class OrderService {
     if (!!_order?.promo && !!_order?.actual_discounted_amount && _order?.actual_discounted_amount > 0)
       await DiscountService.createDiscount(_order?.customer!, _order?.promo!, "order");
 
-    console.log("Paid Order", _order);
+    const cusBalance = await earnings.findOne({ customer: _order?.customer});
+
+    if (cusBalance) {
+      const remainingBalance = cusBalance.balance - _order.total;
+
+      if (remainingBalance >= 0) {
+        cusBalance.balance = remainingBalance; 
+      } else {
+        cusBalance.balance = 0;
+      }
+      await cusBalance.save(); 
+    }
+
+    console.log("Cusbalnce", cusBalance);
 
     const order_item_dto = _order_items.map((item) => ({ meal_id: item?.item!, quantity: item?.quantity }));
     // TODO: remove the session_id on the cart here

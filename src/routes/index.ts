@@ -36,7 +36,7 @@ import { Transaction, transaction } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
-
+import bodyParser from "body-parser";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -74,17 +74,18 @@ routes.get("/healthcheck", (_, res, __) => {
 });
 
 
-routes.post("/webhook", async (req, res, __) => {
+routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, res, __) => {
   const payload = req.body;
   const sig_header = req.headers["stripe-signature"] as string;
-  // console.log("Sig header", sig_header, payload)
+  // console.log("Sig header", sig_header)
+  console.log("Payload", payload)
 
   let event: Stripe.Event | null = null;
 
   try {
     event = stripe.webhooks.constructEvent(payload, sig_header, config.ENDPOINT_SECRET);
   } catch (error) {
-    // console.log("Error", error);
+    console.log("Error", error);
     return sendResponse(res, 400, { message: error.message });
   }
 
