@@ -25,6 +25,26 @@ export class OrderController {
     }
   }
 
+  async getOpenOrders(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.getOpenOrders(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getClosedOrders(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.getClosedOrders(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getOrderById(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params, query } = req;

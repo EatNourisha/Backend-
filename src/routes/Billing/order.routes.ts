@@ -6,6 +6,8 @@ const router = Router();
 const controller = new OrderController();
 
 router.get("/", authGuard, controller.getOrders);
+router.get("/open/orders", authGuard, controller.getOpenOrders);
+router.get("/closed/orders", authGuard, controller.getClosedOrders);
 router.get("/:id", authGuard, controller.getOrderById);
 router.post("/", authGuard, controller.placeOrder);
 router.put("/ascertain", authGuard, controller.ascertainOrderPayments);
