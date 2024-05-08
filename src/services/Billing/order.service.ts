@@ -93,6 +93,37 @@ export class OrderService {
     return { order: _order, items };
   }
 
+  async getOpenOrders(
+    customer_id: string,
+    roles: string[],
+): Promise<Order[]> {
+
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+
+    const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } });
+
+    const typedOrdersData = orders.data as Order[];
+
+    // const orderData ={Data: typedOrdersData, totalCount: typedOrdersData.length}
+    return typedOrdersData;
+}
+
+  async getClosedOrders(
+    customer_id: string,
+    roles: string[],
+): Promise<Order[]> {
+
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+
+    const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
+
+    const typedOrdersData = orders.data as Order[];
+
+    // const orderData ={Data: typedOrdersData, totalCount: typedOrdersData.length}
+    return typedOrdersData;
+}
+
+
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
     validateFields(dto, ["status"]);
 
@@ -239,8 +270,6 @@ export class OrderService {
       }
       await cusBalance.save(); 
     }
-
-    console.log("Cusbalnce", cusBalance);
 
     const order_item_dto = _order_items.map((item) => ({ meal_id: item?.item!, quantity: item?.quantity }));
     // TODO: remove the session_id on the cart here
