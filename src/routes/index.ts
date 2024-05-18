@@ -84,6 +84,7 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
 
   try {
     event = stripe.webhooks.constructEvent(payload, sig_header, config.ENDPOINT_SECRET);
+    
   } catch (error) {
     console.log("Error", error);
     return sendResponse(res, 400, { message: error.message });
