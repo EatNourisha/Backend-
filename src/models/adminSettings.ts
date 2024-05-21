@@ -25,7 +25,7 @@ class InfluencersReward {
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class AdminSettings extends BaseEntity {
   @prop()
-  name: string;
+  name: string; 
 
   @prop({ min: 0 })
   delivery_fee: number;
