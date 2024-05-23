@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 export { catchRequest, handleError } from "./catchInvalidRequests";
 export { authGuard, deviceGuard, subscriptionGuard } from "./guards";
 export { default as compressor } from "./compression";
+export { auditLogs } from "./auditTrail";
 
 export const logRequests = (req: Request, _: Response, next: NextFunction) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;

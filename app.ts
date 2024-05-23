@@ -18,6 +18,7 @@ import { connection } from "./src/queues/connection";
 // import addUserToKlaviyoList from "./src/klaviyo/klaviyo";
 import  startPromoCronJob  from "./src/services/Marketing/cron.service";
 import startSubscriptionCronJob from "./src/services/Marketing/cron.user.sub.expire"
+import { auditLogs } from "./src/middlewares/auditTrail";
 
 declare global {
   namespace Express {
@@ -53,6 +54,7 @@ app.use("/v1/webhook", express.raw({ type: "*/*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logRequests);
+app.use(auditLogs)
 
 // Configure the local strategy for use by Passport.
 //
