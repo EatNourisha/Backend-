@@ -33,7 +33,7 @@ export class MealLineupService {
 
   //   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
   //   return _lineup;
-  // }
+  // } 
 
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     // Validate fields
