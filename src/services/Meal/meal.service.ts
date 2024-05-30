@@ -174,7 +174,7 @@ export class MealService {
   //   return await paginate("mealPack", queries, filters);
   // }
 
-  async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country?: string }): Promise<PaginatedDocument<MealPack[]>> {
+  async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country?: string, category: string, orderType:string}): Promise<PaginatedDocument<MealPack[]>> {
     // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
     let queries: any = {};
@@ -185,6 +185,14 @@ export class MealService {
   
     if (filters?.country) {
       Object.assign(queries, { country: filters.country });
+    }
+  
+    if (filters?.category) {
+      Object.assign(queries, { category: filters.category });
+    }
+  
+    if (filters?.orderType) {
+      Object.assign(queries, { orderType: filters.orderType });
     }
   
     return await paginate("mealPack", queries, filters);

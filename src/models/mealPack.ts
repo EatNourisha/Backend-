@@ -7,6 +7,7 @@ import { Meal } from "./meal";
 enum OrderType {
   Subscription = "subscription",
   SingleOrder = "single order",
+  BulkOrder = "bulk-order",
   Both = "both",
 }
 class MealPackPrice {
@@ -60,6 +61,12 @@ export class MealPack extends BaseEntity {
 
   @prop()
   country: string;
+
+  @prop()
+  calories?: number;
+
+  @prop()
+  category?: string;
 }
 
 export default getModelForClass(MealPack);

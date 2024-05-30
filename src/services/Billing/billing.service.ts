@@ -131,6 +131,10 @@ export class BillingService {
       }
   }
 
+  if ((_order?.actual_discounted_amount ?? 0) >= 0) {
+    amountToPay -= _order?.actual_discounted_amount ?? 0;
+  }
+
     const intent = await this.stripe.paymentIntents.create({
       customer: cus?.stripe_id,
       payment_method: dto?.card_token,
