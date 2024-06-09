@@ -188,7 +188,7 @@ export class MealService {
     }
   
     if (filters?.category) {
-      Object.assign(queries, { category: filters.category });
+      Object.assign(queries, { category: filters.category});
     }
   
     if (filters?.orderType) {
