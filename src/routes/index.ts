@@ -32,7 +32,7 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 import { authGuard } from "../middlewares";
-import { Transaction, transaction } from "../models";
+import { Transaction, customer, transaction } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
@@ -109,6 +109,12 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
         .findOneAndUpdate({ reference: data.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
         .lean<Transaction>()
         .exec();
+        const customerId = data?.customer
+        const cus = await customer.findOne({_id: customerId});
+        if(cus){
+          await cus.updateOne({lineup: null})
+        }
+        
       await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
     }
