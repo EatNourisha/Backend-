@@ -111,7 +111,7 @@ export class ReferralService {
       console.error("[UpdateSubscribersInvite]", error.message);
       // throw createError(error?.message, 400)
     }
-  }
+  } 
 
   // Admin
 
