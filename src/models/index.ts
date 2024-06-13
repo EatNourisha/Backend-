@@ -43,3 +43,4 @@ export { default as withdrawalRequest, WithdrawalRequest } from "./withdrawalReq
 export { default as notification, Notification, NotificationStatus, NotificationType } from "./notification";
 export { default as mobileUse, MobileUse } from "./mobileUse";
 export { default as auditTrail, AuditTrail } from "./auditTrail";
+export { default as category, Category } from "./category";

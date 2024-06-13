@@ -26,6 +26,7 @@ export enum PermissionScope {
 export enum AvailableResource {
   ROLE = "role",
   MEAL = "meal",
+  CATEGORY = "category",
   PLAN = "plan",
   ALLERGY = "allergy",
   CUSTOMER = "customer",
