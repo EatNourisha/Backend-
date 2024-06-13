@@ -97,6 +97,10 @@ const defaultAccessControls: AccessControlType = {
         scopes: [PermissionScope.ALL],
       },
       {
+        name: AvailableResource.CATEGORY,
+        scopes: [PermissionScope.ALL],
+      },
+      {
         name: AvailableResource.TRANSACTION,
         scopes: [PermissionScope.ALL],
       },

@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { authGuard, deviceGuard } from "../../middlewares";
-import { MealController } from "../../controllers";
+import { MealController, categoryController } from "../../controllers";
 
 const router = Router();
 const controller = new MealController();
+const categController = new categoryController();
 
 router.post("/", authGuard, controller.createMeal);
 router.post("/pack", authGuard, controller.createMealPack);
@@ -21,4 +22,9 @@ router.get("/pack/analysis/:id", authGuard, controller.getMealPackAnalysisById);
 router.get("/parties", authGuard, controller.getPartyMealRequests);
 router.post("/parties", deviceGuard, controller.requestPartyMeal);
 
+
+router.post("/category", authGuard, categController.createCategory);
+router.put("/category/:id", authGuard, categController.updateCategory);
+router.delete("/category/:id", authGuard, categController.deletecategory);
+router.get("/category", deviceGuard, categController.getcategory);
 export default router;

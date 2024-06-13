@@ -48,19 +48,6 @@ export class MealService {
     const slug = createSlug(dto.name);
     if (await MealService.checkMealPackExists("slug", slug)) throw createError("Meal pack already exist", 400);
 
-    // const amount = dto?.price?.amount + (dto?.price?.deliveryFee ?? 0.12);
-
-    // const result = await this.stripe.products.create({
-    //   name: dto.name,
-    //   description: dto.description,
-    //   images: dto.images,
-    //   default_price_data: {
-    //     currency: "gbp",
-    //     unit_amount: Math.round(amount * 100),
-    //   },
-    // });
-
-    // const _meal_pack = await mealPack.create({ ...dto, slug, price_id: result.default_price, product_id: result.id });
     const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
     return _meal_pack;
   }
@@ -80,48 +67,6 @@ export class MealService {
       deliveryFee: dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee,
     } as any;
 
-    // let price: Stripe.Response<Stripe.Price> | null = null;
-    // let product: Stripe.Response<Stripe.Product> | null = null;
-    // const amount = (dto?.price?.amount ?? _meal?.price?.amount) + (dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee);
-
-    // if (!_meal?.price_id && !_meal?.product_id) {
-    //   console.log("Got to the product creation");
-    //   product = await this.stripe.products.create({
-    //     name: dto?.name ?? _meal?.name,
-    //     description: dto?.description ?? _meal?.description,
-    //     images: dto?.images ?? _meal?.images,
-    //     default_price_data: {
-    //       currency: "gbp",
-    //       // stripe expects an integer, throws `Invalid integer` error when a floating point value is sent
-    //       unit_amount: Math.round(amount * 100),
-    //     },
-    //   });
-
-    //   console.log("Product", product);
-    // }
-
-    // if (!!dto?.price?.amount && dto?.price?.amount !== (_meal?.price?.amount ?? 0) && (!!_meal?.product_id || product?.id)) {
-    //   price = await this.stripe.prices.create({
-    //     currency: "gbp",
-    //     unit_amount: Math.round(amount * 100),
-    //     product: product?.id ?? _meal?.product_id,
-    //   });
-
-    //   console.log({ price, amount: amount * 100 });
-    // }
-
-    // if (!product && (!!dto?.name || !!dto?.images || (!!dto?.price?.amount && price))) {
-    //   await Promise.all([
-    //     this.stripe.products.update(_meal.product_id, {
-    //       name: dto?.name,
-    //       description: dto?.description,
-    //       default_price: price?.id,
-    //       images: dto?.images ?? _meal?.images,
-    //     }),
-
-    //     this.stripe.prices.update(_meal?.price_id, { active: false }),
-    //   ]);
-    // }
 
     _meal = await mealPack
       .findByIdAndUpdate(
@@ -156,24 +101,6 @@ export class MealService {
     return await paginate("meal", queries, filters);
   }
 
-  /**
- Remove this comment 
- */
-
-  // async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country: string }): Promise<PaginatedDocument<MealPack[]>> {
-  //   // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   let queries = { available_quantity: { $gt: 0, $ne: null }, is_available: true, country: filters?.country,  };
-    
-  //   // if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
-
-  //   if (filters?.country) {
-  //     queries.country = filters.country;
-  // }
-
-  //   return await paginate("mealPack", queries, filters);
-  // }
-
   async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean, country?: string, category: string, orderType:string}): Promise<PaginatedDocument<MealPack[]>> {
     // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
@@ -197,19 +124,6 @@ export class MealService {
   
     return await paginate("mealPack", queries, filters);
   }
-
-/**
- Remove this comment 
- */
-
-  // async getMealPacks(_: string[], filters?: IPaginationFilter & { is_available: boolean }): Promise<PaginatedDocument<MealPack[]>> {
-  //   // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   let queries: any = {};
-  //   if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
-
-  //   return await paginate("mealPack", queries, filters);
-  // }
 
 
   async getMealPacksAdmin(

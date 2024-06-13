@@ -3,6 +3,7 @@
 import { getModelForClass, modelOptions, prop, Ref } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Meal } from "./meal";
+import { Category } from "./category";
 
 enum OrderType {
   Subscription = "subscription",
@@ -65,8 +66,8 @@ export class MealPack extends BaseEntity {
   @prop()
   calories?: number;
 
-  @prop()
-  category?: string;
+  @prop({ ref: () => Category })
+  category?: Ref<Category>;
 }
 
 export default getModelForClass(MealPack);

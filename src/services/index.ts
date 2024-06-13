@@ -29,3 +29,4 @@ export * from "./earnings.service";
 export * from "./Marketing/marketing.service";
 export * from "./mobileUse.service";
 export * from "./security/auditTrail.service";
+export * from "./Meal/category.service";
