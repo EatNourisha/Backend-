@@ -66,8 +66,11 @@ export class MealPack extends BaseEntity {
   @prop()
   calories?: number;
 
-  @prop({ ref: () => Category })
-  category?: Ref<Category>;
+  // @prop({ ref: () => Category })
+  // category?: Ref<Category>;
+
+  @prop()
+  category?: string;
 }
 
 export default getModelForClass(MealPack);
