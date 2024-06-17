@@ -38,6 +38,9 @@ export class Plan extends BaseEntity {
   @prop()
   currency: string;
 
+  @prop({ default: false })
+  weekend?: boolean;
+
   @prop({ enum: SubscriptionInterval })
   subscription_interval: SubscriptionInterval;
 

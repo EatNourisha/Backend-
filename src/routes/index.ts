@@ -9,6 +9,7 @@ import PlanRouter from "./Billing/plan.routes";
 import CardRouter from "./Billing/card.routes";
 import CartRouter from "./Billing/cart.routes";
 import OrderRouter from "./Billing/order.routes";
+import GiftCardRouter from "./Billing/giftcard.routes";
 import CustomerRouter from "./customer.routes";
 import LineupRouter from "./Meal/lineup.routes";
 import DeliveryRouter from "./Meal/delivery.routes";
@@ -21,7 +22,7 @@ import SubscriptionRouter from "./Billing/subscription.routes";
 import NotificationRouter from "./Preference/notification.routes";
 import AdminSettingsRouter from "./Preference/adminSettings.route";
 import CountryRouter from "./countries.route";
-import MobileUseRouter from "./mobileUse.routes"
+import MobileUseRouter from "./mobileUse.routes";
 
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
@@ -32,11 +33,12 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 import { authGuard } from "../middlewares";
-import { Transaction, customer, transaction } from "../models";
+import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
 import bodyParser from "body-parser";
+import { GiftStatus } from "../models/giftPurchase";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -62,8 +64,9 @@ routes.use("/countries", CountryRouter);
 routes.use("/referrals", ReferralRouter);
 routes.use("/earnings", EarningsRouter);
 routes.use("/deliveries", DeliveryRouter);
-routes.use("/appupdate",  AppUpdate);
+routes.use("/appupdate", AppUpdate);
 routes.use("/mobileuse", MobileUseRouter);
+routes.use("/gift", GiftCardRouter);
 
 routes.get("/configs", authGuard, (_, res) => {
   return sendResponse(res, 200, config);
@@ -73,12 +76,9 @@ routes.get("/healthcheck", (_, res, __) => {
   sendResponse(res, 200, { message: "OK" });
 });
 
-
-routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, res, __) => {
+routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, res, __) => {
   const payload = req.body;
   const sig_header = req.headers["stripe-signature"] as string;
-  // console.log("Sig header", sig_header)
-  console.log("Payload", payload)
 
   let event: Stripe.Event | null = null;
 
@@ -86,14 +86,11 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
     event = stripe.webhooks.constructEvent(payload, sig_header, config.ENDPOINT_SECRET);
     
   } catch (error) {
-    console.log("Error", error);
     return sendResponse(res, 400, { message: error.message });
   }
 
-  // console.log("Stripe Event", event);
   switch (event.type) {
     case "checkout.session.completed": {
-      console.log("Checkout Session", event);
       break;
     }
     case "setup_intent.succeeded": {
@@ -106,16 +103,20 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
     }
     case "payment_intent.succeeded": {
       const data = event.data.object as any;
+      const customerId = data?.customer;
+      const cus = await customer.findOne({ stripe_id: customerId });
       const tx = await transaction
-        .findOneAndUpdate({ reference: data.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
+        .findOneAndUpdate({ reference: data?.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
         .lean<Transaction>()
         .exec();
-        const customerId = data?.customer
-        const cus = await customer.findOne({_id: customerId});
-        if(cus){
-          await cus.updateOne({lineup: null})
-        }
-        
+
+      if (tx?.reason === "Gift-Card") {
+         await giftpurchase
+          .findOneAndUpdate({ customer: cus?._id, reference: data?.id }, { status: GiftStatus.ACTIVE })
+          .lean<GiftPurchase>()
+          .exec();
+      }
+
       await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
     }
@@ -129,7 +130,6 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
       break;
     }
     case "payment_method.attached": {
-      console.log("Payment Method Attached!", event);
       await BillingHooks.paymentMethodAttached(event);
       break;
     }
@@ -138,6 +138,17 @@ routes.post("/webhook", bodyParser.raw({type: 'application/json'}), async (req, 
       break;
     }
     case "customer.subscription.created": {
+      const data = event.data.object as any;
+      const customerId = data?.customer;
+      const cus = await customer.findOne({ stripe_id: customerId });
+      await transaction
+        .findOneAndUpdate(
+          { subscription_reference: data?.id, stripe_customer_id: data?.customer },
+          { status: TransactionStatus.SUCCESSFUL }
+        )
+        .lean<Transaction>()
+        .exec();
+      await customer.findOneAndUpdate({ _id: cus?._id }, { lineup: null }).lean<Customer>().exec();
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }

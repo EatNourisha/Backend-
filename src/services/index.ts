@@ -19,6 +19,7 @@ export * from "./Billing/discount.service";
 export * from "./Preference/allergy.service";
 export * from "./Billing/transaction.service";
 export * from "./Billing/subscription.service";
+export * from "./Billing/giftcard.service";
 export * from "./Preference/notification.service";
 export * from "./Preference/review.service";
 export * from "./Preference/adminSettings.service";

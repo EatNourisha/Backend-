@@ -16,6 +16,7 @@ export * from "./Billing/discount.controller";
 export * from "./Preference/allergy.controller";
 export * from "./Billing/transaction.controller";
 export * from "./Billing/subscription.controller";
+export * from "./Billing/giftcard.controller";
 export * from "./Preference/notification.controller";
 export * from "./Preference/review.controller";
 export * from "./Preference/adminSettings.controller";

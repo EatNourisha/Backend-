@@ -24,3 +24,7 @@ export * from "./dtos/settings.dto";
 export * from "./dtos/discount.dto";
 
 export * from "./dtos/marketing.dto";
+
+export * from "./dtos/giftcard.dto";
+
+export * from "./dtos/giftpurchase.dto";

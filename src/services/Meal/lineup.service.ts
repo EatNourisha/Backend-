@@ -65,16 +65,35 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
       throw createError('Customer lineup for this week already exists', 404);
   }
 
-  // If all validations pass, create the lineup
-  const _lineup = await lineup.create({ ...dto, customer: customer_id });
-  await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
-  await MealLineupService.lockLineupChange(customer_id);
+    // console.log('~~~~~~BEFORE~~~~~~~~~~~~')
+    if(dto?.swallow === true){
+      validateFields(dto, ["extras"]);
+    }
+    // If all validations pass, create the lineup
+    const _lineup = await lineup.create({ ...dto, customer: customer_id });
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
+    await MealLineupService.lockLineupChange(customer_id);
 
   // Emit event
   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
 
   return _lineup;
 }
+
+  async updateSwallow(customer_id: string, lineup_id: string, roles: string[], dto:CreateLineupDto): Promise<MealLineup> {
+    
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    const _swallow = await lineup
+    .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { swallow: dto.swallow })
+    .lean<MealLineup>()
+    .exec();
+
+    // let _swallow = await lineup.findOneAndUpdate({ customer: customer_id }, {swallow: status}).lean<MealLineup>().exec();
+
+    return _swallow;
+  }
+
 
   async updateLineup(
     customer_id: string,

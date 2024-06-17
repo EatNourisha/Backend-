@@ -11,6 +11,7 @@ router.get("/upcoming", authGuard, controller.getUpcomingLineup);
 
 router.post("/", authGuard, subscriptionGuard, controller.createLineup);
 router.put("/:id", authGuard, subscriptionGuard, controller.updateLineup);
+router.put("/swallow/:id", authGuard, subscriptionGuard, controller.updateSwallow);
 
 // Admin
 router.get("/:id", authGuard, controller.getLineupById);

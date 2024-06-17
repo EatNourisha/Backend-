@@ -27,6 +27,16 @@ export class MealLineupController {
     }
   }
 
+  async updateSwallow(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body, params } = req;
+      const data = await service.updateSwallow(customer.sub, params.id, customer.roles, body);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getCurrentCustomersLineup(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer } = req;

@@ -40,4 +40,5 @@ export enum AvailableResource {
   ADMIN_SETTINGS = "settings",
   MEAL_ANALYSIS = "meal_analysis",
   DISCOUNT = "discount",
+  GIFTCARD = "giftcard",
 }

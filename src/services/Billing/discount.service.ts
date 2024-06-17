@@ -6,7 +6,6 @@ import {
   Customer,
   Discount,
   Earnings,
-  //   Earnings,
   Plan,
   PromoCode,
   Referral,
@@ -15,7 +14,6 @@ import {
   customer,
   discount,
   earnings,
-  //   earnings,
   plan,
   promoCode,
   referral,
@@ -324,7 +322,7 @@ export class DiscountService {
     if (!code) return { amount_off: 0 };
 
     const promo = await promoCode.findOne({ "code":code, "no_discount": false }).populate("coupon").lean<PromoCode>().exec();
-    if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
+    // if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
     if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun) throw createError("Promo code / coupon expired", 403);
 
     const coup = promo?.coupon as Coupon;
