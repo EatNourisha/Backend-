@@ -44,3 +44,5 @@ export { default as notification, Notification, NotificationStatus, Notification
 export { default as mobileUse, MobileUse } from "./mobileUse";
 export { default as auditTrail, AuditTrail } from "./auditTrail";
 export { default as category, Category } from "./category";
+export { default as giftcard, GiftCard } from "./giftCard";
+export { default as giftpurchase, GiftPurchase } from "./giftPurchase";

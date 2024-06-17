@@ -53,4 +53,23 @@ export class CartController {
       sendError(error, next);
     }
   }
+
+  async weekendDeliveryUpdate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.weekendDeliveryUpdate(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+  async inweekDeliveryUpdate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.inweekDeliveryUpdate(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

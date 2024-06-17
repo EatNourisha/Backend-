@@ -93,6 +93,25 @@ export class CartService {
     return _cart;
   }
 
+  async weekendDeliveryUpdate(customer_id: string, roles: string[]): Promise<Cart> {
+  
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: true, delivery_period: 'weekend'}).lean<Cart>().exec();
+  
+    return _cart;
+  }
+
+  async inweekDeliveryUpdate(customer_id: string, roles: string[]): Promise<Cart> {
+  
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: false, delivery_period: 'in-week'}).lean<Cart>().exec();
+  
+    return _cart;
+  }
+
+
   private static async calcItemPrice(
     // customer_id: string,
     // cart_id: string,

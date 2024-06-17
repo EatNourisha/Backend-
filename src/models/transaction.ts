@@ -18,11 +18,13 @@ export enum TransactionStatus {
 export enum TransactionReason {
   SUBSCRIPTION = "subscription",
   ORDER = "order",
+  GIFTCARD = "Gift-Card",
 }
 
 export enum ItemModelTypes {
   SUBSCRIPTION = "Subscription",
   ORDER = "Order",
+  GIFTCARD = "Gift-Card",
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })

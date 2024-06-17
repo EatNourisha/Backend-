@@ -16,6 +16,12 @@ export class DayMeals {
   dinner: Ref<MealPack>;
 }
 
+export enum Extras {
+  GARRI = "garri",
+  SEMO ="semo",
+  POUNDED_YAM ="pounded_yam",
+  FUFU ="fufu"
+}
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class MealLineup extends BaseEntity {
   @prop({ ref: () => "Customer" })
@@ -47,6 +53,18 @@ export class MealLineup extends BaseEntity {
 
   @prop({default:1})
   week: number;
+
+  @prop({default:false})
+  swallow?: boolean;
+
+  @prop({enum: Extras})
+  extras?: Extras;
+
+}
+
+// Validate the object ID before assigning
+function isValidObjectId(id: any): id is Types.ObjectId {
+  return Types.ObjectId.isValid(id);
 }
 
 

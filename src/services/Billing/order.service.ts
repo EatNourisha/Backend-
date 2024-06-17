@@ -1,7 +1,7 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, earnings, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, earnings, giftpurchase, order, orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
@@ -13,6 +13,7 @@ import { when } from "../../utils/when";
 import { NourishaBus } from "../../libs";
 import OrderEventListener from "../../listeners/order.listener";
 import { MealService } from "../Meal/meal.service";
+// import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -159,11 +160,16 @@ export class OrderService {
 
     const cus = _cart?.customer as Customer;
 
-    const { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
+    let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
+    const gift = await giftpurchase.findOne({ code: dto?.coupon, status: 'active' })
+
+    if (!amount_off || amount_off === 0){
+      if (gift && gift.amount !== undefined) {
+        amount_off += gift.amount || 0;
+      } }
 
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
-    console.log("Customer", cus?.address, dto?.delivery_address);
 
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
@@ -179,15 +185,15 @@ export class OrderService {
       delivery_date: dto?.delivery_date,
       promo: when(!!promo, promo?._id, undefined),
       actual_discounted_amount: amount_off,
-    });
+      weekend_delivery: _cart?.weekend_delivery,
+      delivery_period: _cart?.delivery_period
+      });
 
     const { order: _order, items } = result;
     await order
       .findByIdAndUpdate(_order._id!, { items: items?.map((i) => i._id) })
       .lean<Order>()
       .exec();
-
-    console.log("Created Order", result);
 
     const payment_intent = await new BillingService().initializePayment(customer_id, {
       order_id: _order?._id!,

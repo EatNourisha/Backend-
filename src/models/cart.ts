@@ -20,6 +20,12 @@ export class Cart extends BaseEntity {
 
   @prop()
   session_id: string;
+
+  @prop({ default: false })
+  weekend_delivery?: boolean;
+
+  @prop({ default: 'in-week' })
+  delivery_period?: string;
 }
 
 export default getModelForClass(Cart);

@@ -112,6 +112,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.DISCOUNT,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.GIFTCARD,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };
