@@ -109,7 +109,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .lean<Transaction>()
         .exec();
 
-      if (tx?.reason === "Gift-Card") {
+      if (tx?.reason === "Gift-Card"|| "Custom-Gift") {
          await giftpurchase
           .findOneAndUpdate({ customer: cus?._id, reference: data?.id }, { status: GiftStatus.ACTIVE })
           .lean<GiftPurchase>()

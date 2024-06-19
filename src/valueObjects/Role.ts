@@ -26,6 +26,7 @@ export enum PermissionScope {
 export enum AvailableResource {
   ROLE = "role",
   MEAL = "meal",
+  MEALEXTRAS = "mealextras",
   CATEGORY = "category",
   PLAN = "plan",
   ALLERGY = "allergy",
@@ -41,4 +42,5 @@ export enum AvailableResource {
   MEAL_ANALYSIS = "meal_analysis",
   DISCOUNT = "discount",
   GIFTCARD = "giftcard",
+  CUSTOMGIFT = "customgift",
 }

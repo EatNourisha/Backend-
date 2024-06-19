@@ -54,5 +54,35 @@ export class GiftCardController {
         }
       }
     
+      async getCustomerCustomGift(req: Request, res: Response, next: NextFunction) {
+        try {
+          const {customer,  query } = req;
+          const data = await service.getCustomerCustomGift(customer.sub, query as any);
+          sendResponse(res, 200, data);
+        } catch (error) {
+          sendError(error, next);
+        }
+      }
+    
+      async createCustomGift(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { customer, body } = req;
+          const data = await service.createCustomGift(customer.sub, body, customer.roles);
+          sendResponse(res, 201, data);
+        } catch (error) {
+          sendError(error, next);
+        }
+      }
+  
+      async deleteCustomGift(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { customer, params } = req;
+          const data = await service.deleteCustomGift(params.id, customer.roles);
+          sendResponse(res, 200, data);
+        } catch (error) {
+          sendError(error, next);
+        }
+      }
+  
   }
   

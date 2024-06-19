@@ -19,6 +19,7 @@ export enum TransactionReason {
   SUBSCRIPTION = "subscription",
   ORDER = "order",
   GIFTCARD = "Gift-Card",
+  // GIFTCARD = "Custom-Gift",
 }
 
 export enum ItemModelTypes {

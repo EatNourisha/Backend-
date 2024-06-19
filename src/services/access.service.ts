@@ -21,7 +21,9 @@ import {
   partyMealRequest,
   category,
   giftcard,
-  giftpurchase
+  giftpurchase,
+  mealextras,
+  customgift
 } from "../models";
 
 import capitalize from "lodash/capitalize";
@@ -49,7 +51,9 @@ export type SchemaTypes =
   | "mealPackAnalysis"
   | "category"
   | "giftpurchase"
-  | "giftcard";
+  | "mealextras"
+  | "giftcard"
+  | "customgift";
 
 export class AccessService {
   static async documentBelongsToAccount(customer_id: string, docId: string, schema: SchemaTypes, key?: string): Promise<boolean> {
@@ -85,7 +89,9 @@ export class AccessService {
       partyMealRequest,
       category,
       giftcard,
-      giftpurchase
+      giftpurchase,
+      mealextras,
+      customgift
     };
 
     return map[schema];
