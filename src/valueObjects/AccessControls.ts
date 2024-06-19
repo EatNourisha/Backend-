@@ -48,6 +48,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.ORDER,
         scopes: [PermissionScope.READ, PermissionScope.CREATE, PermissionScope.UPDATE],
       },
+      {
+        name: AvailableResource.CUSTOMGIFT,
+        scopes: [PermissionScope.CREATE, PermissionScope.DELETE],
+      },
     ],
   },
   superadmin: {
@@ -114,6 +118,10 @@ const defaultAccessControls: AccessControlType = {
       },
       {
         name: AvailableResource.GIFTCARD,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.MEALEXTRAS,
         scopes: [PermissionScope.ALL],
       },
     ],

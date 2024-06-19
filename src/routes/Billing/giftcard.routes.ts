@@ -7,7 +7,10 @@ const controller = new GiftCardController();
 
 router.post("/", authGuard, controller.createGiftCard);
 router.post("/buy", authGuard, controller.buyGiftCard);
+router.post("/custom", authGuard, controller.createCustomGift);
+router.get("/custom", authGuard, controller.getCustomerCustomGift);
 router.get("/", authGuard, controller.getGiftCards);
-router.get("/customer", authGuard, controller.getCustomerGiftPurchase);
+router.get("/customer", authGuard, controller.getCustomerGiftPurchase); 
 router.delete("/:id", authGuard, controller.deleteGiftCard);
+router.delete("/custom/:id", authGuard, controller.deleteCustomGift);
 export default router;

@@ -6,11 +6,14 @@ import {
   IPaginationFilter,
   PaginatedDocument,
   RequestPartyMealDto,
+  CreateExtrasDto
 } from "../../interfaces";
 import {
   customer,
   meal,
   Meal,
+  mealextras,
+  MealExtras,
   mealPack,
   MealPack,
   MealPackAnalysis,
@@ -278,4 +281,47 @@ export class MealService {
       );
     return true;
   }
+
+  async createMealExtras(dto: CreateExtrasDto, roles: string[]): Promise<MealExtras> {
+    validateFields(dto, ["name"]);
+    await RoleService.hasPermission(roles, AvailableResource.MEALEXTRAS, [PermissionScope.CREATE, PermissionScope.ALL]);
+
+    const _meal_extras = await mealextras.create({ ...dto });
+    return _meal_extras;
+  }
+
+  async getMealExtras(_: string[], filters?: IPaginationFilter & { name: string}): Promise<PaginatedDocument<MealPack[]>> {
+    // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+    let queries: any = {};
+  
+    if (filters?.name) {
+      Object.assign(queries, { name: filters.name });
+    }
+    return await paginate("mealextras", queries, filters);
+  }
+
+
+  async updateMealExtras(id: string, dto: Partial<CreateExtrasDto>, roles: string[]): Promise<MealExtras> {
+    await RoleService.hasPermission(roles, AvailableResource.MEALEXTRAS, [PermissionScope.UPDATE, PermissionScope.ALL]);
+
+    let _meal = await mealextras.findById(id).lean<MealPack>().exec();
+    if (!_meal) throw createError("Meal extra does not exist", 404);
+
+
+    _meal = await mealextras
+      .findByIdAndUpdate( id, { ...dto },)
+      .lean<MealPack>()
+      .exec();
+
+    return _meal;
+  }
+
+  async deleteMealExtras(id: string, roles: string[]): Promise<MealPack> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.DELETE, PermissionScope.ALL]);
+
+    const extras = await mealextras.findByIdAndDelete(id).lean<MealPack>().exec();
+    if (!extras) throw createError("Meal extra does not exist", 400);
+    return extras;
+  }
+
 }

@@ -46,3 +46,5 @@ export { default as auditTrail, AuditTrail } from "./auditTrail";
 export { default as category, Category } from "./category";
 export { default as giftcard, GiftCard } from "./giftCard";
 export { default as giftpurchase, GiftPurchase } from "./giftPurchase";
+export { default as mealextras, MealExtras } from "./mealExtras";
+export { default as customgift, CustomGift } from "./customgift";

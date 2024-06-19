@@ -27,4 +27,10 @@ router.post("/category", authGuard, categController.createCategory);
 router.put("/category/:id", authGuard, categController.updateCategory);
 router.delete("/category/:id", authGuard, categController.deletecategory);
 router.get("/category", deviceGuard, categController.getcategory);
+
+router.post("/extras", authGuard, controller.createMealExtras);
+router.put("/extras/:id", authGuard, controller.updateMealExtras);
+router.delete("/extras/:id", authGuard, controller.deleteMealExtras);
+router.get("/extras", deviceGuard, controller.getMealExtras);
+
 export default router;

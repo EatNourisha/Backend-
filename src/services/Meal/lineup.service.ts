@@ -65,10 +65,14 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
       throw createError('Customer lineup for this week already exists', 404);
   }
 
-    // console.log('~~~~~~BEFORE~~~~~~~~~~~~')
-    if(dto?.swallow === true){
+    if(dto?.swallow === true && !dto?.extras ){
       validateFields(dto, ["extras"]);
+      // note: this is how it is passed in the body
+      // extras:{
+        // extra: "6671bbc3ba84e64859613ff8"
+      // }
     }
+
     // If all validations pass, create the lineup
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();

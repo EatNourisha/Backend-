@@ -4,6 +4,7 @@ import { getModelForClass, modelOptions, prop, Ref } from "@typegoose/typegoose"
 import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { MealPack } from "./mealPack";
+import { MealExtras } from "./mealExtras";
 
 export class DayMeals {
   @prop({ ref: () => MealPack })
@@ -16,11 +17,10 @@ export class DayMeals {
   dinner: Ref<MealPack>;
 }
 
-export enum Extras {
-  GARRI = "garri",
-  SEMO ="semo",
-  POUNDED_YAM ="pounded_yam",
-  FUFU ="fufu"
+export class Extras {
+  @prop({ ref: () => MealExtras })
+  extra: Ref<MealExtras>;
+
 }
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class MealLineup extends BaseEntity {
@@ -57,16 +57,9 @@ export class MealLineup extends BaseEntity {
   @prop({default:false})
   swallow?: boolean;
 
-  @prop({enum: Extras})
-  extras?: Extras;
+  @prop({type: () => Extras, _id: false })
+  extras:Extras;
 
 }
-
-// Validate the object ID before assigning
-function isValidObjectId(id: any): id is Types.ObjectId {
-  return Types.ObjectId.isValid(id);
-}
-
-
 
 export default getModelForClass(MealLineup);

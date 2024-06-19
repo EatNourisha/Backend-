@@ -125,4 +125,46 @@ export class MealController {
       sendError(error, next);
     }
   }
+
+  async createMealExtras(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, customer } = req;
+      const data = await service.createMealExtras(body, customer.roles);
+    
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getMealExtras(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getMealExtras(customer.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async updateMealExtras(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, customer, params } = req;
+      const data = await service.updateMealExtras(params.id, body, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async deleteMealExtras(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params } = req;
+      const data = await service.deleteMealExtras(params.id, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
 }
