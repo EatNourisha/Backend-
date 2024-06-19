@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { customer, DayMeals, lineup, MealLineup, MealPack, MealPackAnalysis, subscription } from "../../models";
+import { customer, DayMeals, lineup, MealLineup, MealPack, MealPackAnalysis } from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -14,73 +14,24 @@ import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 
 export class MealLineupService {
-  // async createLineupFirstOne(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
-  //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
-
-  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-  //   if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
-  //     throw createError("Customer's weekly lineup already exist", 400);
-
-  //   console.clear();
-  //   console.log("Lineup Dto", dto);
-
-  //   const _lineup = await lineup.create({ ...dto, customer: customer_id });
-  //   await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
-  //   await MealLineupService.lockLineupChange(customer_id);
-  //   // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
-
-  //   // console.log("Lineup Analysis", analysis);
-
-  //   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
-  //   return _lineup;
-  // } 
-
-  async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
-    // Validate fields
+  async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
 
-    // Check permissions
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+    if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
+      throw createError("Customer's weekly lineup already exist", 400);
 
-    // Retrieve customer's subscription information
-    const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+    console.clear();
+    console.log("Lineup Dto", dto);
 
-    // If the subscription is active and has start and end dates
-    if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-        const startDate = new Date(subscriptionCheck.start_date).getTime(); 
-        const endDate = new Date(subscriptionCheck.end_date).getTime(); 
-        
-        // Calculate subscription duration in days
-        const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-        
-        // Check if subscription duration is exactly 7 days
-        if (subDuration === 7 && dto.week > 1) {
-            throw createError("Only monthly subscribers can create more than one lineup", 404);
-        }
-    }
-
-    // Check if the customer lineup for the specified week already exists
-    const existingLineupCount = await lineup.countDocuments({ customer: customer_id, week: dto.week || 1 }).exec();
-    if (existingLineupCount) {
-        throw createError('Customer lineup for this week already exists', 404);
-    }
-
-    if(dto?.swallow === true && !dto?.extras ){
-      validateFields(dto, ["extras"]);
-      // note: this is how it is passed in the body
-      // extras:{
-        // extra: "6671bbc3ba84e64859613ff8"
-      // }
-    }
-
-    // If all validations pass, create the lineup
     const _lineup = await lineup.create({ ...dto, customer: customer_id });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
+    // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
 
-    // Emit event
+    // console.log("Lineup Analysis", analysis);
+
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
-
     return _lineup;
 }
 
