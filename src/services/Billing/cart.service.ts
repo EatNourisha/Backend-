@@ -1,5 +1,5 @@
 import { IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { AdminSettings, Cart, CartItem, MealPack, adminSettings, cart, cartItem } from "../../models";
+import { AdminSettings, Cart, CartItem, MealPack, Order, adminSettings, cart, cartItem, order } from "../../models";
 import { RoleService } from "../../services/role.service";
 import { createError, getUpdateOptions, validateFields, paginate } from "../../utils";
 import { when } from "../../utils/when";
@@ -93,22 +93,22 @@ export class CartService {
     return _cart;
   }
 
-  async weekendDeliveryUpdate(customer_id: string, roles: string[]): Promise<Cart> {
+  async weekendDeliveryUpdate(customer_id: string, roles: string[]): Promise<Order> {
   
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
 
-    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: true, delivery_period: 'weekend'}).lean<Cart>().exec();
+    let _order = await order.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: true, delivery_period: 'weekend'}).lean<Order>().exec();
   
-    return _cart;
+    return _order;
   }
 
-  async inweekDeliveryUpdate(customer_id: string, roles: string[]): Promise<Cart> {
+  async inweekDeliveryUpdate(customer_id: string, roles: string[]): Promise<Order> {
   
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
 
-    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: false, delivery_period: 'in-week'}).lean<Cart>().exec();
+    let _order = await order.findOneAndUpdate({ customer: customer_id }, {weekend_delivery: false, delivery_period: 'in-week'}).lean<Order>().exec();
   
-    return _cart;
+    return _order;
   }
 
 

@@ -22,6 +22,14 @@ export class Extras {
   extra: Ref<MealExtras>;
 
 }
+
+export enum StatusActivity {
+ACTIVE= "active",
+DEACTIVATED= "deactivated"
+}
+
+
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class MealLineup extends BaseEntity {
   @prop({ ref: () => "Customer" })
@@ -57,8 +65,14 @@ export class MealLineup extends BaseEntity {
   @prop({default:false})
   swallow?: boolean;
 
+  @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
+  status?: StatusActivity;
+
   @prop({type: () => Extras, _id: false })
   extras:Extras;
+
+  @prop()
+  sub_end_date: Date;
 
 }
 

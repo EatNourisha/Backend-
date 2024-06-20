@@ -10,4 +10,6 @@ export interface PlaceOrderDto {
   cart_session_id: string;
   coupon?: string;
   delivery_date: Date;
+  weekend_delivery: boolean;
+  delivery_period: string;
 }

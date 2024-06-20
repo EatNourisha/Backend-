@@ -19,7 +19,8 @@ import { connection } from "./src/queues/connection";
 import  startPromoCronJob  from "./src/services/Marketing/cron.service";
 import startSubscriptionCronJob from "./src/services/Marketing/cron.user.sub.expire"
 import { auditLogs } from "./src/middlewares/auditTrail";
-
+import cron from "./src/config/cron";
+cron
 declare global {
   namespace Express {
     interface Request {

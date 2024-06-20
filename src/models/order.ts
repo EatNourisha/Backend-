@@ -57,12 +57,11 @@ export class Order extends BaseEntity {
   @prop()
   actual_discounted_amount?: number;
   
-  @prop()
+  @prop({ default: false })
   weekend_delivery?: boolean;
 
-  @prop()
+  @prop({ default: 'in-week' })
   delivery_period?: string;
-
 }
 
 export default getModelForClass(Order);

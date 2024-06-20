@@ -42,28 +42,30 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
   // Check permissions
   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-  // Retrieve customer's subscription information
-  const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+    // Retrieve customer's subscription information
+    const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+    const endDate = subscriptionCheck?.end_date; 
+// If the subscription is active and has start and end dates
+    if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
+        const startDate = new Date(subscriptionCheck.start_date).getTime(); 
+        const endDate = new Date(subscriptionCheck.end_date).getTime(); 
+        
+        // Calculate subscription duration in days
+        const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        
+        // Check if subscription duration is exactly 7 days
+        if (subDuration === 7 && dto.week > 1) {
+            throw createError("Only monthly subscribers can create more than one lineup", 404);
+        }
+    }
 
-  // If the subscription is active and has start and end dates
-  if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-      const startDate = new Date(subscriptionCheck.start_date).getTime(); 
-      const endDate = new Date(subscriptionCheck.end_date).getTime(); 
-      
-      // Calculate subscription duration in days
-      const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-      
-      // Check if subscription duration is exactly 7 days
-      if (subDuration === 7 && dto.week > 1) {
-          throw createError("Only monthly subscribers can create more than one lineup", 404);
-      }
-  }
+    const cusLineup = await lineup.findOne({customer: customer_id, week: dto.week})
 
-  // Check if the customer lineup for the specified week already exists
-  const existingLineupCount = await lineup.countDocuments({ customer: customer_id, week: dto.week || 1 }).exec();
-  if (existingLineupCount) {
-      throw createError('Customer lineup for this week already exists', 404);
-  }
+    // Check if the customer lineup for the specified week already exists
+    const existingLineupCount = await lineup.countDocuments({ customer: customer_id, week: dto.week || 1 }).exec();
+    if (existingLineupCount && cusLineup?.status === 'active') {
+        throw createError('Customer lineup for this week already exists', 404);
+    }
 
     if(dto?.swallow === true && !dto?.extras ){
       validateFields(dto, ["extras"]);
@@ -74,7 +76,7 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
     }
 
     // If all validations pass, create the lineup
-    const _lineup = await lineup.create({ ...dto, customer: customer_id });
+    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
