@@ -84,17 +84,25 @@ export class GiftCardService {
     if (!cus) throw createError("Customer does not exist", 404);
     
     const couponCode = await this.generateCoupon(7);
-    let giftItem: GiftCard | null = await giftcard.findById(dto?.gift_id).lean<GiftCard>().exec();
+    let giftItem = await giftcard.findById(dto?.gift_id).lean<GiftCard>().exec();
     
+    let customItem = await customgift.findById(dto?.gift_id).lean<CustomGift>().exec();
     if (!giftItem) {
-      giftItem = await customgift.findById(dto?.gift_id).lean<CustomGift>().exec();
-      if (!giftItem) throw createError("Gift card or custom gift does not exist", 404);
+      if (!customItem) throw createError("Gift card or custom gift does not exist", 404);
     }
-  
+    let amountToPay = 0 
     const amount = Math.round(giftItem?.amount * 100);
+    // if(amount){
+    //   amountToPay += amount
+    // }
+    if(!amount || amount < 1){
+      const cusAmount = customItem?.amount
+      amountToPay += cusAmount
+    }
+
     const intent = await this.stripe.paymentIntents.create({
       customer: cus?.stripe_id,
-      amount: amount,
+      amount: amount || Math.round(amountToPay * 100),
       currency: "gbp",
       receipt_email: cus?.email,
       expand: ["invoice"],
@@ -165,48 +173,28 @@ export class GiftCardService {
   async createCustomGift(customer_id: string, dto: CustomGiftDto, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMGIFT, [PermissionScope.CREATE, PermissionScope.ALL]);
     
-    const result = await this.stripe.products.create({
-      name: dto.name,
-      default_price_data: {
-        currency: "gbp",
-        unit_amount: dto.amount * 100,
-        recurring: {
-          interval: dto.subscription_interval,
-          interval_count: 1,
-        },
-      },
-    });
+    // const result = await this.stripe.products.create({
+    //   name: dto.name,
+    //   default_price_data: {
+    //     currency: "gbp",
+    //     unit_amount: dto.amount * 100,
+    //     recurring: {
+    //       interval: dto.subscription_interval,
+    //       interval_count: 1,
+    //     },
+    //   },
+    // });
 
     const _giftcard = await customgift.create({
       ...dto,
       customer: customer_id,
-      product_id: result.id,
-      price_id: result.default_price,
-      // subscription_interval: 'month' // assuming this should be set explicitly as 'month'
+      // product_id: result.id,
+      // price_id: result.default_price,
+      // // subscription_interval: 'month' // assuming this should be set explicitly as 'month'
     });
   
     return _giftcard;
   }
-  
-
-  // async createCustomGift(dto: CustomGiftDto, roles: string[]) {
-  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMGIFT, [PermissionScope.CREATE, PermissionScope.ALL]);
-  //   const result = await this.stripe.products.create({
-  //     name: dto.name,
-  //     default_price_data: {
-  //       currency: "gbp",
-  //       unit_amount: dto.amount * 100,
-  //       recurring: {
-  //         interval: dto.subscription_interval,
-  //         interval_count: 1,
-  //       },
-  //     },
-  //   });
-
-  //   const _giftcard = await customgift.create({ ...dto, product_id: result.id, price_id: result.default_price, subscription_interval: 'month'});
-
-  //   return _giftcard;
-  // }
 
   async getCustomerCustomGift(
     customer_id: string,

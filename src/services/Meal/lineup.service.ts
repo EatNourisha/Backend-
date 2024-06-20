@@ -44,8 +44,8 @@ export class MealLineupService {
 
     // Retrieve customer's subscription information
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
-
-    // If the subscription is active and has start and end dates
+    const endDate = subscriptionCheck?.end_date; 
+// If the subscription is active and has start and end dates
     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
         const startDate = new Date(subscriptionCheck.start_date).getTime(); 
         const endDate = new Date(subscriptionCheck.end_date).getTime(); 
@@ -59,9 +59,11 @@ export class MealLineupService {
         }
     }
 
+    const cusLineup = await lineup.findOne({customer: customer_id, week: dto.week})
+
     // Check if the customer lineup for the specified week already exists
     const existingLineupCount = await lineup.countDocuments({ customer: customer_id, week: dto.week || 1 }).exec();
-    if (existingLineupCount) {
+    if (existingLineupCount && cusLineup?.status === 'active') {
         throw createError('Customer lineup for this week already exists', 404);
     }
 
@@ -74,7 +76,7 @@ export class MealLineupService {
     }
 
     // If all validations pass, create the lineup
-    const _lineup = await lineup.create({ ...dto, customer: customer_id });
+    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
