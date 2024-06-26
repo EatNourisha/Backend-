@@ -51,6 +51,7 @@ export enum Template {
   WELCOME = "/emails/welcome.html", // {name: ''}
   ORDERCREATED = "/emails/orderCreated.html", // {name: '', order_ref_id: '', delivery_date: '', delivery_address: ''}
   Marketing = "/emails/promo.html",
+  GIFTCARD = "/emails/giftCard.html",
 }
 
 type SendViaType = "sendgrid" | "mailgun" | "nodemailer" | "postmark";
