@@ -7,6 +7,7 @@ import {
   SendVerificationEmailDto,
   SendWelcomeEmailDto,
   SendPromoEmailDto,
+  GiftCardEmailDto,
 } from "../interfaces";
 
 _Emittery.isDebugEnabled = false;
@@ -31,6 +32,7 @@ export type NourishaEventTypes = {
   "customer:send_promo_email": SendPromoEmailDto;
   "customer:send_resetpassword_email_web": SendResetPasswordEmailWebDto;
   "customer:send_resetpassword_email_mobile": SendResetPasswordEmailMobileDto;
+  "customer:send_giftcard_email": GiftCardEmailDto;
 
   "subscription:updated": { owner: Customer | string; subscription: Subscription };
   "subscription:cancelled": { owner: Customer | string; subscription: Subscription };

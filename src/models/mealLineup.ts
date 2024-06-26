@@ -17,11 +17,6 @@ export class DayMeals {
   dinner: Ref<MealPack>;
 }
 
-export class Extras {
-  @prop({ ref: () => MealExtras })
-  extra: Ref<MealExtras>;
-
-}
 
 export enum StatusActivity {
 ACTIVE= "active",
@@ -68,9 +63,9 @@ export class MealLineup extends BaseEntity {
   @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
   status?: StatusActivity;
 
-  @prop({type: () => Extras, _id: false })
-  extras:Extras;
 
+  @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
+  extras?: Ref<MealExtras>[];
   @prop()
   sub_end_date: Date;
 

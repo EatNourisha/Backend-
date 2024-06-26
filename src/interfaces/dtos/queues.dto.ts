@@ -38,4 +38,14 @@ export interface SendPromoEmailDto {
   
 }
 
+export interface GiftCardEmailDto {
+  email: string;
+  name: string;
+  amount: number;
+  coupon: string;
+  gifter: string;
+  message?: string;
+  
+}
+
 export interface CreateMealPackAnalysisData extends Omit<MealPackAnalysis, "_id" | "createdAt" | "updatedAt"> {}

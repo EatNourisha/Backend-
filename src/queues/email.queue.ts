@@ -8,6 +8,7 @@ import {
   SendVerificationEmailDto,
   SendWelcomeEmailDto,
   SendPromoEmailDto,
+  GiftCardEmailDto,
 } from "../interfaces";
 // import Bull, { Job } from "bull";
 
@@ -20,6 +21,7 @@ export const known_email_jobs = [
   "send_resetpassword_email_mobile",
   "send_placed_order_email",
   "send_promo_email",
+  "send_giftcard_email",
 ] as const;
 export type KnowEmailJobType = (typeof known_email_jobs)[number];
 
@@ -53,6 +55,9 @@ async function emailProcessor(job: Job<any, any, KnowEmailJobType>) {
       return await sendResetPasswordEmail__Mobile(job);
     case "send_placed_order_email":
       return await sendPlaceOrderEmail(job);
+
+    case "send_giftcard_email":
+      return await sendGiftMail(job);
     default:
       throw new Error(`Job(EmailQueue) ${job.name} not processed!`);
   }
@@ -118,6 +123,12 @@ async function sendPromoMail(job: Job<SendPromoEmailDto, any, KnowEmailJobType>)
   const data = job.data;
   console.log("Send Promo Email", data);
   return await EmailService.sendEmail("🥳promo sent successfully", data?.email, Template.Marketing, data);
+}
+
+async function sendGiftMail(job: Job<GiftCardEmailDto, any, KnowEmailJobType>) {
+  const data = job.data;
+  console.log("Send gift Email", data);
+  return await EmailService.sendEmail("🥳Gift sent successfully", data?.email, Template.GIFTCARD, data);
 }
 
 

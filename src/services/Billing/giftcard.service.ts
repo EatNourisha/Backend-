@@ -6,6 +6,7 @@ import { createError, paginate, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import config from "../../config";
 import { TransactionReason } from "../../models/transaction";
+import { NourishaBus } from "../../libs";
 // import { SubscriptionInterval } from "../../models/customgift";
 export class GiftCardService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -122,18 +123,29 @@ export class GiftCardService {
       });
     }
   
-    await Promise.all([
-      giftpurchase.create({
+    
+    const giftPur = await giftpurchase.create({
         gift_id: dto?.gift_id,
         code: couponCode,
         customer: customer_id,
         reciever_email: dto?.reciever_email,
+        reciever_name: dto?.reciever_name,
         gift_message: dto?.gift_message,
         amount: (intent?.amount ?? 0) / 100,
         reference: intent?.id
-      }),
-    ]);
-  
+      })
+
+    const payload = {
+      email: giftPur?.reciever_email!,
+      gifter: `${cus?.first_name!} ${cus?.last_name!}`,
+      name: giftPur?.reciever_name!, 
+      coupon: giftPur?.code!,
+      amount: giftPur?.amount!,
+      message: giftPur?.gift_message!,
+    };
+
+   await NourishaBus.emit("customer:send_giftcard_email", payload);
+
     return { client_secret: intent?.client_secret };
   }
     
@@ -188,9 +200,6 @@ export class GiftCardService {
     const _giftcard = await customgift.create({
       ...dto,
       customer: customer_id,
-      // product_id: result.id,
-      // price_id: result.default_price,
-      // // subscription_interval: 'month' // assuming this should be set explicitly as 'month'
     });
   
     return _giftcard;
@@ -211,5 +220,32 @@ export class GiftCardService {
     if (!_giftcard) throw createError("Custom Gift does not exist", 400);
     return _giftcard;
   }
+
+
+
+  // async giftCardRecieverEmail(customer_id: string, dto: GiftPurchaseDto, send_email = true,) {
+
+  //   const acc = await customer.findById(customer_id).lean<Customer>().exec();
+  //   if (!acc) throw createError("Customer not found", 404);
+
+  //   const _gift = await giftpurchase.findOne({gift_id: dto?.gift_id})
+  //   if (send_email)
+  //     await NourishaBus.emit("customer:send_giftcard_email", {
+  //           // email:'shukazuby@gmail.com'!,
+  //           // gifter: 'Zuzu'!,
+  //           // name: 'Zubaidat'!, 
+  //           // coupon: 'Code233'!,
+  //           // amount: 100!,
+  //           email: dto?.reciever_email!,
+  //           gifter: acc?.first_name!,
+  //           name: dto?.reciever_name!, 
+  //           coupon: _gift?.code!,
+  //           amount: _gift?.amount!,
+  //         });
+
+  //     console.log(send_email);
+  //     console.log("Gift Card Sent ", );
+  //     return _gift ;
+  // }
 
 }
