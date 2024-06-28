@@ -338,7 +338,8 @@ export class DiscountService {
 
     const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
     if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
-      throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
+      // throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
+      throw createError(`To be eligible to use coupon code, order above ${promo?.restrictions?.minimum_amount}`);
     /// End restriction checks
 
     const times_redeemed = coup?.times_redeemed ?? promo?.times_redeemed ?? 0;
