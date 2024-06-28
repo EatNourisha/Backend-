@@ -339,13 +339,14 @@ export class DiscountService {
     const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
     if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
       // throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
-      throw createError(`To be eligible to use coupon code, order above ${promo?.restrictions?.minimum_amount}`);
+      throw createError(`To be eligible to use coupon code, order above £${promo?.restrictions?.minimum_amount}`);
     /// End restriction checks
 
     const times_redeemed = coup?.times_redeemed ?? promo?.times_redeemed ?? 0;
     const max_redemptions = coup?.max_redemptions ?? promo?.max_redemptions ?? 0;
     if (max_redemptions > 0 && times_redeemed >= max_redemptions && !dryRun)
-      throw createError("Max redemptions for the applied promo code / coupon reached");
+      // throw createError("Max redemptions for the applied promo code / coupon reached");
+    throw createError("Oops, we've reached max redemptions for the applied promo/coupin code");
 
     return { amount_off, promo, disc };
   }
