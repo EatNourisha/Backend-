@@ -116,6 +116,13 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           .exec();
       }
 
+      if(data.metadata !==null){
+        await giftpurchase
+        .findOneAndUpdate({ customer: cus?._id, code: data.metadata.couponCode, reference: data?.id }, { status: GiftStatus.REDEEMED })
+        .lean<GiftPurchase>()
+        .exec();
+    }
+
       await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
     }
