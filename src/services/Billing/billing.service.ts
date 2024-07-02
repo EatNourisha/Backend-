@@ -148,7 +148,7 @@ export class BillingService {
       receipt_email: cus?.email,
       expand: ["invoice"],
       metadata: {
-        couponCode:_order?.promo ?? null
+        couponCode:_order?.coupon ?? null
       },
       confirm: !!dto?.card_token,
     });
