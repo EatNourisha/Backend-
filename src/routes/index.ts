@@ -117,8 +117,10 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       }
       console.log('~~~~~~~~~~~~~~~~~~~~~~',data.metadata.couponCode)
 
-      if(data.metadata.couponCode !==null){       
-         await giftpurchase.findOneAndUpdate({ customer: cus?._id, code: data.metadata.couponCode, reference: data?.id }, { status: GiftStatus.REDEEMED })
+      const meta = data.metadata;
+
+      if(meta.couponCode !== null || ""){       
+         await giftpurchase.findOneAndUpdate({ customer: cus?._id, code: meta.couponCode }, { status: GiftStatus.REDEEMED })
         .lean<GiftPurchase>()
         .exec();
     }
