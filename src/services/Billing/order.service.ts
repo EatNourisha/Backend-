@@ -186,7 +186,8 @@ export class OrderService {
       promo: when(!!promo, promo?._id, undefined),
       actual_discounted_amount: amount_off,
       weekend_delivery: dto?.weekend_delivery,
-      delivery_period: dto?.delivery_period
+      delivery_period: dto?.delivery_period,
+      coupon: dto?.coupon,
       });
 
     const { order: _order, items } = result;
