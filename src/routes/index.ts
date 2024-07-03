@@ -121,7 +121,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       const meta = data.metadata;
 
       if(meta.couponCode !== null || ""){       
-         await giftpurchase.findOneAndUpdate({ customer: cus?._id, code: meta.couponCode }, { status: GiftStatus.REDEEMED })
+        await giftpurchase.findOneAndUpdate({ customer: cus?._id, code: meta.couponCode }, { status: GiftStatus.REDEEMED, redeemed_by: cus?._id })
         .lean<GiftPurchase>()
         .exec();
     }

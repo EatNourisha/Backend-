@@ -67,10 +67,10 @@ export class MealPack extends BaseEntity {
   calories?: number;
 
   @prop()
-  spice_level?: number;
+  spice_level?: string;
 
-  // @prop({ ref: () => Category })
-  // category?: Ref<Category>;
+  @prop()
+  tag?: string;
 
   @prop()
   category?: string;
