@@ -5,6 +5,7 @@ import BaseEntity from "./base";
 import { Address, Customer } from "./customer";
 import { OrderItem } from "./orderItem";
 import { PromoCode } from "./promocode";
+import { MealExtras } from "./mealExtras";
 
 export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
@@ -65,6 +66,12 @@ export class Order extends BaseEntity {
 
   @prop()
   coupon?: string;
+
+  @prop({default:false})
+  swallow?: boolean;
+
+  @prop()
+  extras?: Ref<MealExtras>[];
 
 }
 

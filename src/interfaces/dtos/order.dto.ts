@@ -12,4 +12,6 @@ export interface PlaceOrderDto {
   delivery_date: Date;
   weekend_delivery: boolean;
   delivery_period: string;
+  swallow?: boolean;
+  extras?: string[];
 }

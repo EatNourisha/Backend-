@@ -42,6 +42,15 @@ export class GiftPurchase extends BaseEntity {
 
   @prop({ ref: () => "Customer" })
   redeemed_by: Ref<Customer>;
+  
+  @prop({default: false})
+  scheduled?: boolean;
+
+  @prop()
+  scheduled_date?: Date;
+
+  @prop()
+  gift_image?: string;
 
 
 }
