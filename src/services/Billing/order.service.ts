@@ -171,6 +171,10 @@ export class OrderService {
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
 
+    if(dto?.swallow === true && !dto?.extras){
+      validateFields(dto, ["extras"]);
+    }
+
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
@@ -188,6 +192,8 @@ export class OrderService {
       weekend_delivery: dto?.weekend_delivery,
       delivery_period: dto?.delivery_period,
       coupon: dto?.coupon,
+      swallow: dto?.swallow,
+      extras: dto.extras,
       });
 
     const { order: _order, items } = result;

@@ -101,6 +101,10 @@ export class GiftCardService {
       amountToPay += cusAmount
     }
 
+    if(dto?.scheduled === true && !dto?.scheduled_date){
+      validateFields(dto, ["scheduled_date"]);
+    }
+
     const intent = await this.stripe.paymentIntents.create({
       customer: cus?.stripe_id,
       amount: amount || Math.round(amountToPay * 100),
@@ -132,7 +136,9 @@ export class GiftCardService {
         reciever_name: dto?.reciever_name,
         gift_message: dto?.gift_message,
         amount: (intent?.amount ?? 0) / 100,
-        reference: intent?.id
+        reference: intent?.id,
+        scheduled: dto?.scheduled,
+        scheduled_date: dto?.scheduled_date
       })
 
     const payload = {

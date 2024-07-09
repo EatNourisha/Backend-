@@ -63,9 +63,9 @@ export class MealLineup extends BaseEntity {
   @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
   status?: StatusActivity;
 
-
   @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
   extras?: Ref<MealExtras>[];
+
   @prop()
   sub_end_date: Date;
 
