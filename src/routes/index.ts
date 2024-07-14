@@ -39,6 +39,7 @@ import { TransactionStatus } from "../models/transaction";
 import AppUpdate from "./appupdate.routes";
 import bodyParser from "body-parser";
 import { GiftStatus } from "../models/giftPurchase";
+import {sendGiftBought, sendGiftRecipient, sendGiftSent}  from "../services/giftCardEmail.service";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -111,10 +112,21 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .exec();
 
       if (tx?.reason === "Gift-Card"|| "Custom-Gift") {
-         await giftpurchase
+      const gift = await giftpurchase
           .findOneAndUpdate({ customer: cus?._id, reference: data?.id }, { status: GiftStatus.ACTIVE })
           .lean<GiftPurchase>()
           .exec();
+
+          if(gift){
+            console.log('~~~~~~~~~GIFT EMAILs SENT~~~~~~~~~~~~~~~~')
+            await sendGiftBought(cus?.email!, gift, false )
+            if(gift && gift?.scheduled !== true){
+              await sendGiftRecipient(gift?.reciever_email!, gift, false )
+              await sendGiftSent(cus?.email!, gift, false )
+            }
+            console.log('~~~~~~~~~END GIFT EMAILs~~~~~~~~~~~~~~~~')
+          }
+
       }
       const meta = data.metadata;
 

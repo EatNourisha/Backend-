@@ -73,7 +73,7 @@ export class GiftCardController {
           sendError(error, next);
         }
       }
-  
+    
       async deleteCustomGift(req: Request, res: Response, next: NextFunction) {
         try {
           const { customer, params } = req;
@@ -84,5 +84,26 @@ export class GiftCardController {
         }
       }
   
+      async createGiftImage(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { customer, body } = req;
+          const data = await service.createGiftImages(body, customer.roles);
+            sendResponse(res, 201, data);
+        } catch (error) {
+          sendError(error, next);
+        }
+      }
+
+      async getGiftImages(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { query } = req;
+          const data = await service.getGiftImages([], query as any);
+          sendResponse(res, 200, data);
+        } catch (error) {
+          sendError(error, next);
+        }
+      }
+    
+
   }
   

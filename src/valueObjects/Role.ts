@@ -43,4 +43,5 @@ export enum AvailableResource {
   DISCOUNT = "discount",
   GIFTCARD = "giftcard",
   CUSTOMGIFT = "customgift",
+  GIFTIMAGES = "giftimages",
 }

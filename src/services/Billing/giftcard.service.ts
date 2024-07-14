@@ -1,13 +1,11 @@
 import Stripe from "stripe";
-import { GiftCardDto, GiftPurchaseDto, IPaginationFilter, PaginatedDocument, CustomGiftDto } from "../../interfaces";
-import {  CustomGift, Customer, GiftCard, GiftPurchase, customer, customgift, giftcard, giftpurchase, transaction } from "../../models";
+import { GiftCardDto, GiftPurchaseDto, IPaginationFilter, PaginatedDocument, CustomGiftDto, GiftImageDto } from "../../interfaces";
+import {  CustomGift, Customer, GiftCard, GiftImages, GiftPurchase, customer, customgift, giftImages, giftcard, giftpurchase, transaction } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, paginate, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import config from "../../config";
 import { TransactionReason } from "../../models/transaction";
-import { NourishaBus } from "../../libs";
-// import { SubscriptionInterval } from "../../models/customgift";
 export class GiftCardService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
   async createGiftCard(dto: GiftCardDto, roles: string[]) {
@@ -27,55 +25,6 @@ export class GiftCardService {
     const _giftcard = await giftcard.create({ ...dto, product_id: result.id, price_id: result.default_price });
     return _giftcard;
   }
-
-  // async buyGiftCard(customer_id: string, dto: GiftPurchaseDto, roles: string[]) {
-  //   validateFields(dto, ["gift_id"]);
-  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
-  //   if (!cus) throw createError("Customer does not exist", 404);
-
-  //   const _giftcard = await giftcard.findById(dto?.gift_id).lean<GiftCard>().exec();
-  //   if (!_giftcard) throw createError("gift card does not exist", 404);
-
-  //   const cupondCode = await this.generateCoupon(7);
-
-  //   const intent = await this.stripe.paymentIntents.create({
-  //     customer: cus?.stripe_id,
-  //     amount: Math.round(_giftcard?.amount * 100),
-  //     currency: "gbp",
-  //     receipt_email: cus?.email,
-  //     expand: ["invoice"],
-  //   });
-
-  //   if (!!intent.id) {
-  //     await transaction.create({
-  //       itemRefPath: "Gift-Card",
-  //       item: _giftcard?._id,
-  //       currency: intent.currency,
-  //       order_reference: intent?.id,
-  //       customer: cus?._id,
-  //       amount: (intent.amount ?? 0) / 100,
-  //       reference: intent?.id,
-  //       reason: TransactionReason.GIFTCARD,
-  //       stripe_customer_id: cus?.stripe_id,
-  //     });
-  //   }
-
-  //   await Promise.all([
-  //     giftpurchase.create({
-  //       gift_id: dto?.gift_id,
-  //       code: cupondCode,
-  //       customer: customer_id,
-  //       reciever_email: dto?.reciever_email,
-  //       gift_message: dto?.gift_message,
-  //       amount: (intent?.amount ?? 0) / 100,
-  //       reference: intent?.id
-  //     }),
-  //   ]);
-  //   return { client_secret: intent?.client_secret };
-  // }
-
 
   async buyGiftCard(customer_id: string, dto: GiftPurchaseDto, roles: string[]) {
     validateFields(dto, ["gift_id"]);
@@ -99,6 +48,11 @@ export class GiftCardService {
     if(!amount || amount < 1){
       const cusAmount = customItem?.amount
       amountToPay += cusAmount
+    }
+
+    let _giftImages = await giftImages.findById(dto?.gift_image).lean<GiftImages>().exec();
+    if (!_giftImages) {
+       throw createError("Gift image does not exist", 404);
     }
 
     if(dto?.scheduled === true && !dto?.scheduled_date){
@@ -127,8 +81,7 @@ export class GiftCardService {
       });
     }
   
-    
-    const giftPur = await giftpurchase.create({
+  await giftpurchase.create({
         gift_id: dto?.gift_id,
         code: couponCode,
         customer: customer_id,
@@ -138,21 +91,12 @@ export class GiftCardService {
         amount: (intent?.amount ?? 0) / 100,
         reference: intent?.id,
         scheduled: dto?.scheduled,
-        scheduled_date: dto?.scheduled_date
+        scheduled_date: dto?.scheduled_date,
+        gift_type: _giftImages?.name,
+        imageUrl: _giftImages?.image_url,
       })
 
-    const payload = {
-      email: giftPur?.reciever_email!,
-      gifter: `${cus?.first_name!} ${cus?.last_name!}`,
-      name: giftPur?.reciever_name!, 
-      coupon: giftPur?.code!,
-      amount: giftPur?.amount!,
-      message: giftPur?.gift_message!,
-    };
-
-   await NourishaBus.emit("customer:send_giftcard_email", payload);
-
-    return { client_secret: intent?.client_secret };
+    return { client_secret: intent?.client_secret, payLink: intent?.payment_method_options?.link };
   }
     
   async generateCoupon(length: number): Promise<string> {
@@ -191,18 +135,6 @@ export class GiftCardService {
   async createCustomGift(customer_id: string, dto: CustomGiftDto, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMGIFT, [PermissionScope.CREATE, PermissionScope.ALL]);
     
-    // const result = await this.stripe.products.create({
-    //   name: dto.name,
-    //   default_price_data: {
-    //     currency: "gbp",
-    //     unit_amount: dto.amount * 100,
-    //     recurring: {
-    //       interval: dto.subscription_interval,
-    //       interval_count: 1,
-    //     },
-    //   },
-    // });
-
     const _giftcard = await customgift.create({
       ...dto,
       customer: customer_id,
@@ -227,7 +159,16 @@ export class GiftCardService {
     return _giftcard;
   }
 
+  async createGiftImages(dto: GiftImageDto, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.GIFTIMAGES, [PermissionScope.CREATE, PermissionScope.ALL]);
+    const _giftImages = await giftImages.create({ ...dto });
+    return _giftImages;
+  }
 
+  async getGiftImages(_: string[], filters?: IPaginationFilter): Promise<PaginatedDocument<GiftImages[]>> {
+    let queries: any = {};
+    return await paginate("giftImages", queries, filters);
+  }
 
   // async giftCardRecieverEmail(customer_id: string, dto: GiftPurchaseDto, send_email = true,) {
 
@@ -253,5 +194,6 @@ export class GiftCardService {
   //     console.log("Gift Card Sent ", );
   //     return _gift ;
   // }
+
 
 }

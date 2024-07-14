@@ -4,6 +4,7 @@ import { getModelForClass, index, modelOptions, prop } from "@typegoose/typegoos
 import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { GiftCard } from "./giftCard";
+import { GiftImages } from "./giftImages";
 
 export enum GiftStatus {
   PENDING = "pending",
@@ -50,8 +51,16 @@ export class GiftPurchase extends BaseEntity {
   scheduled_date?: Date;
 
   @prop()
-  gift_image?: string;
+  gift_image: Ref<GiftImages>;
 
+  @prop()
+  gift_type: string;
+
+  @prop()
+  imageUrl: string;
+
+  @prop({default: false})
+  scheduled_Email: boolean;
 
 }
 

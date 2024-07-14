@@ -88,7 +88,7 @@ export class EmailService {
       result = await sgMail.send({
         from: {
           name: "Nourisha",
-          email: "help@eatnourisha.com",
+          email: "hello@eatnourisha.com",
         },
         subject,
         to: email,
