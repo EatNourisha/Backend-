@@ -124,6 +124,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.MEALEXTRAS,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.GIFTIMAGES,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };

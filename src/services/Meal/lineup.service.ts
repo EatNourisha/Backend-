@@ -58,6 +58,26 @@ export class MealLineupService {
             throw createError("Only monthly subscribers can create more than one lineup", 404);
         }
     }
+  // const _mealPack = await mealPack.findById(
+    //   dto?.monday?.lunch || dto?.monday?.dinner ||
+    //   dto?.tuesday?.lunch || dto?.tuesday?.dinner ||  
+    //   dto?.wednesday?.lunch || dto?.wednesday?.dinner ||  
+    //   dto?.thursday?.lunch || dto?.thursday?.dinner ||  
+    //   dto?.friday?.lunch || dto?.friday?.dinner ||  
+    //   dto?.saturday?.lunch || dto?.saturday?.dinner ||  
+    //   dto?.sunday?.lunch || dto?.sunday?.dinner     
+    // ).lean<MealPack>().exec();
+    
+    // const lineupDays = dto?.monday || dto?.tuesday || dto?.wednesday ||
+    //  dto?.thursday || dto?.friday || dto?.saturday ||
+    //  dto?.sunday;
+
+    // if (_mealPack?.isSwallow === true) {
+    //   lineupDays;
+    //     validateFields(dto, ['extras']);
+
+    // }
+
 
     const cusLineup = await lineup.findOne({customer: customer_id, week: dto.week})
 
@@ -67,13 +87,11 @@ export class MealLineupService {
         throw createError('Customer lineup for this week already exists', 404);
     }
 
-    if(dto?.swallow === true && !dto?.extras ){
-      validateFields(dto, ["extras"]);
-      // note: this is how it is passed in the body
-      // extras:{
-        // extra: "6671bbc3ba84e64859613ff8"
-      // }
-    }
+    // if(dto?.swallow === true && !dto?.extras ){
+    //   validateFields(dto, ["extras"]);
+    //   // note: this is how it is passed in the body
+    //   // extras:["6671bbc3ba84e64859613ff8"]
+    // }
 
     // If all validations pass, create the lineup
     const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate });

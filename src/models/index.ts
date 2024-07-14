@@ -48,3 +48,4 @@ export { default as giftcard, GiftCard } from "./giftCard";
 export { default as giftpurchase, GiftPurchase } from "./giftPurchase";
 export { default as mealextras, MealExtras } from "./mealExtras";
 export { default as customgift, CustomGift } from "./customgift";
+export { default as giftImages, GiftImages } from "./giftImages";

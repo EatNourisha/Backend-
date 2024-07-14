@@ -99,6 +99,8 @@ export class CustomerService {
 
 
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
+   const em = await this.validateEmail(input?.email) 
+    if(!em) throw createError("email must have an @ symbol", 404);
     let acc = (await customer.create({
       ...input,
       control: { enabled: true },
@@ -346,8 +348,15 @@ export class CustomerService {
     input = CustomerService.removeUpdateForcedInputs(input);
     if (isEmpty(input)) throw createError("No valid input", 404);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
-
+    
     if (!!input?.address) validateFields(input?.address, ["address_", "city", "postcode", "country"]);
+    const address = input?.address
+    const add =  await this.validateAddress(address?.address_)
+    const ci =  await this.validateAddress(address?.city)
+    const post =  await this.validateAddress(address?.postcode)
+    const coun =  await this.validateAddress(address?.country)
+
+  if(!add || !ci || !post || !coun ) throw createError("Don't add these symbols: @$€£¥#~", 404);
 
     const data = await customer
       .findOneAndUpdate({ _id: id }, { ...input }, { new: true })
@@ -357,6 +366,16 @@ export class CustomerService {
     if (!!input?.address && !!data?.email) await MarketingService.updateContactAddr(data?.email, input?.address);
     return data;
   }
+
+ async validateAddress(address) {
+    const addressRegex = /^[a-zA-Z0-9\s,.'-]+(?<![@$€£¥#~])$/;
+    return addressRegex.test(address);
+}
+
+async validateEmail(email) {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
+}
 
   async addCustomerAllergies(id: string, dto: AddCustomerAllergiesDto, roles: string[]) {
     validateFields(dto, ["allergies"]);
