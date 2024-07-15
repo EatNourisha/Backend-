@@ -170,6 +170,14 @@ export class GiftCardService {
     return await paginate("giftImages", queries, filters);
   }
 
+  async getGiftImageById(id: string, roles: string[]): Promise<GiftImages> {
+    await RoleService.hasPermission(roles, AvailableResource.GIFTIMAGES, [PermissionScope.READ, PermissionScope.ALL]);
+    const _giftImage = await giftImages.findById(id).lean<GiftImages>().exec();
+    if (!_giftImage) throw createError("Gift Image not found", 404);
+    return _giftImage;
+  }
+
+
   // async giftCardRecieverEmail(customer_id: string, dto: GiftPurchaseDto, send_email = true,) {
 
   //   const acc = await customer.findById(customer_id).lean<Customer>().exec();

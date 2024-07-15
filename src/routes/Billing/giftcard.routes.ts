@@ -13,6 +13,7 @@ router.get("/custom", authGuard, controller.getCustomerCustomGift);
 router.get("/", authGuard, controller.getGiftCards);
 router.get("/images", authGuard, controller.getGiftImages);
 router.get("/customer", authGuard, controller.getCustomerGiftPurchase); 
+router.get("/image/:id", authGuard, controller.getGiftImageById);
 router.delete("/:id", authGuard, controller.deleteGiftCard);
 router.delete("/custom/:id", authGuard, controller.deleteCustomGift);
 export default router;
