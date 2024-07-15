@@ -1011,7 +1011,7 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
       <tr>
         <td>
           <p style="margin-top: 32px" class="normal_text">
-            Supriseeee🥳🎉,
+            Dear ${payload?.reciever_name},
           </p>
         </td>
       </tr>
@@ -1019,7 +1019,7 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
       <tr>
         <td>
           <p style="margin-top: 32px" class="normal_text">
-            You've recieved a Nourisha gift card from ${cus?.first_name} ${cus?.last_name}.Get ready to enjoy delightful flavors.
+           Supriseeee🥳🎉! You've recieved a Nourisha gift card from ${cus?.first_name} ${cus?.last_name}.Get ready to enjoy delightful flavors.
           </p>
         </td>
       </tr>

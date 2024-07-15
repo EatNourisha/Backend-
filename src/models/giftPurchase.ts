@@ -18,10 +18,10 @@ export class GiftPurchase extends BaseEntity {
   gift_id: Ref<GiftCard>;
   
   @prop()
-  reciever_email?: string;
+  reciever_email: string;
 
   @prop()
-  reciever_name?: string;
+  reciever_name: string;
   
   @prop({default: 0})
   amount: number;
