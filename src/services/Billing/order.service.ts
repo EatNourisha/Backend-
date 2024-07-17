@@ -306,7 +306,7 @@ export class OrderService {
       email: cus?.email!,
       order_ref_id: _order?.ref!,
       delivery_date: _order?.delivery_date!,
-      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}, ${_order?.delivery_address?.postcode}`!
+      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!
     }
 
     // NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
