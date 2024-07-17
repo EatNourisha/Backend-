@@ -9,10 +9,7 @@ import { MealExtras } from "./mealExtras";
 class ExtraDetail {
   @prop({_id: false})
   day?: string;
-
-  @prop({default: false, _id: false})
-  noSwallow?: boolean;
-
+   
   @prop({_id: false, _id: false})
   mealType?: string;
 
@@ -86,11 +83,8 @@ export class MealLineup extends BaseEntity {
   @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
   status?: StatusActivity;
 
-  // @prop({ type: () => [ExtraDetail], _id: false })
-  // extras?: ExtraDetail[];
-
-  @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
-  extras?: Ref<MealExtras>[];
+  // @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
+  // extras?: Ref<MealExtras>[];
 
   @prop()
   sub_end_date: Date;
