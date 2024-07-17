@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 // import { EmailService, Template } from "./email.service";
 // import { isTesting } from "../config";
 import { NourishaBus } from "../libs";
+import { sendMobilResetEmail, sendWelcomeEmail } from "./authEmail.service";
 // import { EmailQueue } from "../queues";
 // import EmailService, { Template } from "./email.service";
 
@@ -58,7 +59,9 @@ export class AuthVerificationService {
       link: `https://eatnourisha.com/verification?code=${verification?.code}`,
     };
 
-    await NourishaBus.emit("customer:send_resetpassword_email_mobile", payload);
+    // await NourishaBus.emit("customer:send_resetpassword_email_mobile", payload);
+
+    await sendMobilResetEmail(payload.email, payload, false)
     // EmailQueue.add({type: "send_verification_email", ...payload})
     // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
@@ -144,7 +147,14 @@ export class AuthVerificationService {
     // await NourishaBus.emit("customer:send_verification_email", payload);
 
     // send welcome email instead, since emails are not verified on the mobile app at the moment
-    NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
+
+    const payload ={
+      email: acc?.email!, 
+      name: acc?.first_name!
+    }
+
+    // NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
+    await sendWelcomeEmail(payload.email, payload, false)
     // EmailQueue.add({type: "send_verification_email", ...payload})
     // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);

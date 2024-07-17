@@ -1,7 +1,7 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, earnings, giftpurchase, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, order, orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
@@ -10,9 +10,10 @@ import Stripe from "stripe";
 import config from "../../config";
 import { DiscountService } from "./discount.service";
 import { when } from "../../utils/when";
-import { NourishaBus } from "../../libs";
+// import { NourishaBus } from "../../libs";
 import OrderEventListener from "../../listeners/order.listener";
 import { MealService } from "../Meal/meal.service";
+import { sendOrderPlacedEmail } from "../../services/authEmail.service";
 // import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
@@ -297,8 +298,19 @@ export class OrderService {
       cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
       MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
+    let cus = await customer.findById(_order?.customer).lean<Customer>().exec();
+    if (!cus) throw createError("Customer does not exist", 404);
+  
+    const payload ={
+      name: cus?.first_name!,
+      email: cus?.email!,
+      order_ref_id: _order?.ref!,
+      delivery_date: _order?.delivery_date!,
+      delivery_address: _order?.delivery_address!
+    }
 
-    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+    // NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+    await sendOrderPlacedEmail(payload.email, payload, false)
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
