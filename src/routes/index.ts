@@ -119,7 +119,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
           if(gift){
             await sendGiftBought(cus?.email!, gift, false )
-            if(gift && gift?.scheduled !== true){
+            if(gift?.scheduled === false){
               await sendGiftRecipient(gift?.reciever_email!, gift, false )
               await sendGiftSent(cus?.email!, gift, false )
             }          }
