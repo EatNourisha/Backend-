@@ -6,30 +6,42 @@ import { Customer } from "./customer";
 import { MealPack } from "./mealPack";
 import { MealExtras } from "./mealExtras";
 
-export class DayMeals {
-  @prop({ ref: () => MealPack })
-  breakfast: Ref<MealPack>;
-
-  @prop({ ref: () => MealPack })
-  lunch: Ref<MealPack>;
-
-  @prop({ ref: () => MealPack })
-  dinner: Ref<MealPack>;
-}
-
 class ExtraDetail {
-  @prop({ required: true })
-  day: string;
+  @prop({_id: false})
+  day?: string;
 
-  @prop({ required: true })
-  mealType: string;
+  @prop({default: false, _id: false})
+  noSwallow?: boolean;
 
-  @prop({ ref: () => MealPack })
+  @prop({_id: false, _id: false})
+  mealType?: string;
+
+  @prop({ ref: () => MealPack, _id: false })
   mealId: Ref<MealPack>;
 
-  @prop({ ref: () => MealExtras })
-  extraId: Ref<MealExtras>;
+  @prop({ ref: () => MealExtras, _id: false })
+  extraId?: Ref<MealExtras>;
 }
+export class DayMeals {
+  @prop({_id: false})
+  breakfast: ExtraDetail;
+
+  @prop({_id: false})
+  lunch: ExtraDetail;
+
+  @prop({_id: false})
+  dinner: ExtraDetail;
+}
+// export class DayMeals {
+//   @prop({ ref: () => MealPack })
+//   breakfast: Ref<MealPack>;
+
+//   @prop({ ref: () => MealPack })
+//   lunch: Ref<MealPack>;
+
+//   @prop({ ref: () => MealPack })
+//   dinner: Ref<MealPack>;
+// }
 
 export enum StatusActivity {
 ACTIVE= "active",
