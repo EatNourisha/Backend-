@@ -6,30 +6,39 @@ import { Customer } from "./customer";
 import { MealPack } from "./mealPack";
 import { MealExtras } from "./mealExtras";
 
-export class DayMeals {
-  @prop({ ref: () => MealPack })
-  breakfast: Ref<MealPack>;
-
-  @prop({ ref: () => MealPack })
-  lunch: Ref<MealPack>;
-
-  @prop({ ref: () => MealPack })
-  dinner: Ref<MealPack>;
-}
-
 class ExtraDetail {
-  @prop({ required: true })
-  day: string;
+  @prop({_id: false})
+  day?: string;
+   
+  @prop({_id: false, _id: false})
+  mealType?: string;
 
-  @prop({ required: true })
-  mealType: string;
-
-  @prop({ ref: () => MealPack })
+  @prop({ ref: () => MealPack, _id: false })
   mealId: Ref<MealPack>;
 
-  @prop({ ref: () => MealExtras })
-  extraId: Ref<MealExtras>;
+  @prop({ ref: () => MealExtras, _id: false })
+  extraId?: Ref<MealExtras>;
 }
+export class DayMeals {
+  @prop({_id: false})
+  breakfast: ExtraDetail;
+
+  @prop({_id: false})
+  lunch: ExtraDetail;
+
+  @prop({_id: false})
+  dinner: ExtraDetail;
+}
+// export class DayMeals {
+//   @prop({ ref: () => MealPack })
+//   breakfast: Ref<MealPack>;
+
+//   @prop({ ref: () => MealPack })
+//   lunch: Ref<MealPack>;
+
+//   @prop({ ref: () => MealPack })
+//   dinner: Ref<MealPack>;
+// }
 
 export enum StatusActivity {
 ACTIVE= "active",
@@ -74,11 +83,8 @@ export class MealLineup extends BaseEntity {
   @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
   status?: StatusActivity;
 
-  // @prop({ type: () => [ExtraDetail], _id: false })
-  // extras?: ExtraDetail[];
-
-  @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
-  extras?: Ref<MealExtras>[];
+  // @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
+  // extras?: Ref<MealExtras>[];
 
   @prop()
   sub_end_date: Date;
