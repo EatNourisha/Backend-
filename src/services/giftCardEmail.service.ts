@@ -1225,7 +1225,7 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
     const result = await sgMail.send({
       from: {
         name: "Nourisha",
-        email: "help@eatnourisha.com",
+        email: "hello@eatnourisha.com",
       },
       subject,
       to: email,
@@ -1834,7 +1834,7 @@ export async function sendGiftSent(email: string, payload: any, isTesting: boole
     const result = await sgMail.send({
       from: {
         name: "Nourisha",
-        email: "help@eatnourisha.com",
+        email: "hello@eatnourisha.com",
       },
       subject,
       to: email,
