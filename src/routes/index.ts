@@ -117,14 +117,11 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           .exec();
 
           if(gift){
-            console.log('~~~~~~~~~GIFT EMAILs SENT~~~~~~~~~~~~~~~~')
             await sendGiftBought(cus?.email!, gift, false )
             if(gift && gift?.scheduled !== true){
               await sendGiftRecipient(gift?.reciever_email!, gift, false )
               await sendGiftSent(cus?.email!, gift, false )
-            }
-            console.log('~~~~~~~~~END GIFT EMAILs~~~~~~~~~~~~~~~~')
-          }
+            }          }
 
       }
       const meta = data.metadata;

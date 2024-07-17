@@ -40,7 +40,7 @@ cron.schedule('* */1 * * *', async () => {
             if (!cus) {
                throw createError("Customer does not exist", 404);
             }
-            if(pur?.gift_type === 'Happy Birthday' && pur?.scheduled === true && pur?.scheduled_Email === false || null){
+            if(pur?.scheduled === true && pur?.scheduled_Email === false || null){
                   await sendGiftRecipient(pur?.reciever_email!, pur, false )
                   await sendGiftSent(cus?.email!, pur, false );
                   await pur.updateOne({ scheduled_Email: true });
