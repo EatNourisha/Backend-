@@ -27,6 +27,7 @@ export * from "./Preference/adminSettings.service";
 export * from "./referral.service";
 export * from "./earnings.service";
 export * from "./giftCardEmail.service";
+export * from "./authEmail.service";
 
 export * from "./Marketing/marketing.service";
 export * from "./mobileUse.service";
