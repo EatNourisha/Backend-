@@ -1036,7 +1036,7 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
         Gift Card Code: ${payload?.code}
       </p>
       <p class="normal_text" style="margin-top: -20px">
-        Sender Name:${cus?.first_name} ${cus?.last_name}
+        Sender Name: ${cus?.first_name} ${cus?.last_name}
       </p>
       </td>
       </tr>
@@ -1642,7 +1642,10 @@ export async function sendGiftSent(email: string, payload: any, isTesting: boole
             Gift Card Code: ${payload?.code}
           </p>
           <p class="normal_text" style="margin-top: -20px">
-            Reciever Email:${payload?.reciever_email} 
+            Reciever Email: ${payload?.reciever_email} 
+          </p>
+          <p class="normal_text" style="margin-top: -20px">
+            Reciever Name: ${payload?.reciever_name} 
           </p>
         </td>
       </tr>
