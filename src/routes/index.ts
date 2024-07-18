@@ -121,7 +121,8 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             if(gift?.scheduled === false && gift?.scheduled_Email === false){
               await sendGiftRecipient(gift?.reciever_email!, gift, false )
               await sendGiftSent(cus?.email!, gift, false )
-              await giftpurchase.findOneAndUpdate({_id: gift?._id}, {scheduled_Email: true})
+              await giftpurchase.findOneAndUpdate({_id: gift?._id}, {scheduled_Email: true}).lean<GiftPurchase>()
+              .exec()
             }}
 
       }
