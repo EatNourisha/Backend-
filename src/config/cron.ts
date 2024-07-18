@@ -29,6 +29,7 @@ cron.schedule('* */1 * * *', async () => {
     // console.log("######### gift scheduled email runs every 1 min");
     try {
         const purGift = await giftpurchase.find({
+            status: 'active',
             scheduled: true,
             scheduled_date: {
                 $lt: new Date()
