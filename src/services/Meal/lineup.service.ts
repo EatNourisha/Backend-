@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { customer, DayMeals, lineup, MealLineup, MealPack, MealPackAnalysis, subscription } from "../../models";
+import { customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, subscription } from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -45,7 +45,8 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
     // Retrieve customer's subscription information
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
     const endDate = subscriptionCheck?.end_date; 
-// If the subscription is active and has start and end dates
+    
+  // If the subscription is active and has start and end dates
     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
         const startDate = new Date(subscriptionCheck.start_date).getTime(); 
         const endDate = new Date(subscriptionCheck.end_date).getTime(); 
@@ -58,27 +59,27 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
             throw createError("Only monthly subscribers can create more than one lineup", 404);
         }
     }
-  // const _mealPack = await mealPack.findById(
-    //   dto?.monday?.lunch || dto?.monday?.dinner ||
-    //   dto?.tuesday?.lunch || dto?.tuesday?.dinner ||  
-    //   dto?.wednesday?.lunch || dto?.wednesday?.dinner ||  
-    //   dto?.thursday?.lunch || dto?.thursday?.dinner ||  
-    //   dto?.friday?.lunch || dto?.friday?.dinner ||  
-    //   dto?.saturday?.lunch || dto?.saturday?.dinner ||  
-    //   dto?.sunday?.lunch || dto?.sunday?.dinner     
-    // ).lean<MealPack>().exec();
+
+    // Extract all mealIds from the DTO
+    const mealIds = [
+    dto?.monday?.lunch?.mealId, dto?.monday?.dinner?.mealId,
+    dto?.tuesday?.lunch?.mealId, dto?.tuesday?.dinner?.mealId,
+    dto?.wednesday?.lunch?.mealId, dto?.wednesday?.dinner?.mealId,
+    dto?.thursday?.lunch?.mealId, dto?.thursday?.dinner?.mealId,
+    dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
+    dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
+    dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
+    ].filter(mealId => mealId != null); // Filter out null or undefined mealIds
+
+    // Update available_quantity for each selected mealId
+    for (const mealId of mealIds) {
+    const _mealPack = await mealPack.findById(mealId).exec();
+    if (_mealPack && _mealPack.available_quantity !== undefined) {
+        _mealPack.available_quantity -= 1;
+        await _mealPack.save(); // Save the updated meal pack
+    } 
+    }    
     
-    // const lineupDays = dto?.monday || dto?.tuesday || dto?.wednesday ||
-    //  dto?.thursday || dto?.friday || dto?.saturday ||
-    //  dto?.sunday;
-
-    // if (_mealPack?.isSwallow === true) {
-    //   lineupDays;
-    //     validateFields(dto, ['extras']);
-
-    // }
-
-
     const cusLineup = await lineup.findOne({customer: customer_id, week: dto.week})
 
     // Check if the customer lineup for the specified week already exists
@@ -86,12 +87,6 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
     if (existingLineupCount && cusLineup?.status === 'active') {
         throw createError('Customer lineup for this week already exists', 404);
     }
-
-    // if(dto?.swallow === true && !dto?.extras ){
-    //   validateFields(dto, ["extras"]);
-    //   // note: this is how it is passed in the body
-    //   // extras:["6671bbc3ba84e64859613ff8"]
-    // }
 
     // If all validations pass, create the lineup
     const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate });
