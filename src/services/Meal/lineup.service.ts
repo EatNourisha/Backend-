@@ -80,16 +80,13 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
     } 
     }    
     
-    const cusLineup = await lineup.findOne({customer: customer_id, week: dto.week})
+    const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
 
     // Check if the customer lineup for the specified week already exists
-    const existingLineupCount = await lineup.countDocuments({ customer: customer_id, week: dto.week || 1 }).exec();
-    if (existingLineupCount && cusLineup?.status === 'active') {
-        throw createError('Customer lineup for this week already exists', 404);
-    }
+    if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
     // If all validations pass, create the lineup
-    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate });
+    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 });
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
@@ -104,7 +101,7 @@ async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): 
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.UPDATE, PermissionScope.ALL]);
 
     const _swallow = await lineup
-    .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { swallow: dto.swallow })
+    .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { swallow: dto?.swallow })
     .lean<MealLineup>()
     .exec();
 

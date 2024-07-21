@@ -40,6 +40,9 @@ export class Subscription extends BaseEntity {
 
   @prop()
   last_assigned_date?: Date;
+
+  @prop()
+  subscription_type: string;
 }
 
 export default getModelForClass(Subscription);
