@@ -55,8 +55,8 @@ cron.schedule('* */1 * * *', async () => {
     timezone: "Europe/London"
 });
 
-cron.schedule('0 9 * * 5', async () => {
-    console.log("#########777777 line up reminder runs every 1 min");
+cron.schedule('0 12 * * 0', async () => {
+    // console.log("#########777777 line up reminder runs every 1 min");
 
     try {
         const _subscription = await subscription.find({
@@ -66,7 +66,6 @@ cron.schedule('0 9 * * 5', async () => {
 
         await Promise.all(_subscription.map(async (sub: any) => {
             await NourishaBus.emit("lineup:reminder", { owner: sub?.customer });
-            console.log('~~~~~~~~~~~~~#', 'line up reminderrrrrrrr')
         }));
     } catch (error) {
     }
