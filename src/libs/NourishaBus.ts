@@ -39,6 +39,7 @@ export type NourishaEventTypes = {
 
   "lineup:created": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
   "lineup:updated": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
+  "lineup:reminder": { owner: Customer | string; };
 
   "referral:created": { owner: Customer | string };
 

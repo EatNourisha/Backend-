@@ -1,7 +1,8 @@
 import { sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer } from "../models"; // Adjust this path as needed
+import { lineup, giftpurchase, customer, Customer, subscription } from "../models"; // Adjust this path as needed
 import cron from "node-cron";
 import { createError } from "../utils";
+import { NourishaBus } from "../libs";
 
 cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
@@ -46,6 +47,26 @@ cron.schedule('* */1 * * *', async () => {
                   await sendGiftSent(cus?.email!, pur, false );
                   await pur.updateOne({ scheduled_Email: true });
               }
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('0 9 * * 5', async () => {
+    console.log("#########777777 line up reminder runs every 1 min");
+
+    try {
+        const _subscription = await subscription.find({
+            status: 'active',
+            subscription_type: 'month'
+        });
+
+        await Promise.all(_subscription.map(async (sub: any) => {
+            await NourishaBus.emit("lineup:reminder", { owner: sub?.customer });
+            console.log('~~~~~~~~~~~~~#', 'line up reminderrrrrrrr')
         }));
     } catch (error) {
     }

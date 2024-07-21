@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
 import { CreateSubscriptionDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { Card, Customer, Plan, PromoCode, Subscription, card, customer, plan, subscription, transaction } from "../../models";
+import { Card, Customer, Plan, PromoCode, Subscription, card, customer, lineup, plan, subscription, transaction } from "../../models";
 import { createError, epochToCurrentTime, getUpdateOptions, paginate } from "../../utils";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { NourishaBus } from "../../libs";
@@ -67,6 +67,8 @@ export class SubscriptionService {
       plan_type: "subscription",
       addr: cus?.address,
     });
+
+    await lineup.updateMany({customer: customer_id, status: 'active'},{status: 'deactivated'})
 
     NourishaBus.emit("subscription:cancelled", { owner: customer_id, subscription: sub });
     return update;
@@ -184,6 +186,7 @@ export class SubscriptionService {
       plan: _plan?._id!,
       card: _card?._id!,
       next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
+      subscription_type: _plan?.subscription_interval!,
     });
 
     await transaction
