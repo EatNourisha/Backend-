@@ -232,7 +232,7 @@ export class BillingService {
       }),
     ]);
 
-    // await subscription.findOneAndUpdate({customer: customer_id}, {subscription_type: _plan?.subscription_interval}).lean<Subscription>().exec()
+    await subscription.findOneAndUpdate({customer: customer_id}, {subscription_type: _plan?.subscription_interval}).lean<Subscription>().exec()
 
     const client_secret = payment_intent.client_secret;
     return { client_secret, subscription_id: sub?.id };
