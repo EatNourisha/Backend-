@@ -183,9 +183,9 @@ export class BillingService {
     if (!cus) throw createError("Customer does not exist", 404);
 
     // Check if the customer has an active subscription
-    const subs = await subscription.findOne({customer: customer_id, status: "active"}).lean<Subscription>().exec()
-    const activePlan = await plan.findById(subs?.plan).lean<Plan>().exec();
-    if(subs) throw createError(`You have an active ${activePlan?.name} subscription`, 404);
+    // const subs = await subscription.findOne({customer: customer_id, status: "active"}).lean<Subscription>().exec()
+    // const activePlan = await plan.findById(subs?.plan).lean<Plan>().exec();
+    // if(subs) throw createError(`You have an active ${activePlan?.name} subscription`, 404);
     // if(dto?.plan_id === subs?.plan) throw createError(`You have an active subscription for this plan`, 404)
 
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
