@@ -35,4 +35,24 @@ export class SubscriptionController {
       sendError(error, next);
     }
   }
+  // Admin
+  async updateSubSatatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params, query } = req;
+      const data = await service.updateSubStatus(customer.roles, params.id, query.status as string );
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getACusSub(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params } = req;
+      const data = await service.getACusSub(customer.roles, params.id );
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }

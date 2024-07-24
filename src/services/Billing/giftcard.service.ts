@@ -178,30 +178,4 @@ export class GiftCardService {
   }
 
 
-  // async giftCardRecieverEmail(customer_id: string, dto: GiftPurchaseDto, send_email = true,) {
-
-  //   const acc = await customer.findById(customer_id).lean<Customer>().exec();
-  //   if (!acc) throw createError("Customer not found", 404);
-
-  //   const _gift = await giftpurchase.findOne({gift_id: dto?.gift_id})
-  //   if (send_email)
-  //     await NourishaBus.emit("customer:send_giftcard_email", {
-  //           // email:'shukazuby@gmail.com'!,
-  //           // gifter: 'Zuzu'!,
-  //           // name: 'Zubaidat'!, 
-  //           // coupon: 'Code233'!,
-  //           // amount: 100!,
-  //           email: dto?.reciever_email!,
-  //           gifter: acc?.first_name!,
-  //           name: dto?.reciever_name!, 
-  //           coupon: _gift?.code!,
-  //           amount: _gift?.amount!,
-  //         });
-
-  //     console.log(send_email);
-  //     console.log("Gift Card Sent ", );
-  //     return _gift ;
-  // }
-
-
 }
