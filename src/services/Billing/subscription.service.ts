@@ -216,4 +216,40 @@ export class SubscriptionService {
 
     return sub;
   }
-}
+
+  async updateSubStatus(roles: string[], id: string, status: string): Promise<Subscription> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    const cus = await customer.findById(id).lean<Customer>().exec()
+
+    const sub = await subscription.findOneAndUpdate(
+      { customer: cus?._id }, 
+      { status: status,  new: true }, 
+    ).lean<Subscription>().exec();
+  
+    if (!sub) {
+      throw new Error("Subscription not found");
+    }
+    return sub;
+  }
+
+  async getACusSub(roles: string[], id: string): Promise<Subscription> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+      PermissionScope.UPDATE,
+      PermissionScope.ALL,
+    ]);
+
+    const cus = await customer.findById(id).lean<Customer>().exec()
+
+    const sub = await subscription.findOne( { customer: cus?._id }).lean<Subscription>().exec();
+  
+    if (!sub) {
+      throw new Error("Subscription not found");
+    }
+    return sub;
+  }
+
+  } 
