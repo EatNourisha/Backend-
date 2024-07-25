@@ -6,6 +6,9 @@ import BaseEntity from "./base";
 export class Country extends BaseEntity {
   @prop()
   name: string;
+  
+  @prop()
+  country_flag?: string;
 
   @prop()
   code?: string;
