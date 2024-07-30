@@ -11,7 +11,7 @@ export class Country extends BaseEntity {
   country_flag?: string;
 
   @prop()
-  code?: string;
+  code?: string; 
 
   @prop()
   weeklyPrice?: number;
