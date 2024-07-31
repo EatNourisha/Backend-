@@ -72,6 +72,109 @@ export class DiscountService {
     }
   }
 
+  // async createPromoCode(admin_id: string, dto: CreatePromoCodeDto, roles: string[]) {
+  //   validateFields(dto, ["code", "coupon", "influencer"]);
+
+  //   if (!!dto?.influencer && !dto?.influencer?.customer)
+  //     validateFields(dto.influencer, ["first_name", "last_name", "email", "phone_number"]);
+  //   if (!!dto?.restrictions) validateFields(dto.restrictions, ["first_time_transaction"]);
+
+  //   const coupon_data = dto?.coupon as Coupon;
+  //   if (!!coupon_data) validateFields(dto.coupon as Coupon, ["duration"]);
+
+  //   console.log("Promo Code DTO", dto);
+
+  //   const currency = coupon_data?.currency ?? "gbp";
+  //   const amount_or_percent = coupon_data?.percent_off ?? coupon_data.amount_off;
+
+  //   console.log("Amount", amount_or_percent);
+    
+  //   // if (amount_or_percent === undefined || amount_or_percent < 0)
+  //   //   throw createError("coupon.percent_off or coupon.amount_off is required", 400);
+
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
+  //     PermissionScope.CREATE,
+  //     PermissionScope.ALL,
+  //   ]);
+
+  //   if (
+  //     (await promoCode
+  //       .countDocuments({ code: toLower(dto.code) })
+  //       .lean<number>()
+  //       .exec()) > 0
+  //   )
+  //     throw createError(`Promotion code already exist`, 400);
+
+  //   const expires_at = when(!!dto?.expires_at, new Date(dto?.expires_at), undefined) as any;
+  //   const amount_off = when(!!coupon_data?.amount_off, coupon_data?.amount_off * 100, null);
+
+  //   if (amount_or_percent === undefined || amount_or_percent <= 0) {
+  //     return await promoCode
+  //       .findOneAndUpdate(
+  //         { code: toLower(dto.code) },
+  //         {
+  //           ...dto,
+  //           influencer: dto?.influencer,
+  //           code: toLower(dto.code),
+  //           coupon: undefined,
+  //           created_by: admin_id,
+  //           expires_at,
+  //           no_discount: true,
+  //           active: dto?.active ?? true,
+  //         },
+  //         getUpdateOptions()
+  //       )
+  //       .lean<PromoCode>()
+  //       .exec();
+  //   }
+
+  //   const stripe_coup = await this.stripe.coupons.create({ ...dto?.coupon, amount_off, currency });
+
+  //   const coup = await coupon
+  //     .findOneAndUpdate(
+  //       { stripe_id: stripe_coup.id },
+  //       {
+  //         ...stripe_coup,
+  //         stripe_id: stripe_coup.id,
+  //         amount_off: when(!!amount_off, coupon_data?.amount_off, undefined),
+  //         required_for: "promo",
+  //       },
+  //       getUpdateOptions()
+  //     )
+  //     .lean<Coupon>()
+  //     .exec();
+
+  //   const minimum_amount_currency = when(!!dto?.restrictions?.minimum_amount, currency, undefined);
+  //   const stripe_promo = await this.stripe.promotionCodes.create({
+  //     ...omit(dto as any, ["influencer"]),
+  //     coupon: stripe_coup?.id,
+  //     expires_at: when(!!expires_at, expires_at?.getTime() / 1000, undefined),
+  //     restrictions: { ...dto?.restrictions, minimum_amount_currency },
+  //   });
+
+  //   if (!!coup && !!stripe_promo) {
+  //     //   console.log("Stripe Coupon", { stripe_coup, coup, stripe_promo });
+  //     return await promoCode
+  //       .findOneAndUpdate(
+  //         { stripe_id: stripe_promo.id },
+  //         {
+  //           ...(stripe_promo ?? dto),
+  //           influencer: dto?.influencer,
+  //           code: toLower(dto.code),
+  //           coupon: coup._id,
+  //           stripe_id: stripe_promo.id,
+  //           created_by: admin_id,
+  //           expires_at,
+  //         },
+  //         getUpdateOptions()
+  //       )
+  //       .lean<PromoCode>()
+  //       .exec();
+  //   }
+
+  //   return null;
+  // }
+
   async createPromoCode(admin_id: string, dto: CreatePromoCodeDto, roles: string[]) {
     validateFields(dto, ["code", "coupon", "influencer"]);
 
@@ -87,10 +190,7 @@ export class DiscountService {
     const currency = coupon_data?.currency ?? "gbp";
     const amount_or_percent = coupon_data?.percent_off ?? coupon_data.amount_off;
 
-    console.log("Amount", amount_or_percent);
-    
-    // if (amount_or_percent === undefined || amount_or_percent < 0)
-    //   throw createError("coupon.percent_off or coupon.amount_off is required", 400);
+    console.log("Amount or Percent", amount_or_percent);
 
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.DISCOUNT, [
       PermissionScope.CREATE,
@@ -128,8 +228,19 @@ export class DiscountService {
         .exec();
     }
 
-    const stripe_coup = await this.stripe.coupons.create({ ...dto?.coupon, amount_off, currency });
-
+    let stripeCouponData: Partial<Stripe.CouponCreateParams> = {
+      duration: coupon_data.duration,
+      currency,
+    };
+  
+    if (coupon_data?.percent_off !== undefined) {
+      stripeCouponData.percent_off = coupon_data.percent_off;
+    } else if (coupon_data?.amount_off !== undefined) {
+      stripeCouponData.amount_off = amount_off || 0;
+    }
+    
+    const stripe_coup = await this.stripe.coupons.create(stripeCouponData);
+  
     const coup = await coupon
       .findOneAndUpdate(
         { stripe_id: stripe_coup.id },
@@ -143,7 +254,7 @@ export class DiscountService {
       )
       .lean<Coupon>()
       .exec();
-
+  
     const minimum_amount_currency = when(!!dto?.restrictions?.minimum_amount, currency, undefined);
     const stripe_promo = await this.stripe.promotionCodes.create({
       ...omit(dto as any, ["influencer"]),
@@ -151,9 +262,8 @@ export class DiscountService {
       expires_at: when(!!expires_at, expires_at?.getTime() / 1000, undefined),
       restrictions: { ...dto?.restrictions, minimum_amount_currency },
     });
-
+  
     if (!!coup && !!stripe_promo) {
-      //   console.log("Stripe Coupon", { stripe_coup, coup, stripe_promo });
       return await promoCode
         .findOneAndUpdate(
           { stripe_id: stripe_promo.id },
@@ -171,10 +281,9 @@ export class DiscountService {
         .lean<PromoCode>()
         .exec();
     }
-
+  
     return null;
   }
-
 
 
   async updatePromoCode(id: string, dto: Partial<CreatePromoCodeDto>, roles: string[]) {
