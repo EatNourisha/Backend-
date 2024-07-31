@@ -10,7 +10,7 @@ router.get("/completed", authGuard, controller.getCustomerCompletedReferrals);
 router.get("/stats", authGuard, controller.getTotalReferredCustomers);
 
 
-router.get("/admin/stats", authGuard, controller.getReferralStats); 
+router.get("/admin/stats", authGuard, controller.getReferralStats);
 router.get("/admin/invites", authGuard, controller.getAllInvitedCustomers);
 router.get("/admin/subscribed_invites", authGuard, controller.getAllSubscribedInvitedCustomers);
 
