@@ -7,29 +7,31 @@ const service = new AuthService();
 
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
-    let responseData
     try {
       const body = req.body;
       const deviceId = req.headers["device-id"] as string;
       const roles = req.query.role ? [req.query.role as string] : undefined;
       const data = await service.register(body, deviceId, roles);
-      responseData = data
       sendResponse(res, 201, data);
     } catch (error) {
-      if (error.message === 'Unauthorized' && error.statusCode === '500'){
-        sendResponse(res, 201, responseData);
-      }
       sendError(error, next);
     }
   }
 
   async registerCustomerAccount(req: Request, res: Response, next: NextFunction) {
+    let responseData
     try {
       const body = req.body;
       const deviceId = req.headers["device-id"] as string;
       const data = await service.registerWithRole(body, AvailableRole.CUSTOMER, deviceId);
+      responseData = data
       sendResponse(res, 201, data);
     } catch (error) {
+      console.log('~~~~REGISTER ERROR Start~~~~~~~~~', error)
+      if (error.message === 'Unauthorized' && error.statusCode === '500'){
+        sendResponse(res, 201, responseData);
+      }
+      console.log('~~~~REGISTER ERROR ENDs~~~~~~~~~')
       sendError(error, next);
     }
   }
