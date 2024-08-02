@@ -196,7 +196,7 @@ export class BillingService {
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
     
-    if (promo && promo?.active === true && !promo.no_discount) {
+    if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
         promo_code = promo?.stripe_id;
     }
         
@@ -230,6 +230,7 @@ export class BillingService {
         reference: invoice?.number,
         reason: TransactionReason.SUBSCRIPTION,
         stripe_customer_id: sub?.customer,
+        applied_promo: promo?._id
       }),
     ]);
 
