@@ -21,7 +21,8 @@ export async function sendGiftEmail(email: string, subject: string, htmlToSend: 
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
 
@@ -632,7 +633,8 @@ export async function sendGiftBought(email: string, payload: any, isTesting: boo
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
 
@@ -1238,7 +1240,8 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
 
@@ -1847,6 +1850,7 @@ export async function sendGiftSent(email: string, payload: any, isTesting: boole
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
