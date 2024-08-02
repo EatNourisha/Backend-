@@ -445,7 +445,19 @@ export class DiscountService {
     if (!!promo?.restrictions?.first_time_transaction && cus_txs_count > 0 && !dryRun)
       throw createError("Promo code / Coupon can only be used on your first transaction", 403);
 
-    const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
+    let amount_off = 0
+
+    console.log('~~~~~COUP AMOUNT_OFF~~~~~~~~~', coup?.amount_off)
+    console.log('~~~~~COUP PERCENT_OFF~~~~~~~~~', coup?.percent_off)
+
+
+    if(coup?.percent_off !== null) {
+     amount_off = amount * ((coup?.percent_off) / 100)
+    }else{
+      amount_off = coup?.amount_off 
+    }
+
+    // const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
     if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
       // throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
       throw createError(`To be eligible to use coupon code, order above £${promo?.restrictions?.minimum_amount}`);
