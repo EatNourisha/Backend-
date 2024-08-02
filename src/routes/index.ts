@@ -32,7 +32,7 @@ import { sendResponse } from "../utils";
 
 import config from "../config";
 import { BillingHooks } from "../services";
-import { authGuard } from "../middlewares";
+// import { authGuard } from "../middlewares";
 import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
@@ -69,9 +69,9 @@ routes.use("/appupdate", AppUpdate);
 routes.use("/mobileuse", MobileUseRouter);
 routes.use("/gift", GiftCardRouter);
 
-routes.get("/configs", authGuard, (_, res) => {
-  return sendResponse(res, 200, config);
-});
+// routes.get("/configs", authGuard, (_, res) => {
+//   return sendResponse(res, 200, config);
+// });
 
 routes.get("/healthcheck", (_, res, __) => {
   sendResponse(res, 200, { message: "OK" });
