@@ -33,7 +33,7 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 import { authGuard } from "../middlewares";
-import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase } from "../models";
+import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
@@ -165,7 +165,19 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         )
         .lean<Transaction>()
         .exec();
+
       await customer.findOneAndUpdate({ _id: cus?._id }, { lineup: null }).lean<Customer>().exec();
+
+      const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
+
+      if (trans?.applied_promo !== null) {
+        const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+        if (promo) {
+            const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+            await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
+        }
+      }
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }
