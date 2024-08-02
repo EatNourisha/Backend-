@@ -1,4 +1,4 @@
-import { createError } from "../utils";
+// import { createError } from "../utils";
 import sgMail from "@sendgrid/mail";
 import config from "../config";
 // import { Customer, customer } from "../models";
@@ -1108,7 +1108,8 @@ export async function sendMobilResetEmail(email: string, payload: any, isTesting
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
 
@@ -2385,7 +2386,8 @@ export async function sendWelcomeEmail(email: string, payload: any, isTesting: b
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
 
@@ -3562,6 +3564,7 @@ export async function sendOrderPlacedEmail(email: string, payload: any, isTestin
     return resultWithKey;
   } catch (error) {
     console.log("Sendgrid Error:", error);
-    throw createError(error.message, 500);
+    // throw createError(error.message, 500);
+    return
   }
 }
