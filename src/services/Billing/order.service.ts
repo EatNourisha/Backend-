@@ -162,7 +162,7 @@ export class OrderService {
     const cus = _cart?.customer as Customer;
 
     let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
-    const gift = await giftpurchase.findOne({ code: dto?.coupon, status: 'active' })
+    const gift = await giftpurchase.findOne({ code: dto?.coupon, status: 'active' }) 
 
     if (!amount_off || amount_off === 0){
       if (gift && gift.amount !== undefined) {

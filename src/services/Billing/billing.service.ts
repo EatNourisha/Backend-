@@ -14,6 +14,7 @@ import {
   referral,
   subscription,
   transaction,
+  promoCode
 } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
@@ -27,7 +28,7 @@ import { Transaction, TransactionReason, TransactionStatus } from "../../models/
 import { OrderService } from "./order.service";
 import consola from "consola";
 import { DiscountService } from "./discount.service";
-import { when } from "../../utils/when";
+// import { when } from "../../utils/when";
 
 export class BillingService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -190,9 +191,15 @@ export class BillingService {
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
-    const promo = cus?.pending_promo as PromoCode;
-    const promo_code = when(!!promo && promo?.active === true && !promo?.no_discount, promo?.stripe_id, undefined);
-
+   let procode: string | undefined = dto?.promo_code?.toLowerCase()
+    
+    const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
+    let promo_code: string | undefined = undefined;
+    
+    if (promo && promo?.active === true && !promo.no_discount) {
+        promo_code = promo?.stripe_id;
+    }
+        
     const sub = await this.stripe.subscriptions.create({
       customer: cus?.stripe_id,
       default_payment_method: dto?.card_token,
@@ -229,7 +236,7 @@ export class BillingService {
     await subscription.findOneAndUpdate({customer: customer_id}, {subscription_type: _plan?.subscription_interval}).lean<Subscription>().exec()
 
     const client_secret = payment_intent.client_secret;
-    return { client_secret, subscription_id: sub?.id };
+    return { client_secret, subscription_id: sub?.id, link: sub?.metadata };
   }
 }
 
