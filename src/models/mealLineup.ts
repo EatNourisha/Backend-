@@ -29,17 +29,6 @@ export class DayMeals {
   @prop({_id: false})
   dinner: ExtraDetail;
 }
-// export class DayMeals {
-//   @prop({ ref: () => MealPack })
-//   breakfast: Ref<MealPack>;
-
-//   @prop({ ref: () => MealPack })
-//   lunch: Ref<MealPack>;
-
-//   @prop({ ref: () => MealPack })
-//   dinner: Ref<MealPack>;
-// }
-
 export enum StatusActivity {
 ACTIVE= "active",
 DEACTIVATED= "deactivated"
@@ -82,9 +71,6 @@ export class MealLineup extends BaseEntity {
 
   @prop({enum: StatusActivity, default: StatusActivity.ACTIVE})
   status?: StatusActivity;
-
-  // @prop({ type: () => [Ref<MealExtras>], ref: () => MealExtras })
-  // extras?: Ref<MealExtras>[];
 
   @prop()
   sub_end_date: Date;

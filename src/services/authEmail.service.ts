@@ -1,9 +1,6 @@
-// import { createError } from "../utils";
-import sgMail from "@sendgrid/mail";
-import config from "../config";
-// import { Customer, customer } from "../models";
+import { mailJetSendMail } from "../config/mailjet";
 
-export async function sendMobilResetEmail(email: string, payload: any, isTesting: boolean) {
+export async function sendMobilResetEmail(email: string, payload: any) {
   const subject = `🥺Reset Password`;
 
   const body = `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1091,29 +1088,14 @@ export async function sendMobilResetEmail(email: string, payload: any, isTesting
 </body>
 </html>
 `;
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
 
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
-
-export async function sendWelcomeEmail(email: string, payload: any, isTesting: boolean) {
+export async function sendWelcomeEmail(email: string, payload: any) {
   const subject = `Welcome to Nourisha`;
 
   const body = `
@@ -2369,29 +2351,14 @@ export async function sendWelcomeEmail(email: string, payload: any, isTesting: b
 
 </html>
 `;
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
 
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
-
-export async function sendOrderPlacedEmail(email: string, payload: any, isTesting: boolean) {
+export async function sendOrderPlacedEmail(email: string, payload: any) {
   const subject = `🥳 Order successfully placed`
 
   const body = `<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -3546,25 +3513,9 @@ export async function sendOrderPlacedEmail(email: string, payload: any, isTestin
   </body>
 </html>
 `;
-
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
-
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};

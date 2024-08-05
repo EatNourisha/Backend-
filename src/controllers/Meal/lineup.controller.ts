@@ -39,8 +39,10 @@ export class MealLineupController {
 
   async getCurrentCustomersLineup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer } = req;
-      const data = await service.getCurrentCustomersLineup(customer.sub, customer.roles);
+      const { customer, query } = req;
+      const weekParam = query.week;
+      const week = typeof weekParam === 'string' ? parseInt(weekParam, 10) : undefined;      
+      const data = await service.getCurrentCustomersLineup(customer.sub, customer.roles, week);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

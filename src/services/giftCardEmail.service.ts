@@ -1,32 +1,8 @@
 import { createError } from "../utils";
-import sgMail from "@sendgrid/mail";
-import config from "../config";
+import { mailJetSendMail } from "../config/mailjet";
 import { Customer, customer } from "../models";
 
-export async function sendGiftEmail(email: string, subject: string, htmlToSend: string, config: string, isTesting: boolean) {
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "help@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: htmlToSend,
-    });
-
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
-
-export async function sendGiftBought(email: string, payload: any, isTesting: boolean) {
+export async function sendGiftBought(email: string, payload: any) {
   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
   if (!cus) throw createError("Customer does not exist", 404);
 
@@ -616,29 +592,14 @@ export async function sendGiftBought(email: string, payload: any, isTesting: boo
   </body>
 </html>
 `;
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
 
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
-
-export async function sendGiftRecipient(email: string, payload: any, isTesting: boolean) {
+export async function sendGiftRecipient(email: string, payload: any) {
   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
   if (!cus) throw createError("Customer does not exist", 404);
 
@@ -1223,29 +1184,14 @@ export async function sendGiftRecipient(email: string, payload: any, isTesting: 
   </body>
 </html>
 `;
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
 
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
-
-export async function sendGiftSent(email: string, payload: any, isTesting: boolean) {
+export async function sendGiftSent(email: string, payload: any) {
   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
   if (!cus) {
     throw createError("Customer does not exist", 404);
@@ -1833,24 +1779,9 @@ export async function sendGiftSent(email: string, payload: any, isTesting: boole
   </body>
 </html>
 `;
-  try {
-    const result = await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
-      },
-      subject,
-      to: email,
-      html: body,
-    });
-
-    // Ensure the result can optionally include a `key` property
-    const resultWithKey = isTesting ? { ...result, key: config.SENDGRID_KEY } : result;
-
-    return resultWithKey;
-  } catch (error) {
-    console.log("Sendgrid Error:", error);
-    // throw createError(error.message, 500);
-    return
-  }
-}
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
