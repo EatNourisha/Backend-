@@ -33,6 +33,8 @@ const config = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
   GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN as string,
+  MAILJET_API_KEY: process.env.MAILJET_API_KEY as string,
+  MAILJET_API_SECRET: process.env.MAILJET_API_SECRET as string,
 };
 
 export const isTesting = ["staging", "development"].includes(config.ENVIRONMENT ?? "development");

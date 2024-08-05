@@ -33,7 +33,7 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 // import { authGuard } from "../middlewares";
-import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode } from "../models";
+import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
@@ -117,10 +117,10 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           .exec();
 
           if(gift){
-            await sendGiftBought(cus?.email!, gift, false )
+            await sendGiftBought(cus?.email!, gift )
             if(gift?.scheduled === false && gift?.scheduled_Email === false){
-              await sendGiftRecipient(gift?.reciever_email!, gift, false )
-              await sendGiftSent(cus?.email!, gift, false )
+              await sendGiftRecipient(gift?.reciever_email!, gift)
+              await sendGiftSent(cus?.email!, gift)
               await giftpurchase.findOneAndUpdate({_id: gift?._id}, {scheduled_Email: true}).lean<GiftPurchase>()
               .exec()
             }}
@@ -168,6 +168,8 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
       await customer.findOneAndUpdate({ _id: cus?._id }, { lineup: null }).lean<Customer>().exec();
 
+      await lineup.updateMany({ customer: cus?._id , week: 1 },{ $set: { status: 'deactivated' } }, { multi: true }).exec();
+      
       const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
 
       if (trans?.applied_promo !== null) {

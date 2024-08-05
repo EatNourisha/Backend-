@@ -310,7 +310,7 @@ export class OrderService {
     }
 
     // NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
-    await sendOrderPlacedEmail(payload.email, payload, false)
+    await sendOrderPlacedEmail(payload.email, payload)
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.

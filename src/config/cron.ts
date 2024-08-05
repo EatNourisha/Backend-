@@ -43,8 +43,8 @@ cron.schedule('* */1 * * *', async () => {
                throw createError("Customer does not exist", 404);
             }
             if(pur?.scheduled === true && pur?.scheduled_Email === false || null){
-                  await sendGiftRecipient(pur?.reciever_email!, pur, false )
-                  await sendGiftSent(cus?.email!, pur, false );
+                  await sendGiftRecipient(pur?.reciever_email!, pur)
+                  await sendGiftSent(cus?.email!, pur);
                   await pur.updateOne({ scheduled_Email: true });
               }
         }));

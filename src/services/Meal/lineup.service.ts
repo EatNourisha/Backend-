@@ -14,27 +14,6 @@ import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 
 export class MealLineupService {
-  // async createLineupFirstOne(customer_id: string, dto: CreateLineupDto, roles: string[], silent = false): Promise<MealLineup> {
-  //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
-
-  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-  //   if ((await MealLineupService.checkLineupExists(customer_id)) && !silent)
-  //     throw createError("Customer's weekly lineup already exist", 400);
-
-  //   console.clear();
-  //   console.log("Lineup Dto", dto);
-
-  //   const _lineup = await lineup.create({ ...dto, customer: customer_id });
-  //   await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
-  //   await MealLineupService.lockLineupChange(customer_id);
-  //   // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
-
-  //   // console.log("Lineup Analysis", analysis);
-
-  //   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
-  //   return _lineup;
-  // } 
-
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     // Validate fields
     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
@@ -105,8 +84,6 @@ export class MealLineupService {
     .lean<MealLineup>()
     .exec();
 
-    // let _swallow = await lineup.findOneAndUpdate({ customer: customer_id }, {swallow: status}).lean<MealLineup>().exec();
-
     return _swallow;
   }
 
@@ -139,15 +116,39 @@ export class MealLineupService {
     return _lineup;
   }
 
-  async getCurrentCustomersLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
+  // async getCurrentCustomersLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
+  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
+  //     path: pop,
+  //     populate: ["breakfast", "lunch", "dinner"],
+  //   }));
+
+  //   const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
+  //   if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
+  //   return _lineup;
+  // }  
+
+  async getCurrentCustomersLineup(customer_id: string, roles: string[], week: number | undefined): Promise<MealLineup> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
-      path: pop,
-      populate: ["breakfast", "lunch", "dinner"],
+  
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
     }));
-
-    const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
+  
+    const _lineup = await lineup.findOne({ customer: customer_id, week: week || 1 })
+    .populate(pops)
+    .sort({ createdAt: -1 })
+    .lean<MealLineup>()
+    .exec();    
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup;
   }
@@ -159,9 +160,16 @@ export class MealLineupService {
     const day_of_week_index = getDay(new Date());
     const today = days[day_of_week_index];
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
-      path: pop,
-      populate: ["breakfast", "lunch", "dinner"],
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
     }));
 
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
@@ -182,7 +190,14 @@ export class MealLineupService {
 
     pops = pops.map((pop) => ({
       path: pop,
-      populate: ["breakfast", "lunch", "dinner"],
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
     })) as any[];
 
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
@@ -239,11 +254,17 @@ export class MealLineupService {
       PermissionScope.ALL,
     ]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
-      path: pop,
-      populate: ["breakfast", "lunch", "dinner"],
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
     }));
-
     console.log("Silent", silent);
 
     const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();

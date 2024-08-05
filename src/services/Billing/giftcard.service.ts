@@ -6,6 +6,7 @@ import { createError, paginate, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import config from "../../config";
 import { TransactionReason } from "../../models/transaction";
+import { sendGiftBought } from "../../services/giftCardEmail.service";
 export class GiftCardService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
   async createGiftCard(dto: GiftCardDto, roles: string[]) {
@@ -81,7 +82,7 @@ export class GiftCardService {
       });
     }
   
-  await giftpurchase.create({
+const payload =  await giftpurchase.create({
         gift_id: dto?.gift_id,
         code: couponCode,
         customer: customer_id,
@@ -95,6 +96,8 @@ export class GiftCardService {
         gift_type: _giftImages?.name,
         imageUrl: _giftImages?.image_url,
       })
+
+      await sendGiftBought(cus?.email, payload)
 
     return { client_secret: intent?.client_secret, payLink: intent?.payment_method_options?.link };
   }

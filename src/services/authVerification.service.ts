@@ -61,7 +61,7 @@ export class AuthVerificationService {
 
     // await NourishaBus.emit("customer:send_resetpassword_email_mobile", payload);
 
-    await sendMobilResetEmail(payload.email, payload, false)
+    await sendMobilResetEmail(payload.email, payload)
     // EmailQueue.add({type: "send_verification_email", ...payload})
     // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
@@ -154,7 +154,7 @@ export class AuthVerificationService {
     }
 
     // NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
-    await sendWelcomeEmail(payload.email, payload, false)
+    await sendWelcomeEmail(payload.email, payload)
     // EmailQueue.add({type: "send_verification_email", ...payload})
     // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);

@@ -18,6 +18,12 @@ export class Country extends BaseEntity {
 
   @prop()
   monthlyPrice?: number;
+
+  @prop()
+  weeklyWeekendPrice?: number;
+
+  @prop()
+  monthlyWeekendPrice?: number;
 }
 
 export default getModelForClass(Country);
