@@ -426,51 +426,97 @@ export class DiscountService {
     return _earnings;
   }
 
+  // static async checkPromoForCustomer(customer_id: string, amount: number, code?: string, dryRun = false) {
+  //   code = toLower(code);
+  //   if (!code) return { amount_off: 0 };
+
+  //   const promo = await promoCode.findOne({ "code":code, "no_discount": false }).populate("coupon").lean<PromoCode>().exec();
+  //   // if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
+  //   if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun) throw createError("Promo code / coupon expired", 403);
+
+  //   const coup = promo?.coupon as Coupon;
+  //   const disc = await discount.findOne({ customer: customer_id, promo: promo?._id }).lean<Discount>().exec();
+
+  //   /// Check for promo restrictions
+  //   const cus_txs_count = await transaction
+  //     .countDocuments({ customer: customer_id, status: TransactionStatus.SUCCESSFUL })
+  //     .lean<number>()
+  //     .exec();
+  //   if (!!promo?.restrictions?.first_time_transaction && cus_txs_count > 0 && !dryRun)
+  //     throw createError("Promo code / Coupon can only be used on your first transaction", 403);
+
+  //   let amount_off = 0
+
+  //   if(coup?.percent_off !== null) {
+  //    amount_off = amount * ((coup?.percent_off) / 100)
+  //   }else{
+  //     amount_off = coup?.amount_off 
+  //   }
+
+  //   // const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
+  //   if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
+  //     // throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
+  //     throw createError(`To be eligible to use coupon code, order above £${promo?.restrictions?.minimum_amount}`);
+  //   /// End restriction checks
+
+  //   const times_redeemed = coup?.times_redeemed ?? promo?.times_redeemed ?? 0;
+  //   const max_redemptions = coup?.max_redemptions ?? promo?.max_redemptions ?? 0;
+  //   if (max_redemptions > 0 && times_redeemed >= max_redemptions && !dryRun)
+  //     // throw createError("Max redemptions for the applied promo code / coupon reached");
+  //   throw createError("Oops, we've reached max redemptions for the applied promo/coupin code");
+
+  //   return { amount_off, promo, disc };
+  // }
+
   static async checkPromoForCustomer(customer_id: string, amount: number, code?: string, dryRun = false) {
     code = toLower(code);
     if (!code) return { amount_off: 0 };
-
-    const promo = await promoCode.findOne({ "code":code, "no_discount": false }).populate("coupon").lean<PromoCode>().exec();
-    // if ((!promo || !promo?.active) && !dryRun) throw createError("Promo code / Coupon does not exist", 404);
-    if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun) throw createError("Promo code / coupon expired", 403);
-
+  
+    const promo = await promoCode.findOne({ "code": code, "no_discount": false })
+                                 .populate("coupon")
+                                 .lean<PromoCode>()
+                                 .exec();
+  
+    if (!!promo?.expires_at && Date.now() >= promo?.expires_at?.getTime() && !dryRun)
+      throw createError("Promo code / coupon expired", 403);
+  
     const coup = promo?.coupon as Coupon;
     const disc = await discount.findOne({ customer: customer_id, promo: promo?._id }).lean<Discount>().exec();
-
-    /// Check for promo restrictions
+  
+    // Check for promo restrictions
     const cus_txs_count = await transaction
       .countDocuments({ customer: customer_id, status: TransactionStatus.SUCCESSFUL })
       .lean<number>()
       .exec();
     if (!!promo?.restrictions?.first_time_transaction && cus_txs_count > 0 && !dryRun)
       throw createError("Promo code / Coupon can only be used on your first transaction", 403);
-
-    let amount_off = 0
-
-    console.log('~~~~~COUP AMOUNT_OFF~~~~~~~~~', coup?.amount_off)
-    console.log('~~~~~COUP PERCENT_OFF~~~~~~~~~', coup?.percent_off)
-
-
-    if(coup?.percent_off !== null) {
-     amount_off = amount * ((coup?.percent_off) / 100)
-    }else{
-      amount_off = coup?.amount_off 
+  
+    let amount_off = 0;
+  
+    if (coup) {
+      if (coup.percent_off !== null && coup.percent_off !== undefined) {
+        amount_off = amount * (coup.percent_off / 100);
+      } else if (coup.amount_off !== null && coup.amount_off !== undefined) {
+        amount_off = coup.amount_off;
+      }
     }
-
-    // const amount_off = coup?.amount_off ?? amount * ((coup?.percent_off ?? 0) / 100);
+  
+    // Ensure amount_off is a valid number
+    if (isNaN(amount_off)) {
+      amount_off = 0;
+    }
+  
     if ((promo?.restrictions?.minimum_amount ?? 0) > amount && !dryRun)
-      // throw createError("Transaction does not meet the minimum amount of the promo code / coupon");
       throw createError(`To be eligible to use coupon code, order above £${promo?.restrictions?.minimum_amount}`);
-    /// End restriction checks
-
+  
     const times_redeemed = coup?.times_redeemed ?? promo?.times_redeemed ?? 0;
     const max_redemptions = coup?.max_redemptions ?? promo?.max_redemptions ?? 0;
     if (max_redemptions > 0 && times_redeemed >= max_redemptions && !dryRun)
-      // throw createError("Max redemptions for the applied promo code / coupon reached");
-    throw createError("Oops, we've reached max redemptions for the applied promo/coupin code");
-
+      throw createError("Oops, we've reached max redemptions for the applied promo/coupon code");
+  
     return { amount_off, promo, disc };
   }
+  
 
   static async createDiscount(customer_id: string, promo_id: string, used_on: "subscription" | "order") {
     const promo = promoCode

@@ -342,12 +342,19 @@ export class MealLineupService {
     return _lineup ?? {};
   }
 
-  async getLineups( roles: string[], status?:string, silent = false): Promise<MealLineup | null> {
+  async getLineups(
+    roles: string[], 
+    silent = false, 
+    status?: string, 
+    week?: string, 
+    limit?: number, 
+    page?: number
+  ): Promise<MealLineup | null> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
-
+  
     const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
       path: day,
       populate: [
@@ -359,13 +366,27 @@ export class MealLineupService {
         { path: 'dinner.extraId' },
       ],
     }));
-    console.log("Silent", silent);
-
-    const _lineup = await lineup.find({status: status}).populate(pops).sort({ createdAt: -1 }).lean<MealLineup>().exec();
-    if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
-    return _lineup ?? {};
+  
+    const filter: any = {};
+    if (status) filter.status = status;
+    if (week) filter.week = week;
+  
+    // Defaulting limit and page if they aren't provided
+    const effectiveLimit = limit ?? 10;
+    const effectivePage = page ?? 1;
+  
+    const _lineup = await lineup.find(filter)
+      .populate(pops)
+      .sort({ createdAt: -1 })
+      .limit(effectiveLimit)
+      .skip((effectivePage - 1) * effectiveLimit)
+      .lean<MealLineup>()
+      .exec();
+  
+    if (!_lineup && !silent) throw createError("No lineups", 404);
+    return _lineup ?? [];
   }
-
+      
   // static async constructMealAnalysis()
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
