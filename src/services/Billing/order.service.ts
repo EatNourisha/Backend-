@@ -189,7 +189,7 @@ export class OrderService {
       cart_id: _cart?._id!,
       delivery_date: dto?.delivery_date,
       promo: when(!!promo, promo?._id, undefined),
-      actual_discounted_amount: amount_off,
+      actual_discounted_amount: amount_off ?? 0,
       weekend_delivery: dto?.weekend_delivery,
       delivery_period: dto?.delivery_period,
       coupon: dto?.coupon,

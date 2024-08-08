@@ -73,7 +73,7 @@ export class MealLineupController {
     try {
       const { customer, params, query } = req;
       console.log("getLineup", query);
-      const data = await service.getLineupById(params.lineupId, customer.roles, !!query?.silent);
+      const data = await service.getLineupById(params.id, customer.roles, !!query?.silent);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -82,7 +82,7 @@ export class MealLineupController {
   async getLineupByLineId(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params, query } = req;
-      const data = await service.getLineupByLineupId(params.id, customer.roles, !!query?.silent);
+      const data = await service.getLineupByLineupId(params.lineupId, customer.roles, !!query?.silent);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -92,13 +92,16 @@ export class MealLineupController {
   async getLineups(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, query } = req;
-      const statusParam = query.status;
-      const status = typeof statusParam === 'string' ? statusParam : undefined;      
-
-      const data = await service.getLineups( customer.roles, status , !!query?.silent);
+  
+      const status = typeof query.status === 'string' ? query.status : undefined;
+      const week = typeof query.week === 'string' ? query.week : undefined;
+      const limit = query.limit ? parseInt(query.limit as string, 10) : undefined;
+      const page = query.page ? parseInt(query.page as string, 10) : undefined;
+  
+      const data = await service.getLineups(customer.roles, !!query?.silent, status, week, limit, page);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
-}
+    }
