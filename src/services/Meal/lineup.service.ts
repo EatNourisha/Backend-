@@ -318,6 +318,54 @@ export class MealLineupService {
     return await MealService.decreaseAvailableMealpackQuantities(mealpacks_and_quantities);
   }
 
+  async getLineupByLineupId(lineupId: string, roles: string[], silent = false): Promise<MealLineup | null> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
+    }));
+    console.log("Silent", silent);
+
+    const _lineup = await lineup.findOne({ _id: lineupId }).populate(pops).sort({ createdAt: -1 }).lean<MealLineup>().exec();
+    if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
+    return _lineup ?? {};
+  }
+
+  async getLineups( roles: string[], status?:string, silent = false): Promise<MealLineup | null> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
+    }));
+    console.log("Silent", silent);
+
+    const _lineup = await lineup.find({status: status}).populate(pops).sort({ createdAt: -1 }).lean<MealLineup>().exec();
+    if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
+    return _lineup ?? {};
+  }
+
   // static async constructMealAnalysis()
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.

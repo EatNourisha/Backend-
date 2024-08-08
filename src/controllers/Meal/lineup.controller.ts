@@ -73,7 +73,29 @@ export class MealLineupController {
     try {
       const { customer, params, query } = req;
       console.log("getLineup", query);
-      const data = await service.getLineupById(params.id, customer.roles, !!query?.silent);
+      const data = await service.getLineupById(params.lineupId, customer.roles, !!query?.silent);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+  async getLineupByLineId(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, params, query } = req;
+      const data = await service.getLineupByLineupId(params.id, customer.roles, !!query?.silent);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getLineups(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const statusParam = query.status;
+      const status = typeof statusParam === 'string' ? statusParam : undefined;      
+
+      const data = await service.getLineups( customer.roles, status , !!query?.silent);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
