@@ -140,8 +140,20 @@ export class BillingService {
     amountToPay += 8
   }
 
+  let cus_stripe = cus?.stripe_id
+  const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
+  if (!stripeCustomer || stripeCustomer.deleted) {
+    const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
+    cus_stripe = cons.id;
+  
+    await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+    .lean<Customer>()
+    .exec();
+
+  }
+
     const intent = await this.stripe.paymentIntents.create({
-      customer: cus?.stripe_id,
+      customer: cus_stripe,
       payment_method: dto?.card_token,
       amount: Math.round(amountToPay * 100),
       currency: "gbp",
@@ -199,9 +211,21 @@ export class BillingService {
     if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
         promo_code = promo?.stripe_id;
     }
-        
+
+    let cus_stripe = cus?.stripe_id
+    const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
+    if (!stripeCustomer || stripeCustomer.deleted) {
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
+      cus_stripe = cons.id;
+    
+      await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+      .lean<Customer>()
+      .exec();
+  
+    }
+
     const sub = await this.stripe.subscriptions.create({
-      customer: cus?.stripe_id,
+      customer: cus_stripe,
       default_payment_method: dto?.card_token,
       collection_method: "charge_automatically",
       items: [
@@ -239,6 +263,15 @@ export class BillingService {
     const client_secret = payment_intent.client_secret;
     return { client_secret, subscription_id: sub?.id, link: sub?.metadata };
   }
+
+  async attachStripeId( email: string, name: string) {
+    const cons = await this.stripe.customers.create({
+      email,
+      name,
+    });
+    return cons;
+  }
+
 }
 
 export class BillingHooks {
