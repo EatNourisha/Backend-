@@ -58,9 +58,21 @@ export class GiftCardService {
     if(dto?.scheduled === true && !dto?.scheduled_date){
       validateFields(dto, ["scheduled_date"]);
     }
+    
+    let cus_stripe = cus?.stripe_id
+    const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
+    if (!stripeCustomer || stripeCustomer.deleted) {
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
+      cus_stripe = cons.id;
+    
+      await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+      .lean<Customer>()
+      .exec();
+
+    }
 
     const intent = await this.stripe.paymentIntents.create({
-      customer: cus?.stripe_id,
+      customer: cus_stripe,
       amount: amount || Math.round(amountToPay * 100),
       currency: "gbp",
       receipt_email: cus?.email,
@@ -175,6 +187,14 @@ export class GiftCardService {
     const _giftImage = await giftImages.findById(id).lean<GiftImages>().exec();
     if (!_giftImage) throw createError("Gift Image not found", 404);
     return _giftImage;
+  }
+
+  async attachStripeId( email: string, name: string) {
+    const cons = await this.stripe.customers.create({
+      email,
+      name,
+    });
+    return cons;
   }
 
 

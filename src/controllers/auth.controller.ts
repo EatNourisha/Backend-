@@ -19,19 +19,12 @@ export class AuthController {
   }
 
   async registerCustomerAccount(req: Request, res: Response, next: NextFunction) {
-    let responseData
     try {
       const body = req.body;
       const deviceId = req.headers["device-id"] as string;
       const data = await service.registerWithRole(body, AvailableRole.CUSTOMER, deviceId);
-      responseData = data
       sendResponse(res, 201, data);
     } catch (error) {
-      console.log('~~~~REGISTER ERROR Start~~~~~~~~~', error)
-      if (error.message === 'Unauthorized' && error.statusCode === '500'){
-        sendResponse(res, 201, responseData);
-      }
-      console.log('~~~~REGISTER ERROR ENDs~~~~~~~~~')
       sendError(error, next);
     }
   }
