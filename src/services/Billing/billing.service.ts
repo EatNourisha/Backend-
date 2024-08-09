@@ -166,6 +166,9 @@ export class BillingService {
       confirm: !!dto?.card_token,
     });
 
+    const promo = await promoCode.findOne({code: _order?.coupon}).exec();
+
+
     if (!!intent.id) {
       await transaction.create({
         itemRefPath: "Order",
@@ -177,6 +180,7 @@ export class BillingService {
         reference: intent?.id,
         reason: TransactionReason.ORDER,
         stripe_customer_id: cus?.stripe_id,
+        applied_promo: promo?._id
       });
     }
 

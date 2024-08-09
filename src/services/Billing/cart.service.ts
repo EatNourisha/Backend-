@@ -8,6 +8,8 @@ import { AvailableResource, PermissionScope } from "../../valueObjects";
 import { ClientSession } from "mongoose";
 import { nanoid } from "nanoid";
 import { add } from "lodash";
+import { startOfMonth } from 'date-fns';
+
 
 interface CartItemDto {
   itemId: string;
@@ -188,4 +190,41 @@ export class CartService {
       .lean<Cart>()
       .exec();
   }
+
+// ...other code
+
+async deleteCarts(roles: string[], filters: IPaginationFilter): Promise<any> {
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.DELETE, PermissionScope.ALL]);
+
+    console.log({ roles, filters });
+
+    // Step 1: Fetch cartItems created before this month
+    const firstDayOfMonth = startOfMonth(new Date());
+    const cartItems = await cartItem.find({
+        createdAt: { $lt: firstDayOfMonth },
+    }).exec();
+
+    // Step 2: Fetch corresponding carts and update them
+    const cartIds = cartItems.map(item => item.cart);
+    const carts = await cart.updateMany(
+        { _id: { $in: cartIds } },
+        { $set: { subtotal: 0, total: 10 } }
+    ).exec();
+
+    console.log('@@@@@@@@@@@@@@@', carts)
+
+    // Step 3: Delete the cartItems
+   const items  = await cartItem.deleteMany({
+        _id: { $in: cartItems.map(item => item._id) }
+    }).exec();
+
+    // Fetch the updated cart and items to return
+    // const [_cart, items] = await Promise.all([
+    //     cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
+    //     paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+    // ]);
+
+    return { cart: carts, items };
+}
+
 }

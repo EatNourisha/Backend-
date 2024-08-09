@@ -72,4 +72,15 @@ export class CartController {
       sendError(error, next);
     }
   }
+
+  async deleteCarts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.deleteCarts( customer.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
 }
