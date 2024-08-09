@@ -126,6 +126,19 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             }}
 
       }
+
+      const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
+
+      if (trans?.applied_promo !== null) {
+        const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+      if (promo) {
+      await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
+          // const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+          // await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
+      }
+      }
+
       const meta = data.metadata;
 
       if(meta.couponCode !== null || ""){       
@@ -176,8 +189,12 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         const promo = await promoCode.findById(trans?.applied_promo).exec();
 
         if (promo) {
-            const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-            await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
+        const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+        await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
+
+            // const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+            // await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
+            
         }
       }
       await BillingHooks.customerSubscriptionCreated(event);

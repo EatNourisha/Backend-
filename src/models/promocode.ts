@@ -75,8 +75,11 @@ export class PromoCode extends BaseEntity {
   influencer: Influencer;
 
   @prop({ default: false })
-  /// Means this promo code document doesn't give the customers any discounts.
   no_discount: boolean;
+
+  @prop({ ref: () => Customer })
+  redeemed_by: Ref<Customer>[];
+
 }
 
 export default getModelForClass(PromoCode);
