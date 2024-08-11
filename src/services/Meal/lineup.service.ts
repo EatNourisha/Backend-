@@ -342,6 +342,51 @@ export class MealLineupService {
     return _lineup ?? {};
   }
 
+  // async getLineups(
+  //   roles: string[], 
+  //   silent = false, 
+  //   status?: string, 
+  //   week?: string, 
+  //   limit?: number, 
+  //   page?: number
+  // ): Promise<MealLineup | null> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
+  
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //     path: day,
+  //     populate: [
+  //       { path: 'breakfast.mealId' },
+  //       { path: 'breakfast.extraId' },
+  //       { path: 'lunch.mealId' },
+  //       { path: 'lunch.extraId' },
+  //       { path: 'dinner.mealId' },
+  //       { path: 'dinner.extraId' },
+  //     ],
+  //   }));
+  
+  //   const filter: any = {};
+  //   if (status) filter.status = status;
+  //   if (week) filter.week = week;
+  
+  //   // Defaulting limit and page if they aren't provided
+  //   const effectiveLimit = limit ?? 10;
+  //   const effectivePage = page ?? 1;
+  
+  //   const _lineup = await lineup.find(filter)
+  //     .populate(pops)
+  //     .sort({ createdAt: -1 })
+  //     .limit(effectiveLimit)
+  //     .skip((effectivePage - 1) * effectiveLimit)
+  //     .lean<MealLineup>()
+  //     .exec();
+  
+  //   if (!_lineup && !silent) throw createError("No lineups", 404);
+  //   return _lineup ?? [];
+  // }
+
   async getLineups(
     roles: string[], 
     silent = false, 
@@ -349,7 +394,7 @@ export class MealLineupService {
     week?: string, 
     limit?: number, 
     page?: number
-  ): Promise<MealLineup | null> {
+  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
       PermissionScope.ALL,
@@ -371,21 +416,26 @@ export class MealLineupService {
     if (status) filter.status = status;
     if (week) filter.week = week;
   
+    // Count total documents matching the filter
+    const totalCount = await lineup.countDocuments(filter);
+  
     // Defaulting limit and page if they aren't provided
     const effectiveLimit = limit ?? 10;
     const effectivePage = page ?? 1;
   
-    const _lineup = await lineup.find(filter)
+    const lineups = await lineup.find(filter)
       .populate(pops)
       .sort({ createdAt: -1 })
       .limit(effectiveLimit)
       .skip((effectivePage - 1) * effectiveLimit)
-      .lean<MealLineup>()
+      .lean<MealLineup[]>()
       .exec();
   
-    if (!_lineup && !silent) throw createError("No lineups", 404);
-    return _lineup ?? [];
+    if (!lineups.length && !silent) throw createError("No lineups", 404);
+  
+    return { totalCount, lineups } ?? [];
   }
+  
       
   // static async constructMealAnalysis()
 
