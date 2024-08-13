@@ -46,6 +46,10 @@ export class Plan extends BaseEntity {
 
   @prop({ type: () => [String] })
   perks: string[];
+
+  @prop({ default: false })
+  five_day?: boolean;
+
 }
 
 export default getModelForClass(Plan);

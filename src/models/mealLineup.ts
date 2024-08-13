@@ -55,10 +55,10 @@ export class MealLineup extends BaseEntity {
   friday: DayMeals;
 
   @prop({ type: () => DayMeals, _id: false })
-  saturday: DayMeals;
+  saturday?: DayMeals;
 
   @prop({ type: () => DayMeals, _id: false })
-  sunday: DayMeals;
+  sunday?: DayMeals;
 
   @prop()
   delivery_date: Date;
@@ -74,6 +74,9 @@ export class MealLineup extends BaseEntity {
 
   @prop()
   sub_end_date: Date;
+
+  @prop({default:false})
+  in_week?: boolean;
 
 }
 

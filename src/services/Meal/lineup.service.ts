@@ -15,8 +15,15 @@ import { MealService } from "./meal.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
+    
     // Validate fields
-    validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+    if(dto?.in_week === false || null){
+      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+    }
+
+    if(dto?.in_week === true){
+      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+    }
 
     // Check permissions
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
