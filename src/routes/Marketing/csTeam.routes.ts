@@ -11,6 +11,7 @@ router.post("/followup/:cusId", authGuard, controller.addFollowUp);
 router.post("/report/:cusId", authGuard, controller.addReport);
 router.get("/", authGuard, controller.getAllCs);
 router.get("/followup/:cusId", authGuard, controller.getCustomerFollowHistory);
+router.get("/report/:cusId", authGuard, controller.getCustomerReportHistory);
 router.get("/:id", authGuard, controller.getACs);
 router.delete("/:id", authGuard, controller.removeACs);
 

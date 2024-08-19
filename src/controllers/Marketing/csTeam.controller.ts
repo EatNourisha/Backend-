@@ -86,4 +86,14 @@ export class csTeamController {
       }
     }
 
+    async getCustomerReportHistory(req: Request, res: Response, next: NextFunction) {
+      try {
+        const { customer, params} = req;
+        const data = await service.getCustomerReportHistory(customer.sub, params.cusId, customer.roles);
+        sendResponse(res, 201, data);
+      } catch (error) {
+        sendError(error, next);
+      }
+    }
+
 }
