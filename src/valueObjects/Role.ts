@@ -44,4 +44,7 @@ export enum AvailableResource {
   GIFTCARD = "giftcard",
   CUSTOMGIFT = "customgift",
   GIFTIMAGES = "giftimages",
+  CSTEAM = "csteam",
+  CSREPORT = "csreport",
+  CSFOLLOWUP = "csfollowup",
 }

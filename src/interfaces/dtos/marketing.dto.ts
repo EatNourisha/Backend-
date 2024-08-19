@@ -6,3 +6,6 @@ export interface UpdateContactSubscriptionDto {
   plan_type: string;
   addr?: Address;
 }
+// export interface FollowUpDto {
+//   text: string;
+// }

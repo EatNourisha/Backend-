@@ -128,6 +128,18 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.GIFTIMAGES,
         scopes: [PermissionScope.ALL],
       },
+      {
+        name: AvailableResource.CSTEAM,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.CSFOLLOWUP,
+        scopes: [PermissionScope.ALL],
+      },
+      {
+        name: AvailableResource.CSREPORT,
+        scopes: [PermissionScope.ALL],
+      },
     ],
   },
 };
