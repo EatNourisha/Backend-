@@ -125,6 +125,31 @@ export class OrderService {
     return typedOrdersData;
 }
 
+// async getOpenOrders(
+//   customer_id: string,
+//   roles: string[],
+// ){
+//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+//   const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } });
+//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
+//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
+//   const typedOrdersData = orders.data as Order[];
+//   return {typedOrdersData, _lineup};
+// }
+
+// async getClosedOrders(
+//   customer_id: string,
+//   roles: string[],
+// ) {
+//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+//   const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
+//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $lt: new Date() }})
+//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
+//   const typedOrdersData = orders.data as Order[];
+
+//   return {typedOrdersData, _lineup};
+// }
+
 
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
     validateFields(dto, ["status"]);

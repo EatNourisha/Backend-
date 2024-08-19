@@ -24,7 +24,10 @@ import {
   giftpurchase,
   mealextras,
   customgift,
-  giftImages
+  giftImages,
+  csteam,
+  csreport,
+  cstfollowup
 } from "../models";
 
 import capitalize from "lodash/capitalize";
@@ -55,7 +58,11 @@ export type SchemaTypes =
   | "mealextras"
   | "giftcard"
   | "customgift"
-  | "giftImages";
+  | "giftImages"
+  | "csteam"
+  | "csreport"
+  | "cstfollowup"
+  ;
 
 export class AccessService {
   static async documentBelongsToAccount(customer_id: string, docId: string, schema: SchemaTypes, key?: string): Promise<boolean> {
@@ -94,7 +101,10 @@ export class AccessService {
       giftpurchase,
       mealextras,
       customgift,
-      giftImages
+      giftImages,
+      csteam,
+      csreport,
+      cstfollowup
     };
 
     return map[schema];

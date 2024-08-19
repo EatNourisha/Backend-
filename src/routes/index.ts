@@ -26,6 +26,7 @@ import MobileUseRouter from "./mobileUse.routes";
 
 import ReferralRouter from "./referral.routes";
 import EarningsRouter from "./earnings.routes";
+import CsTeamRouter from "./Marketing/csTeam.routes";
 
 import { sendResponse } from "../utils";
 // import config from "../config";
@@ -68,6 +69,7 @@ routes.use("/deliveries", DeliveryRouter);
 routes.use("/appupdate", AppUpdate);
 routes.use("/mobileuse", MobileUseRouter);
 routes.use("/gift", GiftCardRouter);
+routes.use("/cs", CsTeamRouter);
 
 // routes.get("/configs", authGuard, (_, res) => {
 //   return sendResponse(res, 200, config);

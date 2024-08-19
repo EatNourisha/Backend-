@@ -29,6 +29,7 @@ export * from "./earnings.service";
 export * from "./giftCardEmail.service";
 export * from "./authEmail.service";
 
+export * from "./Marketing/csTeam.service";
 export * from "./Marketing/marketing.service";
 export * from "./mobileUse.service";
 export * from "./security/auditTrail.service";
