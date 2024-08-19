@@ -22,7 +22,7 @@ export class csTeamService {
   async getAllCs(customer_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
 
-    let cus = await customer.findById(customer_id).lean<Customer>().exec();
+    let cus = await customer.findById(customer_id).lean<Customer>().sort({createdAt: -1}).exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
     let team = await csteam
