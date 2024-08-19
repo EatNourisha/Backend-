@@ -15,6 +15,9 @@ export class csTeamService {
     let team = await customer.findById(cus_id).lean<Customer>().exec();
     if (!team) throw createError("Member does not exist", 404);
 
+    let cs = await csteam.findOne({team_member: team?._id}).lean<Customer>().exec();
+    if (cs) throw createError("Already a cs team member", 404);
+
     const _csTeam = await csteam.create({ added_by: _cus?._id, team_member: team?._id });
     return _csTeam;
   }
