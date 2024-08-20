@@ -104,4 +104,14 @@ export class MealLineupController {
       sendError(error, next);
     }
   }
+
+  async importPreviousLineup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.importPreviousLineup(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
     }
+  }
+}
