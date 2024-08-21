@@ -11,6 +11,7 @@ router.post("/image", authGuard, controller.createGiftImage);
 router.post("/custom", authGuard, controller.createCustomGift);
 router.get("/custom", authGuard, controller.getCustomerCustomGift);
 router.get("/", authGuard, controller.getGiftCards);
+router.get("/:id", authGuard, controller.getGiftCardById);
 router.get("/images", authGuard, controller.getGiftImages);
 router.get("/customer", authGuard, controller.getCustomerGiftPurchase); 
 router.get("/image/:id", authGuard, controller.getGiftImageById);

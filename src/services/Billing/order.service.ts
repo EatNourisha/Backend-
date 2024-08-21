@@ -1,7 +1,7 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, MealLineup, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, lineup, order, orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import { OrderStatus } from "../../models/order";
@@ -125,30 +125,62 @@ export class OrderService {
     return typedOrdersData;
 }
 
-// async getOpenOrders(
-//   customer_id: string,
-//   roles: string[],
-// ){
-//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-//   const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } });
-//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
-//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
-//   const typedOrdersData = orders.data as Order[];
-//   return {typedOrdersData, _lineup};
-// }
+async getOpenOrdersHistory(
+  customer_id: string,
+  roles: string[],
+){
+  await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+  const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } });
 
-// async getClosedOrders(
-//   customer_id: string,
-//   roles: string[],
-// ) {
-//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-//   const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
-//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $lt: new Date() }})
-//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
-//   const typedOrdersData = orders.data as Order[];
+  const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+    path: day,
+    populate: [
+      { path: 'breakfast.mealId' },
+      { path: 'breakfast.extraId' },
+      { path: 'lunch.mealId' },
+      { path: 'lunch.extraId' },
+      { path: 'dinner.mealId' },
+      { path: 'dinner.extraId' }
+    ]
+  })) 
 
-//   return {typedOrdersData, _lineup};
-// }
+  const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
+  .populate(pops)
+  .lean<MealLineup>()
+  .exec();
+
+  // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
+  const _orders = orders.data as Order[];
+  return {_orders, _lineup};
+}
+
+async getClosedOrdersHistory(
+  customer_id: string,
+  roles: string[],
+) {
+  await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+  const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
+
+  const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+    path: day,
+    populate: [
+      { path: 'breakfast.mealId' },
+      { path: 'breakfast.extraId' },
+      { path: 'lunch.mealId' },
+      { path: 'lunch.extraId' },
+      { path: 'dinner.mealId' },
+      { path: 'dinner.extraId' }
+    ]
+  })) 
+
+  const _lineup = await lineup.find({customer: customer_id, delivery_date: { $lt: new Date() }})
+  .populate(pops)
+  .lean<MealLineup>()
+  .exec();
+  const _orders = orders.data as Order[];
+
+  return {_orders, _lineup};
+}
 
 
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
