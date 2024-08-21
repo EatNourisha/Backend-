@@ -45,6 +45,26 @@ export class OrderController {
     }
   }
 
+  async getOpenOrdersHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.getOpenOrdersHistory(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getClosedOrdersHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.getClosedOrdersHistory(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getOrderById(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, params, query } = req;

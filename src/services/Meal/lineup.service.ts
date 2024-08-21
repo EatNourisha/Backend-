@@ -472,6 +472,36 @@ export class MealLineupService {
   }
   
   
+  async importPreviousLineupById(
+    customer_id: string, 
+    id: string, 
+    roles: string[]
+  ): Promise<MealLineup> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' }
+      ]
+    })) 
+  
+    const lastLineup = await lineup
+      .findOne({ _id: id, customer: customer_id })
+      .populate(pops)
+      .lean<MealLineup>()
+      .exec();
+  
+    if (!lastLineup) throw createError("Customer has no meal lineups", 404);
+  
+    return lastLineup;
+  }
+  
       
   // static async constructMealAnalysis()
 

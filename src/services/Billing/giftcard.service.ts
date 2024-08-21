@@ -189,6 +189,13 @@ export class GiftCardService {
     return _giftImage;
   }
 
+  async getGiftCardById(id: string, roles: string[]): Promise<GiftCard> {
+    await RoleService.hasPermission(roles, AvailableResource.GIFTCARD, [PermissionScope.READ, PermissionScope.ALL]);
+    const _gift = await giftcard.findById(id).lean<GiftCard>().exec();
+    if (!_gift) throw createError("Gift card not found", 404);
+    return _gift;
+  }
+
   async attachStripeId( email: string, name: string) {
     const cons = await this.stripe.customers.create({
       email,
