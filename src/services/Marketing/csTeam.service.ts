@@ -60,13 +60,16 @@ export class csTeamService {
     return team;
   }
 
-  async removeCs(customer_id: string, teamId: string, roles: string[]) {
+  async removeCs(customer_id: string, adminId: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
 
     let cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
-    let team = await csteam.findOne({ _id: teamId, customer: customer_id }).exec();
+    let admin = await customer.findById(adminId).lean<Customer>().exec();
+    if (!admin) throw createError("admin does not exist", 404);
+
+    let team = await csteam.findOne({ team_member: admin?._id, customer: customer_id }).exec();
     if (!team) throw createError("Cs not found", 404);
 
     await team.deleteOne();
