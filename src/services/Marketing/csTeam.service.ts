@@ -172,6 +172,29 @@ export class csTeamService {
   
     return reports;
   }
+
+  async getACsByAdminId(customer_id: string, adminId: string, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
+  
+    const _customer = await customer.findById(customer_id).lean<Customer>().exec();
+    if (!_customer) throw createError("Customer does not exist", 404);
+  
+    const admin = await customer.findById(adminId).lean<Customer>().exec();
+    if (!admin) throw createError("Admin does not exist", 404);
+  
+    const team = await csteam.findOne({ team_member: admin._id })
+      .lean<CsTeam>()
+      // .populate([
+      //   { path: "added_by", model: "Customer" },
+      //   { path: "team_member", model: "Customer" },
+      // ])
+      .exec();
+  
+    if (!team) throw createError("CS team not found for the given admin ID", 404);
+  
+    return team;
+  }
+  
   
 }
 
