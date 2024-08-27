@@ -90,21 +90,50 @@ export class PlanService {
     return _plan;
   }
 
-  async getPlans(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean}): Promise<PaginatedDocument<Plan[]>> {
+  // async getPlans(roles: string[], filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean}): Promise<PaginatedDocument<Plan[]>> {
+  //   await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
+  //   const queries: any = {};
+
+  //   if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+
+  //   if (filters?.country) {
+  //     Object.assign(queries, { "country": filters.country });
+  //   }
+  //   if (filters?.weekend) {
+  //     Object.assign(queries, { weekend: filters.weekend });
+  //   }
+  //   if (filters?.five_day) {
+  //     Object.assign(queries, { five_day: filters.five_day });
+  //   }
+  //   return paginate("plan", queries, filters);
+  // }
+
+  async getPlans(
+    roles: string[],
+    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string }
+  ): Promise<PaginatedDocument<Plan[]>> {
     await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
     const queries: any = {};
-
-    if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
-
+  
+    if (filters?.searchPhrase) {
+      Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+    }
+  
     if (filters?.country) {
-      Object.assign(queries, { "country": filters.country });
+      Object.assign(queries, { country: filters.country });
     }
-    if (filters?.weekend) {
-      Object.assign(queries, { weekend: filters.weekend });
+  
+    const weekendQuery = filters?.weekend ? { weekend: filters.weekend } : {};
+    const fiveDayQuery = filters?.five_day ? { five_day: filters.five_day } : {};
+  
+    const fiveDayCount = await plan.countDocuments({ ...queries, ...fiveDayQuery });
+  
+    if (fiveDayCount === 0) {
+      Object.assign(queries, weekendQuery);
+    } else {
+      Object.assign(queries, fiveDayQuery, weekendQuery);
     }
-    if (filters?.five_day) {
-      Object.assign(queries, { five_day: filters.five_day });
-    }
+  
     return paginate("plan", queries, filters);
   }
 
