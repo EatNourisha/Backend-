@@ -58,18 +58,18 @@ export class csTeamController {
 
     async addFollowUp(req: Request, res: Response, next: NextFunction) {
       try {
-        const { customer, params, body} = req;
-        const data = await service.addFollowUp(customer.sub, params.cusId, body.text, customer.roles);
+        const { customer, params, body } = req;
+        const data = await service.addFollowUp(customer.sub, params.cusId, body, customer.roles);
         sendResponse(res, 201, data);
       } catch (error) {
         sendError(error, next);
       }
     }
-
+    
     async addReport(req: Request, res: Response, next: NextFunction) {
       try {
         const { customer, params, body} = req;
-        const data = await service.addReport(customer.sub, params.cusId, body.text, customer.roles);
+        const data = await service.addReport(customer.sub, params.cusId, body, customer.roles);
         sendResponse(res, 201, data);
       } catch (error) {
         sendError(error, next);

@@ -6,6 +6,10 @@ export interface UpdateContactSubscriptionDto {
   plan_type: string;
   addr?: Address;
 }
+export interface csDto {
+  text: string;
+  teamId: string;
+}
 // export interface FollowUpDto {
 //   text: string;
 // }

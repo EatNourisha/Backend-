@@ -4,6 +4,7 @@ import { RoleService } from "../../services/role.service";
 import { createError } from "../../utils";
 import csFollowUps from "../../models/csFollowUps";
 import csReports from "../../models/csReports";
+import { csDto } from "interfaces";
 
 export class csTeamService {
   async addCsMember(customer_id: string, cus_id: string, roles: string[]) {
@@ -96,7 +97,7 @@ export class csTeamService {
     return { message: "CS assigned" };
   }
 
-  async addFollowUp(customer_id: string, _cus_id: string, text: string, roles: string[]) {
+  async addFollowUp(customer_id: string, _cus_id: string, dto: csDto, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
   
     const admin = await customer.findById(customer_id).lean<Customer>().exec();
@@ -105,17 +106,24 @@ export class csTeamService {
     const custom = await customer.findById(_cus_id).exec();
     if (!custom) throw createError("Customer does not exist", 404);
   
-    const followUp = await csFollowUps.create({ text, by: admin._id, customer: custom._id });
+    const team = await csteam.findById(dto.teamId).lean<CsTeam>().exec();
+    if (!team) throw createError("Team does not exist", 404);
   
-    custom.follow_up = (custom.follow_up as string[]) ?? [];
+    const followUp = await csFollowUps.create({
+      text: dto.text,
+      by: team.team_member,
+      customer: custom._id
+    });
+  
+    custom.follow_up = custom.follow_up ?? [];
     custom.follow_up.push(followUp._id);
   
     await custom.save();
   
     return followUp;
   }
-
-  async addReport(customer_id: string, _cus_id: string, text: string, roles: string[]) {
+  
+  async addReport(customer_id: string, _cus_id: string, dto: csDto, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
   
     const admin = await customer.findById(customer_id).lean<Customer>().exec();
@@ -124,15 +132,42 @@ export class csTeamService {
     const custom = await customer.findById(_cus_id).exec();
     if (!custom) throw createError("Customer does not exist", 404);
   
-    const report = await csReports.create({ text, by: admin._id, customer: custom._id });
+    const team = await csteam.findById(dto.teamId).lean<CsTeam>().exec();
+    if (!team) throw createError("Team does not exist", 404);
   
-    custom.report = (custom.report as string[]) ?? [];
+    const report = await csReports.create({
+      text: dto.text,
+      by: team.team_member,
+      customer: custom._id
+    });
+  
+    custom.report = custom.report ?? [];
     custom.report.push(report._id);
   
     await custom.save();
   
     return report;
   }
+  
+
+  // async addReport(customer_id: string, _cus_id: string, text: string, roles: string[]) {
+  //   await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.CREATE, PermissionScope.ALL]);
+  
+  //   const admin = await customer.findById(customer_id).lean<Customer>().exec();
+  //   if (!admin) throw createError("Admin does not exist", 404);
+  
+  //   const custom = await customer.findById(_cus_id).exec();
+  //   if (!custom) throw createError("Customer does not exist", 404);
+  
+  //   const report = await csReports.create({ text, by: admin._id, customer: custom._id });
+  
+  //   custom.report = (custom.report as string[]) ?? [];
+  //   custom.report.push(report._id);
+  
+  //   await custom.save();
+  
+  //   return report;
+  // }
 
   async getCustomerFollowHistory(customer_id: string, _cus_id: string, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.READ, PermissionScope.ALL]);
