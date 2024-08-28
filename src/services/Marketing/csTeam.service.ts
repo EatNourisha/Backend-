@@ -198,7 +198,40 @@ export class csTeamService {
     return team;
   }
   
+  async deleteFollowUp(customer_id: string, id: string, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.DELETE, PermissionScope.ALL]);
   
+    const _customer = await customer.findById(customer_id).lean<Customer>().exec();
+    if (!_customer) throw createError("Customer does not exist", 404);
+  
+    const csMember = await csteam.findOne({ team_member: _customer._id }).exec();
+    if (!csMember) throw createError("You are not a CS member", 404);
+  
+    const followUp = await csFollowUps.findById(id).exec();
+    if (!followUp) throw createError("Follow-up record does not exist", 404);
+  
+    await followUp.delete();
+  
+    return ;
+}
+
+  async deleteReport(customer_id: string, id: string, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.CSTEAM, [PermissionScope.DELETE, PermissionScope.ALL]);
+  
+    const _customer = await customer.findById(customer_id).lean<Customer>().exec();
+    if (!_customer) throw createError("Customer does not exist", 404);
+  
+    const csMember = await csteam.findOne({ team_member: _customer._id }).exec();
+    if (!csMember) throw createError("You are not a CS member", 404);
+  
+    const report = await csReports.findById(id).exec();
+    if (!report) throw createError("Report record does not exist", 404);
+  
+    await report.delete();
+  
+    return report;
+}
+
 }
 
 // 2023-11-26T23:34:09.665+00:00
