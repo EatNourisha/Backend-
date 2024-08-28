@@ -94,17 +94,36 @@ export class csTeamController {
       } catch (error) {
         sendError(error, next);
       }
-    }    async getACsByAdminId(req: Request, res: Response, next: NextFunction) {
+    }    
+    
+    async getACsByAdminId(req: Request, res: Response, next: NextFunction) {
       try {
         const { customer, params } = req;
         const data = await service.getACsByAdminId(customer.sub, params.adminId, customer.roles);
         sendResponse(res, 201, data);
       } catch (error) {
         sendError(error, next);
+      }      
+    }
+    
+    async deleteFollowup(req: Request, res: Response, next: NextFunction) {
+      try {
+        const { customer, params } = req;
+        const data = await service.deleteFollowUp(customer.sub, params.id, customer.roles);
+        sendResponse(res, 201, data);
+      } catch (error) {
+        sendError(error, next);
       }
     }
 
-
-
+    async deleteReport(req: Request, res: Response, next: NextFunction) {
+      try {
+        const { customer, params } = req;
+        const data = await service.deleteReport(customer.sub, params.id, customer.roles);
+        sendResponse(res, 201, data);
+      } catch (error) {
+        sendError(error, next);
+      }
+    }
 
 }

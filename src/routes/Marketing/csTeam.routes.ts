@@ -15,5 +15,7 @@ router.get("/report/:cusId", authGuard, controller.getCustomerReportHistory);
 router.get("/get/cs/:adminId", authGuard, controller.getACsByAdminId);
 router.get("/:id", authGuard, controller.getACs);
 router.delete("/:id", authGuard, controller.removeACs);
+router.delete("/followup/:id", authGuard, controller.deleteFollowup);
+router.delete("/report/:id", authGuard, controller.deleteReport);
 
 export default router;
