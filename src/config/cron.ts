@@ -118,7 +118,7 @@ cron.schedule('* */1 * * *', async () => {
     scheduled: true,
     timezone: "Europe/London"
 });
-cron.schedule('* * * * * *', async () => {
+cron.schedule('* */1 * * *', async () => {
     try {
         // console.log("#########777777 Job runs every 1 sec");
 
