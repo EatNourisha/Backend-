@@ -24,6 +24,8 @@ import {
   Subscription,
   subscription,
   country,
+  inactiveusers,
+  cart,
 } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
@@ -41,6 +43,7 @@ import { DeliveryService } from "./Meal/delivery.service";
 import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
 import { MarketingService } from "./Marketing/marketing.service";
+import mealLineup from "../models/mealLineup";
 // import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
 
@@ -680,11 +683,96 @@ async validateEmail(email) {
   
     return customers;
   }
-  
+
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
   // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {
     new CustomerEventListener();
   }
+
+  
+//  static  async findInactiveCustomers() {
+//       const sixMonthsAgo = subMonths(new Date(2023, 11, 1), 10); 
+//       const fromDate = new Date(2023, 11, 1); 
+//     const today = new Date();
+
+//   const monthsAgo = differenceInMonths(today, fromDate);
+//   console.log('month', monthsAgo)
+  
+//       const allCustomers = await customer.find({
+//           createdAt: { $lte: new Date() }
+//       }).lean().exec();
+  
+//       const inactiveCustomers: InactiveCustomer[] = [];
+      
+//       for (const customer of allCustomers) {
+
+//     const customerIdStr = customer._id.toString();
+//     const cartExists = await cart.exists({ customer: customer._id });
+//     const lineupExists = await mealLineup.exists({ customer: customer._id });
+//     const alreadyExists = await inactiveusers.exists({ customer: customerIdStr });
+
+//         if (!cartExists && !lineupExists && !alreadyExists) {
+//             inactiveCustomers.push({
+//               customer: customer._id,
+//               email: customer.email,
+//               firstname: customer.first_name,
+//               lastname: customer.last_name,
+//               // address: ` ${customer?.address.city}`,
+//               phoneNumber: customer?.phone,
+//               ref_code: customer?.ref_code,
+//               reg_date: customer.createdAt ?? sixMonthsAgo ,
+//             });
+//         }
+//       }
+  
+//       if (inactiveCustomers.length > 0) {
+//           await inactiveusers.insertMany(inactiveCustomers);
+//       }
+  
+//       return inactiveCustomers;
+//   }
+  
+static async findInactiveCustomers() {
+
+  const allCustomers = await customer.find({
+    createdAt: { 
+      $gte: new Date(2023, 11, 1),  
+      $lte: new Date()   
+      }
+  }).lean().exec();
+
+  for (const customer of allCustomers) {
+    const customerIdStr = customer._id.toString();
+    const cartExists = await cart.exists({ customer: customer._id });
+    const lineupExists = await mealLineup.exists({ customer: customer._id });
+
+    if (!cartExists && !lineupExists) {
+      await inactiveusers.findOneAndUpdate(
+        { customer: customerIdStr },
+        {
+          $setOnInsert: {
+            customer: customerIdStr,
+            email: customer.email,
+            firstname: customer.first_name,
+            lastname: customer.last_name,
+            phoneNumber: customer?.phone,
+            ref_code: customer?.ref_code,
+            stripe_cus_id: customer?.stripe_id,
+            address: customer?.address,
+            registration_date: customer.createdAt,
+            last_seen: customer.last_seen ,
+            last_stripe_check: customer.last_stripe_check ,
+          },
+        },
+        { upsert: true, new: true }
+      );
+    }
+  }
+
+  return inactiveusers.find({}).lean().exec(); // Return the list of inactive users if needed
+}
+
+
 }

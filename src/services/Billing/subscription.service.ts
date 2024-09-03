@@ -11,6 +11,7 @@ import SubscriptionEventListener from "../../listeners/subscription.listener";
 import { DiscountService } from "./discount.service";
 import { DeliveryService, MarketingService } from "../../services";
 import { sub } from "date-fns";
+import { TransactionStatus } from "../../models/transaction";
 
 export class SubscriptionService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -190,7 +191,7 @@ export class SubscriptionService {
     });
 
     await transaction
-      .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id })
+      .updateOne({ subscription_reference: data?.id, stripe_customer_id: data?.customer }, { item: sub?._id, plan: _plan?._id, status: TransactionStatus.PENDING})
       .exec();
 
     const promo = cus_db?.pending_promo as PromoCode;
