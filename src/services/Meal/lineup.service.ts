@@ -72,8 +72,8 @@ export class MealLineupService {
     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
     // If all validations pass, create the lineup
-    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 });
-    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date }).exec();
+    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan});
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
   // Emit event
@@ -342,9 +342,10 @@ export class MealLineupService {
         { path: 'dinner.extraId' },
       ],
     }));
+
     console.log("Silent", silent);
 
-    const _lineup = await lineup.findOne({ _id: lineupId }).populate(pops).sort({ createdAt: -1 }).lean<MealLineup>().exec();
+    const _lineup = await lineup.findOne({ _id: lineupId }).populate(pops).populate('plan').sort({ createdAt: -1 }).lean<MealLineup>().exec();
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup ?? {};
   }
@@ -502,7 +503,36 @@ export class MealLineupService {
     return lastLineup;
   }
   
-      
+  async customerPreviousLineups(customer_id: string, roles: string[]): Promise<MealLineup> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
+    }));
+
+  
+    // Find the most recently created meal lineup by the customer
+    const lastLineup = await lineup
+      .find({ customer: customer_id })
+      .sort({ createdAt: -1 }) 
+      .populate(pops)
+      .populate('plan')
+      .lean<MealLineup>()
+      .exec();
+  
+    if (!lastLineup) throw createError("Customer has no meal lineups", 404);
+  
+    return lastLineup;
+  }
+   
   // static async constructMealAnalysis()
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.

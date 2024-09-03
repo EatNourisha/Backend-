@@ -3,6 +3,7 @@ import { lineup, giftpurchase, customer, Customer, subscription } from "../model
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
+import {CustomerService} from "../services/customer.service"
 
 cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
@@ -73,5 +74,63 @@ cron.schedule('0 12 * * 0', async () => {
     scheduled: true,
     timezone: "Europe/London"
 });
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("#########777777 deactivate Job runs every 1 min");
+
+    try {
+        const _lineup = await lineup.find({
+            delivery_status: 'pending',
+            delivery_date: {
+                $lt: new Date()
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            await line.updateOne({ delivery_status: 'delivered' });
+            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("#########777777 deactivate Job runs every 1 min");
+
+    try {
+        const _lineup = await lineup.find({
+            delivery_status: 'pending',
+            delivery_date: {
+                $lt: new Date()
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            await line.updateOne({ delivery_status: 'delivered' });
+            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+cron.schedule('* * * * * *', async () => {
+    try {
+        // console.log("#########777777 Job runs every 1 sec");
+
+        const inactiveCustomers = await CustomerService.findInactiveCustomers();
+        console.log(`Found and saved ${inactiveCustomers.length} inactive customers.`);
+    } catch (error) {
+        console.error("Error running findInactiveCustomers job:", error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
 
 export default cron

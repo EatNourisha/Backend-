@@ -52,3 +52,4 @@ export { default as giftImages, GiftImages } from "./giftImages";
 export { default as csteam, CsTeam } from "./csTeam";
 export { default as csreport, CsReports } from "./csReports";
 export { default as cstfollowup, CsFollowUp } from "./csFollowUps";
+export { default as inactiveusers, Inactiveusers } from "./inactive_users";

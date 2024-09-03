@@ -5,6 +5,7 @@ import BaseEntity from "./base";
 import { Customer } from "./customer";
 import { MealPack } from "./mealPack";
 import { MealExtras } from "./mealExtras";
+import { Plan } from "./plan";
 
 class ExtraDetail {
   @prop({_id: false})
@@ -74,6 +75,12 @@ export class MealLineup extends BaseEntity {
 
   @prop()
   sub_end_date: Date;
+
+  @prop({default: 'pending'})
+  delivery_status: string;
+
+  @prop({ ref: () => Plan })
+  plan: Ref<Plan>;
 
   @prop({default:false})
   in_week?: boolean;

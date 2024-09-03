@@ -123,4 +123,13 @@ export class MealLineupController {
       sendError(error, next);
     }
   }
+  async customerPreviousLineups(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer } = req;
+      const data = await service.customerPreviousLineups(customer.sub, customer.roles);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 }
