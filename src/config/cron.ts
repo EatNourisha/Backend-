@@ -57,7 +57,7 @@ cron.schedule('* */1 * * *', async () => {
 });
 
 cron.schedule('0 12 * * 0', async () => {
-    // console.log("#########777777 line up reminder runs every 1 min");
+    // console.log("#########777777 line up reminder runs every sunday 12 pm");
 
     try {
         const _subscription = await subscription.find({
@@ -118,9 +118,10 @@ cron.schedule('* */1 * * *', async () => {
     scheduled: true,
     timezone: "Europe/London"
 });
-cron.schedule('* */1 * * *', async () => {
+
+cron.schedule('0 0 * * 0', async () => {
     try {
-        // console.log("#########777777 Job runs every 1 sec");
+        // console.log("#########777777 Job runs every week. sunday midnight");
 
         const inactiveCustomers = await CustomerService.findInactiveCustomers();
         console.log(`Found and saved ${inactiveCustomers.length} inactive customers.`);
