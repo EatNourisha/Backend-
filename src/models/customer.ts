@@ -154,6 +154,13 @@ export class Customer extends BaseEntity {
   @prop()
   report?: string[];
 
+  @prop()
+  temp_id?: string;
+
+  @prop()
+  device_id?: string;
+
+
 }
 
 export default getModelForClass(Customer);

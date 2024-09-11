@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, subscription } from "../../models";
+import { cart, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, subscription} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -25,8 +25,8 @@ export class MealLineupService {
       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
     }
 
-    // Check permissions
-    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  // Check permissions
+  await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     // Retrieve customer's subscription information
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
@@ -61,8 +61,11 @@ export class MealLineupService {
     for (const mealId of mealIds) {
     const _mealPack = await mealPack.findById(mealId).exec();
     if (_mealPack && _mealPack.available_quantity !== undefined) {
-        _mealPack.available_quantity -= 1;
-        await _mealPack.save(); // Save the updated meal pack
+
+    // Decrement the available quantity, but not below 0
+    _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
+    await _mealPack.save(); 
+      
     } 
     }    
     
@@ -71,16 +74,114 @@ export class MealLineupService {
     // Check if the customer lineup for the specified week already exists
     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
+    const cartExists = await cart.exists({ customer: customer_id });
+    const lineupExists = await lineup.exists({ customer: customer_id });
+
+    let returning = false
+
+    if (cartExists || lineupExists) {
+      returning = true
+    }
+
     // If all validations pass, create the lineup
-    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan});
+    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
-    // Emit event
-    await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+  // Emit event
+  await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
 
-    return _lineup;
+  return _lineup;
 }
+
+
+// async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
+    
+//   // Validate fields
+//   if(dto?.in_week === false || null){
+//     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+//   }
+
+//   if(dto?.in_week === true){
+//     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+//   }
+
+// // Check permissions
+// await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+//   // Retrieve customer's subscription information
+//   const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+//   const endDate = subscriptionCheck?.end_date; 
+  
+// // If the subscription is active and has start and end dates
+//   if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
+//       const startDate = new Date(subscriptionCheck.start_date).getTime(); 
+//       const endDate = new Date(subscriptionCheck.end_date).getTime(); 
+      
+//       // Calculate subscription duration in days
+//       const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      
+//       // Check if subscription duration is exactly 7 days
+//       if (subDuration === 7 && dto.week > 1) {
+//           throw createError("Only monthly subscribers can create more than one lineup", 404);
+//       }
+//   }
+
+//   const mealIds = [
+//     dto?.monday?.lunch?.mealId, dto?.monday?.dinner?.mealId,
+//     dto?.tuesday?.lunch?.mealId, dto?.tuesday?.dinner?.mealId,
+//     dto?.wednesday?.lunch?.mealId, dto?.wednesday?.dinner?.mealId,
+//     dto?.thursday?.lunch?.mealId, dto?.thursday?.dinner?.mealId,
+//     dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
+//     dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
+//     dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
+//   ].filter(mealId => mealId != null) as string[]; // Ensure mealIds are strings
+  
+//   // Count occurrences of each mealId
+//   const mealIdCounts = mealIds.reduce((counts, mealId) => {
+//     counts[mealId] = (counts[mealId] || 0) + 1;
+//     return counts;
+//   }, {} as { [key: string]: number }); 
+
+//   console.log('lllllllllllll',mealIdCounts)
+  
+//   for (const [mealId, count] of Object.entries(mealIdCounts)) {
+//     const _mealPack = await mealPack.findById(mealId).exec() 
+//     if (_mealPack && _mealPack.available_quantity !== undefined) {
+//       if (count > _mealPack.available_quantity) {
+//         throw createError(`You can only select ${_mealPack.name} ${_mealPack.available_quantity} times.`, 404);
+      
+//       } else {
+//         // Decrement the available quantity by the count, but not below 0
+//         _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - count);
+//         await _mealPack.save(); 
+//       }
+//     } 
+//   }  
+//   const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
+
+//   // Check if the customer lineup for the specified week already exists
+//   if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
+
+//   const cartExists = await cart.exists({ customer: customer_id });
+//   const lineupExists = await lineup.exists({ customer: customer_id });
+
+//   let returning = false
+
+//   if (cartExists || lineupExists) {
+//     returning = true
+//   }
+
+//   // If all validations pass, create the lineup
+//   const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
+//   await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
+//   await MealLineupService.lockLineupChange(customer_id);
+
+// // Emit event
+// await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+
+// return _lineup;
+// }
 
   async updateSwallow(customer_id: string, lineup_id: string, roles: string[], dto:CreateLineupDto): Promise<MealLineup> {
     

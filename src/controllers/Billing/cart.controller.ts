@@ -34,25 +34,58 @@ export class CartController {
     }
   }
 
+  // async addItemToCart(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const { customer, body } = req;
+  //     const data = await service.addItemToCart(customer.sub, body, customer.roles);
+  //     sendResponse(res, 200, data);
+  //   } catch (error) {
+  //     sendError(error, next);
+  //   }
+  // }
+
   async addItemToCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, body } = req;
-      const data = await service.addItemToCart(customer.sub, body, customer.roles);
+      const { customer, body, headers } = req;
+      
+      const device_id = headers['device-id'] || body.device_id;
+  
+      const customer_id = customer?.sub || null;
+  
+      const data = await service.addItemToCart(customer_id, body, customer?.roles || [], device_id);
+  
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
-
+  
   async removeItemFromCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, body } = req;
-      const data = await service.removeItemFromCart(customer.sub, body, customer.roles);
+      const { customer, body, headers } = req;
+      
+      const device_id = headers['device-id'] || body.device_id;
+  
+      const customer_id = customer?.sub || null;
+  
+      const data = await service.removeItemFromCart(customer_id, body, customer?.roles || [], device_id);
+  
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
+  
+
+  // async removeItemFromCart(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const { customer, body } = req;
+  //     const data = await service.removeItemFromCart(customer.sub, body, customer.roles);
+  //     sendResponse(res, 200, data);
+  //   } catch (error) {
+  //     sendError(error, next);
+  //   }
+  // }
 
   async weekendDeliveryUpdate(req: Request, res: Response, next: NextFunction) {
     try {

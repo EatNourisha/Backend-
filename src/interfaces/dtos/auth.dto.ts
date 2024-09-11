@@ -3,6 +3,8 @@ import { Gender } from "../../valueObjects";
 export class loginDto {
   email: string;
   password: string;
+  device_id?: string;
+  temp_id?: string
 }
 
 export class registerDto {
@@ -15,4 +17,6 @@ export class registerDto {
   password: string;
   phone: string;
   ref_code?: string;
+  device_id?: string;
+  temp_id?: string;
 }

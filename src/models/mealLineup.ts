@@ -85,6 +85,9 @@ export class MealLineup extends BaseEntity {
   @prop({default:false})
   in_week?: boolean;
 
+  @prop({default:false})
+  isReturningCustomer?: boolean;
+
 }
 
 export default getModelForClass(MealLineup);

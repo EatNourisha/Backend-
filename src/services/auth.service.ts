@@ -3,7 +3,7 @@
 import { sign, verify } from "jsonwebtoken";
 import { createError, getUpdateOptions, setExpiration, validateFields } from "../utils";
 import { AuthPayload, Auth, loginDto, registerDto, ResetPasswordDto, ChangePasswordDto } from "../interfaces";
-import { authToken, authVerification, Customer, customer } from "../models";
+import { authToken, authVerification, cart, cartItem, Customer, customer } from "../models";
 import { CustomerService, RoleService, PasswordService, AuthVerificationService, EmailService, Template } from "../services";
 import config, { isTesting } from "../config";
 import { AuthVerificationReason, AvailableRole } from "../valueObjects";
@@ -17,6 +17,23 @@ export class AuthService {
     console.log("DEVICE ID", device_id);
 
     const acc = await this.customerService.findByLogin(data.email, data.password, admin);
+
+    const _cart = await cart.findOne({ device_id: device_id, temp_id: data.temp_id})
+    .exec();
+    if(_cart){
+      await customer.findByIdAndUpdate(acc?._id, {device_id: _cart?.device_id ?? null,
+        temp_id: _cart?.temp_id ?? null
+    })
+    _cart.customer = acc._id 
+
+    const _cartItem = await cartItem.findOne({ cart: _cart._id, session_id: _cart.session_id }).exec();
+
+    if (_cartItem) {
+      _cartItem.customer = acc._id; 
+      await _cartItem.save(); 
+    }
+   await _cart.save()
+}
     const payload = AuthService.transformUserToPayload(acc);
     const { token, expiration } = await this.addToken(payload, device_id);
     payload.exp = expiration;
@@ -24,6 +41,19 @@ export class AuthService {
     await NourishaBus.emit("customer:logged_in", { owner: acc });
     return { payload, token };
   }
+
+  // async login(data: loginDto, device_id: string, admin = false): Promise<Auth> {
+  //   // validateFields(data);
+  //   console.log("DEVICE ID", device_id);
+
+  //   const acc = await this.customerService.findByLogin(data.email, data.password, admin);
+  //   const payload = AuthService.transformUserToPayload(acc);
+  //   const { token, expiration } = await this.addToken(payload, device_id);
+  //   payload.exp = expiration;
+
+  //   await NourishaBus.emit("customer:logged_in", { owner: acc });
+  //   return { payload, token };
+  // }
 
   async register(data: registerDto, device_id: string, roles?: string[], isAdminReg = false): Promise<Auth> {
     if (await this.customerService.checkEmailExists(data.email)) throw createError("Email already exist", 400);
@@ -42,9 +72,7 @@ export class AuthService {
     if (await this.customerService.checkEmailExists(data.email)) throw createError("Email already exist", 400);
 
     const _role = await RoleService.getRoleBySlug(role);
-    const acc = await this.customerService.createCustomer(data, [_role?._id]);
-    // TODO: add the referral service then use the refer code to perform some referral task
-    // // if (data?.refCode) await ReferralService.createRef(data.refCode, acc?._id);
+    const acc = await this.customerService.createCustomer(data, device_id, [_role?._id]);
     const payload = AuthService.transformUserToPayload(acc);
     const { token, expiration } = await this.addToken(payload, device_id);
     payload.exp = expiration;
@@ -53,6 +81,24 @@ export class AuthService {
     await this.requestEmailVerification(acc?._id);
     return { payload, token };
   }
+
+  // async registerWithRole(data: registerDto, role: AvailableRole, device_id: string): Promise<Auth | null> {
+  //   validateFields(data, ["email", "first_name", "last_name", "password", "phone"]);
+  //   if (await this.customerService.checkEmailExists(data.email)) throw createError("Email already exist", 400);
+
+  //   const _role = await RoleService.getRoleBySlug(role);
+  //   const acc = await this.customerService.createCustomer(data, [_role?._id]);
+  //   // TODO: add the referral service then use the refer code to perform some referral task
+  //   // // if (data?.refCode) await ReferralService.createRef(data.refCode, acc?._id);
+  //   const payload = AuthService.transformUserToPayload(acc);
+  //   const { token, expiration } = await this.addToken(payload, device_id);
+  //   payload.exp = expiration;
+
+  //   console.log(`Registered new user with refCode ${acc?.ref_code}`);
+  //   await this.requestEmailVerification(acc?._id);
+  //   return { payload, token };
+  // }
+
 
   public async requestEmailVerification(customer_id: string): Promise<{ message: string }> {
     const result = await new AuthVerificationService().requestEmailVerification(customer_id, AuthVerificationReason.ACCOUNT_VERIFICATION);

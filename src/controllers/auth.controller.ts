@@ -20,8 +20,10 @@ export class AuthController {
 
   async registerCustomerAccount(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = req.body;
-      const deviceId = req.headers["device-id"] as string;
+      // const body = req.body;
+      // const deviceId = req.headers["device-id"] as string;
+      const {body, headers}= req;
+      const deviceId = headers['device-id'] || body.device_id;
       const data = await service.registerWithRole(body, AvailableRole.CUSTOMER, deviceId);
       sendResponse(res, 201, data);
     } catch (error) {
@@ -31,8 +33,10 @@ export class AuthController {
 
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = req.body;
-      const deviceId = req.headers["device-id"] as string;
+      // const body = req.body;
+      // const deviceId = req.headers["device-id"] as string;
+      const {body, headers}= req;
+      const deviceId = headers['device-id'] || body.device_id;
       const data = await service.login(body, deviceId);
       sendResponse(res, 200, data);
     } catch (error) {
