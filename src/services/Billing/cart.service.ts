@@ -46,54 +46,138 @@ export class CartService {
     return { cart: _cart, items };
   }
 
-  async addItemToCart(customer_id: string, dto: CartItemDto, roles: string[]): Promise<Cart> {
+  // async addItemToCart(customer_id: string, dto: CartItemDto, roles: string[]): Promise<Cart> {
+  //   validateFields(dto, ["itemId", "quantity"]);
+  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+  //   const session = await cart.startSession();
+
+  //   let _cart = await cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec();
+  //   const cart_session_id = _cart?.session_id ?? nanoid(20);
+
+  //   try {
+  //     const txs = await session.withTransaction(async () => {
+  //       // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, false, session);
+  //       const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, false, session);
+  //       _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
+  //     });
+
+  //     if (txs) await session.endSession();
+  //   } catch (error) {
+  //     await session.endSession();
+  //     throw createError(error.message, 400);
+  //   }
+
+  //   return _cart;
+  // }
+
+  async addItemToCart(customer_id: string | null, dto: CartItemDto, roles: string[], device_id?: string): Promise<Cart> {
+
+    console.log(roles)
     validateFields(dto, ["itemId", "quantity"]);
-    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    
     const session = await cart.startSession();
-
-    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec();
+    let _cart;
+  
+    if (customer_id) {
+    _cart = await cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec();
+    } else {
+      _cart = await cart.findOne({ device_id }).lean<Cart>().exec();
+  
+      if (!_cart) {
+        const temp_id = nanoid(20);
+        _cart = await cart.create({ temp_id, device_id });
+      }
+    }
+  
     const cart_session_id = _cart?.session_id ?? nanoid(20);
-
+  
     try {
       const txs = await session.withTransaction(async () => {
-        // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, false, session);
         const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, false, session);
         _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
       });
-
+  
       if (txs) await session.endSession();
     } catch (error) {
       await session.endSession();
       throw createError(error.message, 400);
     }
-
+  
     return _cart;
   }
 
-  async removeItemFromCart(customer_id: string, dto: CartItemDto, roles: string[]): Promise<Cart> {
+  async removeItemFromCart(customer_id: string | null, dto: CartItemDto, roles: string[], device_id?: string): Promise<Cart> {
     validateFields(dto, ["itemId", "quantity"]);
-    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    console.log(roles)
+    // await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+    
     const session = await cart.startSession();
-
-    let _cart = await cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec();
+    let _cart;
+  
+    if (customer_id) {
+      _cart = await cart.findOne({ customer: customer_id }).lean<Cart>().exec();
+    } else if (device_id) {
+      _cart = await cart.findOne({ device_id }).lean<Cart>().exec(); // 
+    }
+  
+    if (!_cart && !customer_id && device_id) {
+      _cart = await cart.create({
+        device_id: device_id,
+        temp_id: nanoid(20),
+      });
+    }
+  
+    if (!_cart) {
+      throw createError("Cart not found", 404);
+    }
+  
     const cart_session_id = _cart?.session_id ?? nanoid(20);
-
+  
     try {
       const txs = await session.withTransaction(async () => {
-        // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, true, session);
         const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, true, session);
-        _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
-        if (updates?.item?.quantity < 1) await cartItem.deleteOne({ _id: updates?.item._id }, { session });
+        _cart = await CartService.updateCartInfo(_cart._id, cart_session_id, updates, session);
+        
+        // Remove cart item if quantity is less than 1
+        if (updates?.item?.quantity < 1) {
+          await cartItem.deleteOne({ _id: updates?.item._id }, { session });
+        }
       });
-
+  
       if (txs) await session.endSession();
     } catch (error) {
       await session.endSession();
       throw createError(error.message, 400);
     }
-
+  
     return _cart;
   }
+  
+
+  // async removeItemFromCart(customer_id: string, dto: CartItemDto, roles: string[]): Promise<Cart> {
+  //   validateFields(dto, ["itemId", "quantity"]);
+  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.UPDATE, PermissionScope.ALL]);
+  //   const session = await cart.startSession();
+
+  //   let _cart = await cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec();
+  //   const cart_session_id = _cart?.session_id ?? nanoid(20);
+
+  //   try {
+  //     const txs = await session.withTransaction(async () => {
+  //       // const updates = await CartService.calcItemPrice(customer_id, _cart?._id!, cart_session_id, dto, true, session);
+  //       const updates = await CartService.calcItemPrice(_cart, dto, cart_session_id, true, session);
+  //       _cart = await CartService.updateCartInfo(_cart?._id!, cart_session_id, updates, session);
+  //       if (updates?.item?.quantity < 1) await cartItem.deleteOne({ _id: updates?.item._id }, { session });
+  //     });
+
+  //     if (txs) await session.endSession();
+  //   } catch (error) {
+  //     await session.endSession();
+  //     throw createError(error.message, 400);
+  //   }
+
+  //   return _cart;
+  // }
 
   async weekendDeliveryUpdate(customer_id: string, roles: string[]): Promise<Order> {
   
@@ -222,7 +306,7 @@ async deleteCarts(roles: string[], filters: IPaginationFilter): Promise<any> {
     // const [_cart, items] = await Promise.all([
     //     cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
     //     paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
-    // ]);
+    // ]);    
 
     return { cart: carts, items };
 }

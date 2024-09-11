@@ -19,14 +19,26 @@ export class CustomerController {
 
   async createCustomer(req: Request, res: Response, next: NextFunction) {
     try {
-      const { body } = req;
-      const result = await service.createCustomer(body);
+      const { body, headers } = req;
+      const device_id = headers['device-id'] || body.device_id;
+      const result = await service.createCustomer(body, device_id);
 
       sendResponse(res, 201, result);
     } catch (error) {
       sendError(error, next);
     }
   }
+
+  // async createCustomer(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const { body } = req;
+  //     const result = await service.createCustomer(body);
+
+  //     sendResponse(res, 201, result);
+  //   } catch (error) {
+  //     sendError(error, next);
+  //   }
+  // }
 
   async addSubscriber(req: Request, res: Response, next: NextFunction) {
     try {

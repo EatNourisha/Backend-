@@ -6,8 +6,9 @@ const router = Router();
 const controller = new CartController();
 
 router.get("/", authGuard, controller.getCart);
-router.put("/", authGuard, controller.addItemToCart);
-router.delete("/", authGuard, controller.removeItemFromCart);
+// router.put("/", authGuard, controller.addItemToCart);
+router.put("/", controller.addItemToCart);
+router.delete("/", controller.removeItemFromCart);
 router.put("/weekend-delivery", authGuard, controller.weekendDeliveryUpdate);
 router.put("/inweek-delivery", authGuard, controller.inweekDeliveryUpdate);
 router.delete("/dev/delete", authGuard, controller.deleteCarts);

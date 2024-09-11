@@ -26,6 +26,7 @@ import {
   country,
   inactiveusers,
   cart,
+  cartItem,
 } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
@@ -101,8 +102,8 @@ export class CustomerService {
   }
 
 
-  async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
-   const em = await this.validateEmail(input?.email) 
+  async createCustomer(input: CustomerDto, device_id: any, roles?: string[]): Promise<Customer> {
+    const em = await this.validateEmail(input?.email) 
     if(!em) throw createError("email must have an @ symbol", 404);
     let acc = (await customer.create({
       ...input,
@@ -112,6 +113,23 @@ export class CustomerService {
       is_email_verified: false,
     })) as Customer;
 
+    const _cart = await cart.findOne({ device_id: device_id }).exec();
+    if(_cart){
+      await customer.findByIdAndUpdate(acc?._id, {device_id: _cart?.device_id ?? null,
+        temp_id: _cart?.temp_id ?? null
+    })
+    _cart.customer = acc._id 
+
+    const _cartItem = await cartItem.findOne({ cart: _cart._id, session_id: _cart.session_id }).exec();
+
+    if (_cartItem) {
+      _cartItem.customer = acc._id; 
+      await _cartItem.save(); 
+    }
+        
+    await _cart.save() 
+ 
+}
     await Promise.allSettled([
       PasswordService.addPassword(acc._id!, input.password),
       this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
@@ -123,6 +141,29 @@ export class CustomerService {
     await NourishaBus.emit("customer:created", { owner: acc });
     return acc;
   }
+ 
+  // async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
+  //  const em = await this.validateEmail(input?.email) 
+  //   if(!em) throw createError("email must have an @ symbol", 404);
+  //   let acc = (await customer.create({
+  //     ...input,
+  //     control: { enabled: true },
+  //     ref_code: nanoid(7).toLowerCase(),
+  //     roles: roles ?? [],
+  //     is_email_verified: false,
+  //   })) as Customer;
+
+  //   await Promise.allSettled([
+  //     PasswordService.addPassword(acc._id!, input.password),
+  //     this.attachStripeId(acc?._id!, input?.email, join([input?.first_name, input?.last_name], " ")),
+  //     roles && roles[0] && this.updatePrimaryRole(acc._id!, roles[0], []),
+  //   ]);
+
+  //   acc = (await customer.findById(acc._id).lean().exec()) as Customer;
+  //   if (!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
+  //   await NourishaBus.emit("customer:created", { owner: acc });
+  //   return acc;
+  // }
  
 
   async toggleAutoRenewal(customer_id: string, dto: { auto_renew: boolean }, roles: string[]) {

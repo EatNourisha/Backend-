@@ -78,6 +78,11 @@ export class MealPack extends BaseEntity {
   @prop({default:false})
   isSwallow?: boolean;
 
+  @prop()
+  continent: string;
+
+
+
 }
 
 export default getModelForClass(MealPack);
