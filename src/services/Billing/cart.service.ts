@@ -50,20 +50,17 @@ export class CartService {
     console.log('DEVICE_ID', device_id)
     // await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-  
     console.log({ customer_id, roles, filters, device_id });
   
     let _cart;
     let items;
   
     if (customer_id) {
-      // For mobile users with customer_id
       [_cart, items] = await Promise.all([
         cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
         paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
       ]);
     } else if (device_id) {
-      // For web users without customer_id, using temp_id and device_id
       [_cart, items] = await Promise.all([
         cart.findOneAndUpdate({ device_id }, { device_id }, getUpdateOptions()).lean<Cart>().exec(),
         paginate<CartItem[]>("cartItem", { device_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
