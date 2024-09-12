@@ -1,4 +1,4 @@
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 LABEL AUTHOR github.com/famuyiwadayo
 WORKDIR /usr/app
 COPY ./ ./
@@ -7,7 +7,7 @@ RUN yarn run build
 
 # Build Stage 2
 # This build takes the production build from staging build
-FROM node:18-alpine
+FROM node:20-alpine
 LABEL AUTHOR github.com/famuyiwadayo
 WORKDIR /usr/app
 COPY package.json ./
