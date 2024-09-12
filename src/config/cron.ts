@@ -154,11 +154,12 @@ cron.schedule('*/30 * * * *', async () => {
 
         await Promise.all(_lineup.map(async (line: any) => {
             const sub = await subscription.findOne({customer: line.customer}).exec()
-            if(sub?.status === 'incomplete_expired' || sub?.status === 'cancelled' || sub?.status === 'canceled'){
-                sub.status = 'inactive' 
-                await sub.save()
-            }
-            
+            if (sub) {
+                if (sub.status !== 'active') {
+                    sub.status = 'inactive';
+                    await sub.save();
+                }
+            }            
         }));
     } catch (error) {
     }
