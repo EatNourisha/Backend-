@@ -139,7 +139,7 @@ cron.schedule('0 0 * * 0', async () => {
 });
 
 cron.schedule('*/30 * * * *', async () => {    
-    // console.log("#########777777 deactivate Job runs every 30 min");
+    // console.log("#########777777 deactivate Job runs every 30 mins");
 
     try {
         const today = new Date();
