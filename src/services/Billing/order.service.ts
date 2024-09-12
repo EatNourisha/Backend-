@@ -478,7 +478,7 @@ async getClosedOrdersHistory(
     const _orders = await this.getOrdr(customer_id, roles, filters)
     const _lineups = await this.getLineups(roles, filters)
 
-    return { _orders, _lineups } ?? [];
+    return { _orders, _lineups } ;
 
   }
 
