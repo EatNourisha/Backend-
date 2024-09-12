@@ -16,7 +16,6 @@ import { MealService } from "./meal.service";
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     
-    // Validate fields
     if(dto?.in_week === false || null){
       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
     }
@@ -25,22 +24,17 @@ export class MealLineupService {
       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
     }
 
-  // Check permissions
   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
-    // Retrieve customer's subscription information
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
     const endDate = subscriptionCheck?.end_date; 
     
-  // If the subscription is active and has start and end dates
     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
         const startDate = new Date(subscriptionCheck.start_date).getTime(); 
         const endDate = new Date(subscriptionCheck.end_date).getTime(); 
         
-        // Calculate subscription duration in days
         const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
         
-        // Check if subscription duration is exactly 7 days
         if (subDuration === 7 && dto.week > 1) {
             throw createError("Only monthly subscribers can create more than one lineup", 404);
         }
@@ -55,14 +49,12 @@ export class MealLineupService {
     dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
     dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
     dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
-    ].filter(mealId => mealId != null); // Filter out null or undefined mealIds
+    ].filter(mealId => mealId != null); 
 
-    // Update available_quantity for each selected mealId
     for (const mealId of mealIds) {
     const _mealPack = await mealPack.findById(mealId).exec();
     if (_mealPack && _mealPack.available_quantity !== undefined) {
 
-    // Decrement the available quantity, but not below 0
     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
     await _mealPack.save(); 
       
@@ -71,7 +63,6 @@ export class MealLineupService {
     
     const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
 
-    // Check if the customer lineup for the specified week already exists
     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
     const cartExists = await cart.exists({ customer: customer_id });
@@ -83,7 +74,6 @@ export class MealLineupService {
       returning = true
     }
 
-    // If all validations pass, create the lineup
     const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
     await MealLineupService.lockLineupChange(customer_id);
@@ -135,7 +125,7 @@ export class MealLineupService {
 //     dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
 //     dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
 //     dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
-//   ].filter(mealId => mealId != null) as string[]; // Ensure mealIds are strings
+//   ].filter(mealId => mealId != null) as string[]; 
   
 //   // Count occurrences of each mealId
 //   const mealIdCounts = mealIds.reduce((counts, mealId) => {

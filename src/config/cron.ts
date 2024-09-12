@@ -18,6 +18,11 @@ cron.schedule('* */1 * * *', async () => {
 
         await Promise.all(_lineup.map(async (line: any) => {
             await line.updateOne({ status: 'deactivated' });
+            const sub = await subscription.findOne({customer: line.customer}).exec()
+            if(sub){
+                sub.status = 'inactive'
+                await sub.save()
+            }
             
         }));
     } catch (error) {
@@ -132,6 +137,36 @@ cron.schedule('0 0 * * 0', async () => {
     scheduled: true,
     timezone: "Europe/London"
 });
+
+cron.schedule('*/30 * * * *', async () => {    
+    // console.log("#########777777 deactivate Job runs every 30 min");
+
+    try {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const _lineup = await lineup.find({
+            status: 'deactivated',
+            sub_end_date: {
+                $gte: startOfMonth, // Start of the current month
+                $lt: new Date()            
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            const sub = await subscription.findOne({customer: line.customer}).exec()
+            if(sub?.status === 'incomplete_expired' || sub?.status === 'cancelled' || sub?.status === 'canceled'){
+                sub.status = 'inactive' 
+                await sub.save()
+            }
+            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
 
 
 export default cron

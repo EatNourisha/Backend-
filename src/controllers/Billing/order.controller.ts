@@ -104,4 +104,15 @@ export class OrderController {
       sendError(error, next);
     }
   }
+
+  async getOrdersAndLineups(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getOrdersAndLineups(customer.sub, customer.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
 }

@@ -37,8 +37,10 @@ export class PlanController {
 
   async getPlans(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, query } = req;
-      const data = await service.getPlans(customer.roles, query);
+      const { query } = req;
+      const data = await service.getPlans( query);
+      // const { customer, query } = req;
+      // const data = await service.getPlans(customer.roles, query);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

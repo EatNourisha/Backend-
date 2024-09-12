@@ -375,4 +375,111 @@ async getClosedOrdersHistory(
   static mountEventListener() {
     new OrderEventListener();
   }
+
+  async getLineups(
+    roles: string[], 
+    silent = false, 
+    limit?: number, 
+    page?: number
+  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+    
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+      ],
+    }));
+    
+    const filter: any = {
+      status: 'active', 
+      createdAt: {
+        $gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+        $lte: new Date(),  
+      },
+    };
+  
+    const totalCount = await lineup.countDocuments(filter);
+  
+    const effectiveLimit = limit ?? 10;
+    const effectivePage = page ?? 1;
+  
+    const lineups = await lineup.find(filter)
+      .populate(pops)  
+      .sort({ createdAt: -1 }) 
+      .limit(effectiveLimit)  
+      .skip((effectivePage - 1) * effectiveLimit)  
+      .lean<MealLineup[]>()
+      .exec();
+  
+    if (!lineups.length && !silent) throw createError("No lineups found", 404);
+  
+    return { totalCount, lineups };
+  }
+
+  async getOrdr(
+    customer_id: string,
+    roles: string[],
+    filters: IPaginationFilter & {customer: string}
+  ): Promise<PaginatedDocument<Order[]>> {
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
+  
+    const today = new Date();
+    const query = {
+      createdAt: {
+        $gte: new Date(new Date().setDate(today.getDate() - 30)),  
+        $lte: today,  
+      },
+      delivery_date: { $lt: today },  
+    };
+  
+    const populate = [
+      {
+        path: "items",
+        populate: {
+          path: "item",
+          model: "MealPack",
+        },
+      },
+    ];
+  
+    const is_admin = await RoleService.isAdmin(roles);
+    
+    if (!is_admin) {
+      Object.assign(query, { customer: customer_id });
+    }
+    if (is_admin && !!filters?.customer) {
+      Object.assign(query, { customer: filters.customer });
+      // populate.push({ path: "customer" });
+    }
+  
+    return await paginate("order", query, filters, { populate, sort: { createdAt: -1 } });
+  }
+  
+    async getOrdersAndLineups(
+    customer_id: string,
+    roles: string[],
+    filters: any 
+  ): Promise<any> {
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const _orders = await this.getOrdr(customer_id, roles, filters)
+    const _lineups = await this.getLineups(roles, filters)
+
+    return { _orders, _lineups } ?? [];
+
+  }
+
 }
