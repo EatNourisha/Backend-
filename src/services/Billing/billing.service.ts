@@ -358,7 +358,7 @@ export class BillingHooks {
     console.log("Invoice Payment Failed!", data);
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
-      status: TransactionStatus.DECLINED,
+      status: TransactionStatus.DECLINED ?? 'declined',
       invoice_url: data?.hosted_invoice_url,
       invoice_download_url: data?.invoice_pdf,
     });

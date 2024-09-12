@@ -14,6 +14,7 @@ router.get("/:id", authGuard, controller.getOrderById);
 router.post("/", authGuard, controller.placeOrder);
 router.put("/ascertain", authGuard, controller.ascertainOrderPayments);
 router.put("/:id", authGuard, controller.updateOrderStatus);
+router.get("/lineup/one-section", authGuard, controller.getOrdersAndLineups);
 // router.put("/", authGuard, controller.addItemToCart);
 // router.delete("/", authGuard, controller.removeItemFromCart);
 

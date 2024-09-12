@@ -69,6 +69,7 @@
     "node-cron": "^3.0.3",
     "node-mailjet": "^6.0.5",
     "nodemailer": "^6.9.5",
+    "npm": "^10.8.3",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "postmark": "^4.0.2",
