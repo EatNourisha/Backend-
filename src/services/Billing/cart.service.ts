@@ -33,18 +33,48 @@ export class CartService {
     return { item_count: count };
   }
 
-  async getCart(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<CartRo> {
-    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+  // async getCart(customer_id: string, roles: string[], filters: IPaginationFilter): Promise<CartRo> {
+  //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    console.log({ customer_id, roles, filters });
+  //   console.log({ customer_id, roles, filters });
 
-    const [_cart, items] = await Promise.all([
-      cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
-      paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
-    ]);
+  //   const [_cart, items] = await Promise.all([
+  //     cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
+  //     paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+  //   ]);
 
+  //   return { cart: _cart, items };
+  // }
+
+  async getCart(customer_id: string | null, roles: string[], filters: IPaginationFilter, device_id?: string): Promise<CartRo> {
+    console.log('DEVICE_ID', device_id)
+    // await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+
+  
+    console.log({ customer_id, roles, filters, device_id });
+  
+    let _cart;
+    let items;
+  
+    if (customer_id) {
+      // For mobile users with customer_id
+      [_cart, items] = await Promise.all([
+        cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
+        paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+      ]);
+    } else if (device_id) {
+      // For web users without customer_id, using temp_id and device_id
+      [_cart, items] = await Promise.all([
+        cart.findOneAndUpdate({ device_id }, { device_id }, getUpdateOptions()).lean<Cart>().exec(),
+        paginate<CartItem[]>("cartItem", { device_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+      ]);
+    } else {
+      throw createError("Customer or device ID must be provided", 400);
+    }
+  
     return { cart: _cart, items };
   }
+  
 
   // async addItemToCart(customer_id: string, dto: CartItemDto, roles: string[]): Promise<Cart> {
   //   validateFields(dto, ["itemId", "quantity"]);
