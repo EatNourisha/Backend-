@@ -24,10 +24,26 @@ export class CartController {
       sendError(error, next);
     }
   }
+  // async getCart(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const { customer, query } = req;
+  //     const data = await service.getCart(customer.sub, customer.roles, query);
+  //     sendResponse(res, 200, data);
+  //   } catch (error) {
+  //     sendError(error, next);
+  //   }
+  // }
+
   async getCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, query } = req;
-      const data = await service.getCart(customer.sub, customer.roles, query);
+      const { customer, body, headers, query } = req;
+      
+      const device_id = headers['device-id'] || body.device_id;
+  
+      const customer_id = customer?.sub || null;
+  
+      const data = await service.getCart(customer_id, customer?.roles || [], query, device_id);
+  
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
@@ -75,7 +91,6 @@ export class CartController {
       sendError(error, next);
     }
   }
-  
 
   // async removeItemFromCart(req: Request, res: Response, next: NextFunction) {
   //   try {
