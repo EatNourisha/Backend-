@@ -532,7 +532,8 @@ export class MealLineupService {
   
     if (!lineups.length && !silent) throw createError("No lineups", 404);
   
-    return { totalCount, lineups } ?? [];
+    return { totalCount, lineups };
+    // return { totalCount, lineups } ?? [];
   }
 
   async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
