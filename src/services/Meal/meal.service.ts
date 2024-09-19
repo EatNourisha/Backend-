@@ -155,8 +155,38 @@ export class MealService {
     if (!(await RoleService.isAdmin(roles))) Object.assign(queries, { is_available: true });
     if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
 
+    Object.assign(queries, { orderType: { $in: ["single order", "subscription", "both", null] } });
+
     return await paginate("mealPack", queries, filters);
   }
+  
+  async getBulkMealPacksAdmin(
+    roles: string[],
+    filters?: IPaginationFilter & { is_available: boolean }
+  ): Promise<PaginatedDocument<MealPack[]>> {
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+    let queries: any = {};
+    if (!(await RoleService.isAdmin(roles))) Object.assign(queries, { is_available: true });
+    if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
+
+    Object.assign(queries, { orderType: "bulk-order" });
+
+    return await paginate("mealPack", queries, filters);
+  }
+  
+  // async getMealPacksAdmin(
+  //   roles: string[],
+  //   filters?: IPaginationFilter & { is_available: boolean }
+  // ): Promise<PaginatedDocument<MealPack[]>> {
+  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+  //   let queries: any = {};
+  //   if (!(await RoleService.isAdmin(roles))) Object.assign(queries, { is_available: true });
+  //   if (!!filters?.is_available && Boolean(filters.is_available)) Object.assign(queries, { is_available: true });
+
+  //   return await paginate("mealPack", queries, filters);
+  // }
 
   async getMealById(id: string, roles: string[]): Promise<Meal> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);

@@ -236,6 +236,15 @@ async getClosedOrdersHistory(
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
+    const cartExists = await cart.exists({ customer: customer_id });
+    const lineupExists = await lineup.exists({ customer: customer_id });
+
+    let returning = false
+
+    if (cartExists || lineupExists) {
+      returning = true
+    }
+
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
@@ -252,6 +261,8 @@ async getClosedOrdersHistory(
       coupon: dto?.coupon,
       swallow: dto?.swallow,
       extras: dto.extras,
+      isReturningCustomer: returning
+
       });
 
     const { order: _order, items } = result;

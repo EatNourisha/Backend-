@@ -76,6 +76,16 @@ export class MealController {
     }
   }
 
+  async getBulkMealPacksAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getBulkMealPacksAdmin(customer.roles, query as any);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getMealById(req: Request, res: Response, next: NextFunction) {
     try {
       const { params } = req;

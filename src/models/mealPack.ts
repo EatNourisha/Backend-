@@ -81,6 +81,9 @@ export class MealPack extends BaseEntity {
   @prop()
   continent: string;
 
+  @prop()
+  weight: string;
+
 
 
 }

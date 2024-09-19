@@ -14,4 +14,5 @@ export interface PlaceOrderDto {
   delivery_period: string;
   swallow?: boolean;
   extras?: string[];
+  isReturningCustomer: boolean;
 }

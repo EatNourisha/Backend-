@@ -73,6 +73,9 @@ export class Order extends BaseEntity {
   @prop()
   extras?: Ref<MealExtras>[];
 
+  @prop()
+  isReturningCustomer: boolean;
+
 }
 
 export default getModelForClass(Order);
