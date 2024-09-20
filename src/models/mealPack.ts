@@ -5,7 +5,7 @@ import BaseEntity from "./base";
 import { Meal } from "./meal";
 import { Category } from "./category";
 
-enum OrderType {
+export enum OrderType {
   Subscription = "subscription",
   SingleOrder = "single order",
   BulkOrder = "bulk-order",

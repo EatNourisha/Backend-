@@ -25,6 +25,8 @@ import { RoleService } from "../../services/role.service";
 import { createError, createSlug, getUpdateOptions, paginate, removeForcedInputs, validateFields } from "../../utils";
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import { when } from "../../utils/when";
+import { OrderType } from "../../models/mealPack";
+
 // import config from "../../config";
 
 export class MealService {
@@ -121,9 +123,17 @@ export class MealService {
       Object.assign(queries, { category: filters.category});
     }
   
+    // if (filters?.orderType) {
+    //   Object.assign(queries, { orderType: filters.orderType });
+    // }
+
     if (filters?.orderType) {
-      Object.assign(queries, { orderType: filters.orderType });
-    }
+      if (filters.orderType !== 'bulk-order') {
+        Object.assign(queries, { orderType: { $ne: 'bulk-order' } });
+      } else {
+        Object.assign(queries, { orderType: filters.orderType });
+      }
+    }  
   
     if (filters?.tag) {
       Object.assign(queries, { tag: filters.tag });
@@ -369,5 +379,67 @@ export class MealService {
     if (!extras) throw createError("Meal extra does not exist", 400);
     return extras;
   }
+
+  // static async duplicateAndEditMealPacks() {
+  //   try {
+  //     const mealPacks = await mealPack.find({
+  //       orderType: { $in: ['both', 'single order', 'subscription'] }
+  //     });
+        
+  //     const duplicatedMealPacks = mealPacks.map(mealPack => {
+  //       const { _id, ...duplicated } = mealPack.toObject();
+        
+  //       duplicated.orderType = OrderType.BulkOrder;
+  //       duplicated.price.amount = 40;
+  //       duplicated.price.previousAmount = 0;
+  //       duplicated.price.deliveryFee = 10;
+        
+  //       return duplicated;
+  //     });
+  
+  //     await mealPack.insertMany(duplicatedMealPacks);
+  
+  //     console.log('MealPacks duplicated and edited successfully!');
+  //   } catch (err) {
+  //     console.error('Error duplicating mealPacks:', err);
+  //   }
+  // }
+  
+  static async duplicateAndEditMealPacks() {
+    try {
+      const mealPacks = await mealPack.find({
+        orderType: { $in: ['both', 'single order', 'subscription'] }
+      });
+  
+      const existingDuplicatedIds = (await mealPack.find({
+        orderType: OrderType.BulkOrder,
+      })).map(mealPack => mealPack._id.toString());
+  
+      const duplicatedMealPacks = mealPacks.map(mealPack => {
+        const { _id, ...duplicated } = mealPack.toObject();
+        
+        if (!existingDuplicatedIds.includes(_id.toString())) {
+          duplicated.orderType = OrderType.BulkOrder;
+          duplicated.price = {
+            amount: 40,
+            previousAmount: 0,
+            deliveryFee: 10
+          };
+          return duplicated; 
+        }
+        return null; 
+      }).filter(dup => dup !== null); 
+  
+      if (duplicatedMealPacks.length > 0) {
+        await mealPack.insertMany(duplicatedMealPacks);
+        console.log('MealPacks duplicated and edited successfully!');
+      } else {
+        console.log('No new MealPacks to duplicate.');
+      }
+    } catch (err) {
+      console.error('Error duplicating mealPacks:', err);
+    }
+  }
+    
 
 }
