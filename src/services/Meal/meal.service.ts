@@ -405,7 +405,7 @@ export class MealService {
   //   }
   // }
   
-  static async duplicateAndEditMealPacks() {
+ async duplicateAndEditMealPacks() {
     try {
       const mealPacks = await mealPack.find({
         orderType: { $in: ['both', 'single order', 'subscription'] }

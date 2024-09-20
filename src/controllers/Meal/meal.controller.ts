@@ -66,6 +66,16 @@ export class MealController {
     }
   }
 
+  async duplicateMealPacks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {  } = req;
+      const data = await service.duplicateAndEditMealPacks();
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async getMealPacksAdmin(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, query } = req;

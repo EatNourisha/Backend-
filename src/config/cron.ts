@@ -1,4 +1,4 @@
-import { MealService, sendGiftRecipient, sendGiftSent } from "../services";
+import { sendGiftRecipient, sendGiftSent } from "../services";
 import { lineup, giftpurchase, customer, Customer, subscription } from "../models"; // Adjust this path as needed
 import cron from "node-cron";
 import { createError } from "../utils";
@@ -168,20 +168,20 @@ cron.schedule('*/30 * * * *', async () => {
     timezone: "Europe/London"
 });
 
-cron.schedule('0 * * * *', async () => { 
+// cron.schedule('0 * * * *', async () => { 
     
-    try {
-        // console.log("#########777777 Job runs evert 1 houre);
+//     try {
+//         // console.log("#########777777 Job runs evert 1 houre);
 
-        const dublicates = await MealService.duplicateAndEditMealPacks();
-        console.log('dublicated meals', dublicates)
-    } catch (error) {
-        console.error("Error running findInactiveCustomers job:", error);
-    }
-}, {
-    scheduled: true,
-    timezone: "Europe/London"
-});
+//         const dublicates = await MealService.duplicateAndEditMealPacks();
+//         console.log('dublicated meals', dublicates)
+//     } catch (error) {
+//         console.error("Error running findInactiveCustomers job:", error);
+//     }
+// }, {
+//     scheduled: true,
+//     timezone: "Europe/London"
+// });
 
 
 export default cron
