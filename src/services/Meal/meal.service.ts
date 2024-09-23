@@ -127,6 +127,8 @@ export class MealService {
     //   Object.assign(queries, { orderType: filters.orderType });
     // }
 
+    Object.assign(queries, { orderType: { $ne: 'bulk-order' } });    
+
     if (filters?.orderType) {
       if (filters.orderType !== 'bulk-order') {
         Object.assign(queries, { orderType: { $ne: 'bulk-order' } });
@@ -134,6 +136,7 @@ export class MealService {
         Object.assign(queries, { orderType: filters.orderType });
       }
     }  
+    
   
     if (filters?.tag) {
       Object.assign(queries, { tag: filters.tag });
