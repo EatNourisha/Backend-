@@ -449,7 +449,8 @@ async getClosedOrdersHistory(
         $gte: new Date(new Date().setDate(today.getDate() - 30)),  
         $lte: today,  
       },
-      delivery_date: { $lt: today },  
+      delivery_date: { $lt: today }, 
+      status: 'payment_received'
     };
   
     const populate = [
