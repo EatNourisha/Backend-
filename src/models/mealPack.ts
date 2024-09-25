@@ -22,12 +22,30 @@ class MealPackPrice {
   deliveryFee: number;
 }
 
+class NutInfo {
+  @prop()
+  protein?: string;
+
+  @prop()
+  fat?: string;
+
+  @prop()
+  carbs?: string;
+}
+
 class MealInfo {
   @prop()
   ingredient?: string;
 
   @prop()
-  prehitting_instruction?: string;
+  heating?: string;
+
+  @prop()
+  allergy?: string;
+
+  @prop({ type: NutInfo, _id: false })
+  nutrition?: NutInfo;
+
 
 }
 

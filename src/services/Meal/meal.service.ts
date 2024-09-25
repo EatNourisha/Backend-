@@ -408,7 +408,6 @@ export class MealService {
 
   // }
 
-
   async updateMealExtras(id: string, dto: Partial<CreateExtrasDto>, roles: string[]): Promise<MealExtras> {
     await RoleService.hasPermission(roles, AvailableResource.MEALEXTRAS, [PermissionScope.UPDATE, PermissionScope.ALL]);
 
