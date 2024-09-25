@@ -350,20 +350,20 @@ export class MealService {
     return _meal_extras;
   }
 
-  async getMealExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string}): Promise<PaginatedDocument<MealPack[]>> {
-    // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-    let queries: any = {};
+  // async getMealExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string}): Promise<PaginatedDocument<MealPack[]>> {
+  //   // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  //   let queries: any = {};
   
-    if (filters?.name) {
-      Object.assign(queries, { name: filters.name });
-    }
-    if (filters?.type) {
-      Object.assign(queries, { type: filters.type });
-    }
-    return await paginate("mealextras", queries, filters);
-  }
+  //   if (filters?.name) {
+  //     Object.assign(queries, { name: filters.name });
+  //   }
+  //   if (filters?.type) {
+  //     Object.assign(queries, { type: filters.type });
+  //   }
+  //   return await paginate("mealextras", queries, filters);
+  // }
 
-  async getSwallowExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string, mealType: string} ): Promise<PaginatedDocument<MealPack[]>> {
+  async getSwallowExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string} ): Promise<PaginatedDocument<MealPack[]>> {
     const queries: any = { type: 'swallow' }; 
   
     if (filters?.name) {
@@ -373,14 +373,10 @@ export class MealService {
       Object.assign(queries, { type: filters.type });
     }
 
-    if (filters?.mealType) {
-      Object.assign(queries, { meal_type: filters.mealType });
-    }
-
     return await paginate("mealextras", queries, filters);
   }
   
-  async getProteinExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string, mealType: string} ): Promise<PaginatedDocument<MealPack[]>> {
+  async getProteinExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string} ): Promise<PaginatedDocument<MealPack[]>> {
     const queries: any = { type: 'protein' }; 
 
     if (filters?.name) {
@@ -389,24 +385,18 @@ export class MealService {
     if (filters?.type) {
       Object.assign(queries, { type: filters.type });
     }
-
-    if (filters?.mealType) {
-      Object.assign(queries, { meal_type: filters.mealType });
-    }
   
     return await paginate("mealextras", queries, filters);
   }
     
-  // async getMealExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string, mealType: string}) {
+  async getMealExtras(_: string[], filters?: IPaginationFilter & { name: string, type: string}) {
     
-  //  const swallow =  await this.getSwallowExtras(_, filters)
-  //  const protein = await this.getProteinExtras(_, filters)
+   const swallow =  await this.getSwallowExtras(_, filters)
+   const protein = await this.getProteinExtras(_, filters)
 
-  // //  const data = {swallow, protein}
+   return {swallow, protein}
 
-  //  return {swallow, protein}
-
-  // }
+  }
 
   async updateMealExtras(id: string, dto: Partial<CreateExtrasDto>, roles: string[]): Promise<MealExtras> {
     await RoleService.hasPermission(roles, AvailableResource.MEALEXTRAS, [PermissionScope.UPDATE, PermissionScope.ALL]);
