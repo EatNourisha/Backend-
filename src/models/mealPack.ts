@@ -22,6 +22,15 @@ class MealPackPrice {
   deliveryFee: number;
 }
 
+class MealInfo {
+  @prop()
+  ingredient?: string;
+
+  @prop()
+  prehitting_instruction?: string;
+
+}
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class MealPack extends BaseEntity {
   @prop()
@@ -78,12 +87,17 @@ export class MealPack extends BaseEntity {
   @prop({default:false})
   isSwallow?: boolean;
 
+  @prop({default:false})
+  isProtein?: boolean;
+
   @prop()
   continent: string;
 
   @prop()
-  weight: string;
+  weight?: string;
 
+  @prop({ type: MealInfo, _id: false })
+  mealInfo?: MealInfo;
 
 
 }
