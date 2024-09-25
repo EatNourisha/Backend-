@@ -95,7 +95,7 @@ export class OrderService {
     return { order: _order, items };
   }
 
-  async getOpenOrders(
+async getOpenOrders(
     customer_id: string,
     roles: string[],
 ): Promise<Order[]> {
@@ -110,7 +110,7 @@ export class OrderService {
     return typedOrdersData;
 }
 
-  async getClosedOrders(
+async getClosedOrders(
     customer_id: string,
     roles: string[],
 ): Promise<Order[]> {
@@ -236,12 +236,13 @@ async getClosedOrdersHistory(
     if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
-    const cartExists = await cart.exists({ customer: customer_id });
+    // const cartExists = await cart.exists({ customer: customer_id });
+    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received'});
     const lineupExists = await lineup.exists({ customer: customer_id });
 
     let returning = false
 
-    if (cartExists || lineupExists) {
+    if (orderExists || lineupExists) {
       returning = true
     }
 
@@ -461,7 +462,11 @@ async getClosedOrdersHistory(
           model: "MealPack",
         },
       },
-    ];
+      {
+        path: "customer", 
+        model: "Customer", 
+      }
+  ];
   
     const is_admin = await RoleService.isAdmin(roles);
     

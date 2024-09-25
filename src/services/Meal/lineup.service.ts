@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { cart, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, subscription} from "../../models";
+import { customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -65,12 +65,13 @@ export class MealLineupService {
 
     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
-    const cartExists = await cart.exists({ customer: customer_id });
+    // const cartExists = await cart.exists({ customer: customer_id });
+    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received'});
     const lineupExists = await lineup.exists({ customer: customer_id });
 
     let returning = false
 
-    if (cartExists || lineupExists) {
+    if (orderExists || lineupExists) {
       returning = true
     }
 
