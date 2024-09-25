@@ -398,20 +398,21 @@ export class MealService {
 
   }
 
+
   async updateMealExtras(id: string, dto: Partial<CreateExtrasDto>, roles: string[]): Promise<MealExtras> {
     await RoleService.hasPermission(roles, AvailableResource.MEALEXTRAS, [PermissionScope.UPDATE, PermissionScope.ALL]);
-
-    let _meal = await mealextras.findById(id).lean<MealPack>().exec();
+    let _meal = await mealextras.findById(id).lean<MealExtras>().exec();
     if (!_meal) throw createError("Meal extra does not exist", 404);
-
-
-    _meal = await mealextras
-      .findByIdAndUpdate( id, { ...dto },)
-      .lean<MealPack>()
-      .exec();
-
-    return _meal;
+  
+    const _meal_extras = await mealextras.findByIdAndUpdate(
+      id, 
+      { ...dto },
+      { new: true } 
+    ).lean<MealExtras>().exec();
+  
+    return _meal_extras;
   }
+  
 
   async deleteMealExtras(id: string, roles: string[]): Promise<MealPack> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.DELETE, PermissionScope.ALL]);
