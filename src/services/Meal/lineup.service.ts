@@ -66,7 +66,7 @@ export class MealLineupService {
     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
 
     // const cartExists = await cart.exists({ customer: customer_id });
-    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received'});
+    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {lte: new Date()}});
     const lineupExists = await lineup.exists({ customer: customer_id });
 
     let returning = false
@@ -214,19 +214,6 @@ export class MealLineupService {
     await NourishaBus.emit("lineup:updated", { owner: customer_id, lineup: _lineup, dto: dto as any });
     return _lineup;
   }
-
-  // async getCurrentCustomersLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
-  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((pop) => ({
-  //     path: pop,
-  //     populate: ["breakfast", "lunch", "dinner"],
-  //   }));
-
-  //   const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
-  //   if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
-  //   return _lineup;
-  // }  
 
   async getCurrentCustomersLineup(customer_id: string, roles: string[], week: number | undefined): Promise<MealLineup> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
