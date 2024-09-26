@@ -17,12 +17,43 @@ cron.schedule('* */1 * * *', async () => {
         });
 
         await Promise.all(_lineup.map(async (line: any) => {
-            await line.updateOne({ status: 'deactivated' });
+            await line.updateOne({ status: 'inactive' });
             const sub = await subscription.findOne({customer: line.customer}).exec()
             if(sub){
                 sub.status = 'inactive'
                 await sub.save()
             }
+            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("#########777777 deactivate Job runs every 1 min");
+
+    try {
+        const _lineup = await lineup.find({
+            status: 'inactive',
+            // sub_end_date: {
+            //     $lt: new Date()
+            // }
+
+            sub_end_date: {
+                $lt: new Date(new Date().setMonth(new Date().getMonth() - 1))
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            await line.updateOne({ status: 'deactivated' });
+            // const sub = await subscription.findOne({customer: line.customer}).exec()
+            // if(sub){
+            //     sub.status = 'inactive'
+            //     await sub.save()
+            // }
             
         }));
     } catch (error) {

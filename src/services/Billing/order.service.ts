@@ -237,7 +237,7 @@ async getClosedOrdersHistory(
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
     // const cartExists = await cart.exists({ customer: customer_id });
-    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {lte: new Date()}});
+    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
     const lineupExists = await lineup.exists({ customer: customer_id });
 
     let returning = false
@@ -412,7 +412,7 @@ async getClosedOrdersHistory(
     }));
     
     const filter: any = {
-      status: 'active', 
+      status: { $in: ['active', 'inactive'] },
       createdAt: {
         $gte: new Date(new Date().setDate(new Date().getDate() - 30)),
         $lte: new Date(),  
@@ -447,10 +447,15 @@ async getClosedOrdersHistory(
     const today = new Date();
     const query = {
       createdAt: {
-        $gte: new Date(new Date().setDate(today.getDate() - 30)),  
-        $lte: today,  
+        $gte: new Date(new Date().setDate(new Date().getDate() - 30)),  
+        $lte: new Date(),  
       },
       delivery_date: { $lt: today }, 
+
+    //   delivery_date: {
+    //     $gte: new Date(new Date().setDate(new Date().getDate() - 30)), // 30 days ago
+    //     $lt: new Date() 
+    // },
       status: 'payment_received'
     };
   
