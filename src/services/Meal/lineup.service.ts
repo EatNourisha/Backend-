@@ -16,7 +16,7 @@ import { MealService } from "./meal.service";
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     
-    if(dto?.in_week === false || null){
+    if (dto?.in_week === false || dto?.in_week === null) {
       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
     }
 
