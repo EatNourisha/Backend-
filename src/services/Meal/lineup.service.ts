@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription} from "../../models";
+import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -14,191 +14,192 @@ import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 
 export class MealLineupService {
-  async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
+//   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     
+//     if (dto?.in_week === false || dto?.in_week === null) {
+//       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+//     }
+
+//     if(dto?.in_week === true){
+//       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+//     }
+
+//   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+//     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+//     const endDate = subscriptionCheck?.end_date; 
+    
+//     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
+//         const startDate = new Date(subscriptionCheck.start_date).getTime(); 
+//         const endDate = new Date(subscriptionCheck.end_date).getTime(); 
+        
+//         const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        
+//         if (subDuration === 7 && dto.week > 1) {
+//             throw createError("Only monthly subscribers can create more than one lineup", 404);
+//         }
+//     }
+
+//     // Extract all mealIds from the DTO
+//     const mealIds = [
+//     dto?.monday?.lunch?.mealId, dto?.monday?.dinner?.mealId,
+//     dto?.tuesday?.lunch?.mealId, dto?.tuesday?.dinner?.mealId,
+//     dto?.wednesday?.lunch?.mealId, dto?.wednesday?.dinner?.mealId,
+//     dto?.thursday?.lunch?.mealId, dto?.thursday?.dinner?.mealId,
+//     dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
+//     dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
+//     dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
+//     ].filter(mealId => mealId != null); 
+
+//     for (const mealId of mealIds) {
+//     const _mealPack = await mealPack.findById(mealId).exec();
+//     if (_mealPack && _mealPack.available_quantity !== undefined) {
+
+//     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
+//     await _mealPack.save(); 
+      
+//     } 
+//     }    
+    
+//     const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
+
+//     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
+
+//     // const cartExists = await cart.exists({ customer: customer_id });
+//     const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+//     const lineupExists = await lineup.exists({ customer: customer_id });
+
+//     let returning = false
+
+//     if (orderExists || lineupExists) {
+//       returning = true
+//     }
+
+//     const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
+//     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
+//     await MealLineupService.lockLineupChange(customer_id);
+
+//   // Emit event
+//   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+
+//   return _lineup;
+// }
+
+  async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     if (dto?.in_week === false || dto?.in_week === null) {
-      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ]);
     }
 
-    if(dto?.in_week === true){
-      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+    if (dto?.in_week === true) {
+      validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", ]);
     }
 
-  await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
-    const endDate = subscriptionCheck?.end_date; 
-    
+    const endDate = subscriptionCheck?.end_date;
+
+    if(subscriptionCheck?.continent !== 'Asian'){
+      if (dto?.in_week === false || dto?.in_week === null) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+      }
+  
+      if (dto?.in_week === true) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+      }
+  
+
+    }
+
+    let deli_date: Date | undefined = dto.delivery_date;
     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-        const startDate = new Date(subscriptionCheck.start_date).getTime(); 
-        const endDate = new Date(subscriptionCheck.end_date).getTime(); 
-        
-        const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-        
-        if (subDuration === 7 && dto.week > 1) {
-            throw createError("Only monthly subscribers can create more than one lineup", 404);
+
+      if (subscriptionCheck?.continent === "Asian" || subscriptionCheck?.continent === "Asia") {
+        const asianDels = await adminSettings.findOne();
+
+        const currentDay = new Date().getDay();
+
+        // Orders placed Wednesday to Saturday will be delivered next Tuesday
+        if (currentDay >= 3 && currentDay <= 6) {
+          deli_date = asianDels?.wed_sat;
         }
+
+        // Orders placed on Sunday to Tuesday are delivered the following Tuesday
+        else {
+          deli_date = asianDels?.sun_tue;
+        }
+      }
+      const startDate = new Date(subscriptionCheck.start_date).getTime();
+      const endDate = new Date(subscriptionCheck.end_date).getTime();
+
+      const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+      if (subDuration === 7 && dto.week > 1) {
+        throw createError("Only monthly subscribers can create more than one lineup", 404);
+      }
     }
 
     // Extract all mealIds from the DTO
     const mealIds = [
-    dto?.monday?.lunch?.mealId, dto?.monday?.dinner?.mealId,
-    dto?.tuesday?.lunch?.mealId, dto?.tuesday?.dinner?.mealId,
-    dto?.wednesday?.lunch?.mealId, dto?.wednesday?.dinner?.mealId,
-    dto?.thursday?.lunch?.mealId, dto?.thursday?.dinner?.mealId,
-    dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
-    dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
-    dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
-    ].filter(mealId => mealId != null); 
+      dto?.monday?.lunch?.mealId,
+      dto?.monday?.dinner?.mealId,
+      dto?.tuesday?.lunch?.mealId,
+      dto?.tuesday?.dinner?.mealId,
+      dto?.wednesday?.lunch?.mealId,
+      dto?.wednesday?.dinner?.mealId,
+      dto?.thursday?.lunch?.mealId,
+      dto?.thursday?.dinner?.mealId,
+      dto?.friday?.lunch?.mealId,
+      dto?.friday?.dinner?.mealId,
+      dto?.saturday?.lunch?.mealId,
+      dto?.saturday?.dinner?.mealId,
+      dto?.sunday?.lunch?.mealId,
+      dto?.sunday?.dinner?.mealId,
+    ].filter((mealId) => mealId != null);
 
     for (const mealId of mealIds) {
-    const _mealPack = await mealPack.findById(mealId).exec();
-    if (_mealPack && _mealPack.available_quantity !== undefined) {
-
-    _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
-    await _mealPack.save(); 
-      
-    } 
-    }    
-    
-    const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
-
-    if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
-
-    // const cartExists = await cart.exists({ customer: customer_id });
-    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
-    const lineupExists = await lineup.exists({ customer: customer_id });
-
-    let returning = false
-
-    if (orderExists || lineupExists) {
-      returning = true
+      const _mealPack = await mealPack.findById(mealId).exec();
+      if (_mealPack && _mealPack.available_quantity !== undefined) {
+        _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
+        await _mealPack.save();
+      }
     }
 
-    const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
-    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
+    const cusLineup = await lineup.findOne({ customer: customer_id, week: dto?.week || 1, status: "active" });
+
+    if (cusLineup) throw createError("Customer lineup for this week already exists", 404);
+
+    // const cartExists = await cart.exists({ customer: customer_id });
+    const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
+    const lineupExists = await lineup.exists({ customer: customer_id });
+
+    let returning = false;
+
+    if (orderExists || lineupExists) {
+      returning = true;
+    }
+
+    
+    
+    const _lineup = await lineup.create({
+      ...dto,
+      customer: customer_id,
+      sub_end_date: endDate,
+      week: dto?.week || 1,
+      plan: subscriptionCheck?.plan,
+      isReturningCustomer: returning,
+    });
+    _lineup.delivery_date = deli_date ?? new Date();
+   await _lineup.save()
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
+      delivery_date: deli_date }).exec();
     await MealLineupService.lockLineupChange(customer_id);
 
-  // Emit event
-  await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+    // Emit event
+    await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
 
-  return _lineup;
-}
-  // async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
-  //   if (dto?.in_week === false || dto?.in_week === null) {
-  //     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ]);
-  //   }
-
-  //   if (dto?.in_week === true) {
-  //     validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", ]);
-  //   }
-
-  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-  //   const subscriptionCheck = await subscription.findOne({ customer: customer_id });
-  //   const endDate = subscriptionCheck?.end_date;
-
-  //   if(subscriptionCheck?.continent !== 'Asian'){
-  //     if (dto?.in_week === false || dto?.in_week === null) {
-  //       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
-  //     }
-  
-  //     if (dto?.in_week === true) {
-  //       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
-  //     }
-  
-
-  //   }
-
-  //   let deli_date: Date | undefined = dto.delivery_date;
-  //   if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-
-  //     if (subscriptionCheck?.continent === "Asian" || subscriptionCheck?.continent === "Asia") {
-  //       const asianDels = await adminSettings.findOne();
-
-  //       const currentDay = new Date().getDay();
-
-  //       // Orders placed Wednesday to Saturday will be delivered next Tuesday
-  //       if (currentDay >= 3 && currentDay <= 6) {
-  //         deli_date = asianDels?.wed_sat;
-  //       }
-
-  //       // Orders placed on Sunday to Tuesday are delivered the following Tuesday
-  //       else {
-  //         deli_date = asianDels?.sun_tue;
-  //       }
-  //     }
-  //     const startDate = new Date(subscriptionCheck.start_date).getTime();
-  //     const endDate = new Date(subscriptionCheck.end_date).getTime();
-
-  //     const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-
-  //     if (subDuration === 7 && dto.week > 1) {
-  //       throw createError("Only monthly subscribers can create more than one lineup", 404);
-  //     }
-  //   }
-
-  //   // Extract all mealIds from the DTO
-  //   const mealIds = [
-  //     dto?.monday?.lunch?.mealId,
-  //     dto?.monday?.dinner?.mealId,
-  //     dto?.tuesday?.lunch?.mealId,
-  //     dto?.tuesday?.dinner?.mealId,
-  //     dto?.wednesday?.lunch?.mealId,
-  //     dto?.wednesday?.dinner?.mealId,
-  //     dto?.thursday?.lunch?.mealId,
-  //     dto?.thursday?.dinner?.mealId,
-  //     dto?.friday?.lunch?.mealId,
-  //     dto?.friday?.dinner?.mealId,
-  //     dto?.saturday?.lunch?.mealId,
-  //     dto?.saturday?.dinner?.mealId,
-  //     dto?.sunday?.lunch?.mealId,
-  //     dto?.sunday?.dinner?.mealId,
-  //   ].filter((mealId) => mealId != null);
-
-  //   for (const mealId of mealIds) {
-  //     const _mealPack = await mealPack.findById(mealId).exec();
-  //     if (_mealPack && _mealPack.available_quantity !== undefined) {
-  //       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
-  //       await _mealPack.save();
-  //     }
-  //   }
-
-  //   const cusLineup = await lineup.findOne({ customer: customer_id, week: dto?.week || 1, status: "active" });
-
-  //   if (cusLineup) throw createError("Customer lineup for this week already exists", 404);
-
-  //   // const cartExists = await cart.exists({ customer: customer_id });
-  //   const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
-  //   const lineupExists = await lineup.exists({ customer: customer_id });
-
-  //   let returning = false;
-
-  //   if (orderExists || lineupExists) {
-  //     returning = true;
-  //   }
-
-    
-    
-  //   const _lineup = await lineup.create({
-  //     ...dto,
-  //     customer: customer_id,
-  //     sub_end_date: endDate,
-  //     week: dto?.week || 1,
-  //     plan: subscriptionCheck?.plan,
-  //     isReturningCustomer: returning,
-  //   });
-  //   _lineup.delivery_date = deli_date ?? new Date();
-  //  await _lineup.save()
-  //   await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
-  //     delivery_date: deli_date }).exec();
-  //   await MealLineupService.lockLineupChange(customer_id);
-
-  //   // Emit event
-  //   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
-
-  //   return _lineup;
-  // }
+    return _lineup;
+  }
 
   async updateSwallow(customer_id: string, lineup_id: string, roles: string[], dto:CreateLineupDto): Promise<MealLineup> {
     
