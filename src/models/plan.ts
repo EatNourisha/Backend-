@@ -50,6 +50,9 @@ export class Plan extends BaseEntity {
   @prop({ default: false })
   five_day?: boolean;
 
+  @prop()
+  continent?: string;
+
 }
 
 export default getModelForClass(Plan);

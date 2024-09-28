@@ -445,17 +445,17 @@ async getClosedOrdersHistory(
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
   
     const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    // const oneMonthAgo = new Date();
+    // oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     const query = {
       createdAt: {
         $gte: new Date(new Date().setDate(new Date().getDate() - 30)),  
         $lte: new Date(),  
       },
-      // delivery_date: { $lt: today }, 
-
-      delivery_date: { $lt: today, $gte: oneMonthAgo },
-      status: 'payment_received'
+      status: 'payment_received',
+      delivery_date: { $lt: today }
+      
+      // delivery_date: { $lt: today, $gte: oneMonthAgo },
     };
   
     const populate = [

@@ -188,6 +188,7 @@ export class SubscriptionService {
       card: _card?._id!,
       next_billing_date: epochToCurrentTime(data?.current_period_end!), //TODO: (WIP) confirm if the next billing date is valid
       subscription_type: _plan?.subscription_interval!,
+      // continent: _plan?.continent!,
     });
 
     await transaction
