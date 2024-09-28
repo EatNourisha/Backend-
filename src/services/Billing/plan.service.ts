@@ -181,7 +181,8 @@ export class PlanService {
       stripe_id: prev_sub?.stripe_id ?? undefined,
       is_assigned_by_admin: true,
       last_assigned_date: new Date(),
-      subscription_type: _plan?.subscription_interval
+      subscription_type: _plan?.subscription_interval,
+      // continent: _plan?.continent!,
     });
 
     const delay = next_sub_date.getTime() - Date.now();

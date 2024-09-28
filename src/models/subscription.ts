@@ -43,6 +43,9 @@ export class Subscription extends BaseEntity {
 
   @prop()
   subscription_type: string;
+
+  @prop()
+  continent?: string;
 }
 
 export default getModelForClass(Subscription);

@@ -41,6 +41,13 @@ export class AdminSettings extends BaseEntity {
 
   @prop({ type: InfluencersReward })
   influencer_reward: InfluencersReward;
+
+  @prop()
+  wed_sat?: Date;
+
+  @prop()
+  sun_tue?: Date;
+
 }
 
 export default getModelForClass(AdminSettings);
