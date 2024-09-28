@@ -444,19 +444,23 @@ async getClosedOrdersHistory(
   ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
   
-    const today = new Date();
+    const query = {
+      status: 'payment_received',
+    };
+
+    // const today = new Date();
     // const oneMonthAgo = new Date();
     // oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    const query = {
-      createdAt: {
-        $gte: new Date(new Date().setDate(new Date().getDate() - 30)),  
-        $lte: new Date(),  
-      },
-      status: 'payment_received',
-      delivery_date: { $lt: today }
+    // const query = {
+    //   createdAt: {
+    //     $gte: new Date(new Date().setDate(new Date().getDate() - 30)),  
+    //     $lte: new Date(),  
+    //   },
+    //   status: 'payment_received',
+    //   delivery_date: { $lt: today }
       
-      // delivery_date: { $lt: today, $gte: oneMonthAgo },
-    };
+    //   delivery_date: { $lt: today, $gte: oneMonthAgo },
+    // };
   
     const populate = [
       {
