@@ -183,7 +183,8 @@ export class CustomerController {
 
   async getCountries(_req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await service.getCountries();
+      const { query } = _req;
+      const result = await service.getCountries(query);
       sendResponse(res, 200, result);
     } catch (error) {
       sendError(error, next);

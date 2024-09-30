@@ -18,6 +18,8 @@ export class AuthService {
 
     const acc = await this.customerService.findByLogin(data.email, data.password, admin);
 
+    const __cart = await cart.findOne({customer: acc._id}).lean(555555555555`9`)
+
     const _cart = await cart.findOne({ device_id: device_id, temp_id: data.temp_id})
     .exec();
     if(_cart){
