@@ -27,7 +27,8 @@ import {
   giftImages,
   csteam,
   csreport,
-  cstfollowup
+  cstfollowup,
+  country
 } from "../models";
 
 import capitalize from "lodash/capitalize";
@@ -62,6 +63,7 @@ export type SchemaTypes =
   | "csteam"
   | "csreport"
   | "cstfollowup"
+  | "country"
   ;
 
 export class AccessService {
@@ -104,7 +106,8 @@ export class AccessService {
       giftImages,
       csteam,
       csreport,
-      cstfollowup
+      cstfollowup,
+      country
     };
 
     return map[schema];

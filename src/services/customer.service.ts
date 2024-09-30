@@ -27,6 +27,7 @@ import {
   inactiveusers,
   cart,
   cartItem,
+  Country,
 } from "../models";
 import { createError, paginate, removeForcedInputs, validateFields } from "../utils";
 import { AuthVerificationReason, AvailableResource, AvailableRole, PermissionScope } from "../valueObjects";
@@ -67,36 +68,81 @@ export class CustomerService {
     return { meals, customers, subscriptions, orders };
   }
 
-  async addCountry(data) {
-      const { name, code, weeklyPrice, monthlyPrice } = data;
-      const newCountry = (await country.create({ name: name.toLowerCase(), code, weeklyPrice, monthlyPrice}));
-      return newCountry;
+  // async addCountry(data) {
+  //     const { name, code, weeklyPrice, monthlyPrice } = data;
+  //     const newCountry = (await country.create({ name: name.toLowerCase(), code, weeklyPrice, monthlyPrice}));
+  //     return newCountry;
 
-  }
+  // }
 
-  async  updateCountry(id: string, data: any) {
-    let existingCountry: any; 
+  // async  updateCountry(id: string, data: any) {
+  //   let existingCountry: any; 
   
-    const { name, code, weeklyPrice, monthlyPrice } = data;
-    try {
-      existingCountry = await country.findOneAndUpdate(
-        { _id: id, name: name.toLowerCase() },
-        { $set: { code, weeklyPrice, monthlyPrice } },
-        { new: true }
-      );
-    } catch (error) {
-      console.error(`Failed to update country ${name}: ${error.message}`);
-      // Handle any error that might occur during the update
-    }
-    return existingCountry;
+  //   const { name, code, weeklyPrice, monthlyPrice } = data;
+  //   try {
+  //     existingCountry = await country.findOneAndUpdate(
+  //       { _id: id, name: name.toLowerCase() },
+  //       { $set: { code, weeklyPrice, monthlyPrice } },
+  //       { new: true }
+  //     );
+  //   } catch (error) {
+  //     console.error(`Failed to update country ${name}: ${error.message}`);
+  //     // Handle any error that might occur during the update
+  //   }
+  //   return existingCountry;
+  // }
+
+    // async getCountries() {
+  //   const countries = await country.find().lean().exec();
+  //   return countries;
+  // }
+
+
+async addCountry(data) {
+  const { name, code, weeklyPrice, monthlyPrice, continent} = data;
+  const newCountry = (await country.create({ name: name.toLowerCase(), code, weeklyPrice, monthlyPrice, continent}));
+  return newCountry;
+}
+
+async  updateCountry(id: string, data: any) {
+  let existingCountry: any; 
+
+  const { name, code, weeklyPrice, monthlyPrice, continent } = data;
+  try {
+    existingCountry = await country.findOneAndUpdate(
+      { _id: id, name: name.toLowerCase() },
+      { $set: { code, weeklyPrice, monthlyPrice, continent} },
+      { new: true }
+    );
+  } catch (error) {
+    console.error(`Failed to update country ${name}: ${error.message}`);
+    // Handle any error that might occur during the update
   }
+  return existingCountry;
+}
+
     
-  async getCountries() {
-    const countries = await country.find().lean().exec();
-    return countries;
+async getCountries(
+  filters?: IPaginationFilter & { searchPhrase?: string, continent?: string }
+): Promise<PaginatedDocument<Country[]>> {
+  const queries: any = {};
+
+  if (filters?.searchPhrase) {
+    Object.assign(queries, { $text: { $search: filters.searchPhrase } });
   }
 
-  async getCountriesById(_id: string) {
+  if (filters?.continent) {
+    Object.assign(queries, { continent: filters.continent });
+  }
+
+  if (filters?.continent) {
+    Object.assign(queries, { continent: filters.continent });
+  }
+
+  return paginate("country", queries, filters);
+}
+
+async getCountriesById(_id: string) {
     const result = await country.findById(_id);
     return result;
   }

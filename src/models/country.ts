@@ -14,6 +14,9 @@ export class Country extends BaseEntity {
   code?: string; 
 
   @prop()
+  continent?: string;
+
+  @prop()
   weeklyPrice?: number;
 
   @prop()
