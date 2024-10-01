@@ -157,15 +157,28 @@ export class MealController {
     }
   }
 
+  // async getMealExtras(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const { customer, query } = req;
+  //     const data = await service.getMealExtras(customer.roles, query as any);
+  //     sendResponse(res, 200, data);
+  //   } catch (error) {
+  //     sendError(error, next);
+  //   }
+  // }
+
   async getMealExtras(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, query } = req;
-      const data = await service.getMealExtras(customer.roles, query as any);
+      const roles = customer?.roles ?? null;
+      const data = await service.getMealExtras(roles, query as any);
+  
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
     }
   }
+  
 
   async updateMealExtras(req: Request, res: Response, next: NextFunction) {
     try {

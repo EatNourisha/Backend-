@@ -34,6 +34,6 @@ router.post("/extras", authGuard, controller.createMealExtras);
 router.put("/extras/:id", authGuard, controller.updateMealExtras);
 // router.put("/duplicate/meal/packs", controller.duplicateMealPacks);
 router.delete("/extras/:id", authGuard, controller.deleteMealExtras);
-router.get("/extras", deviceGuard, controller.getMealExtras);
+router.get("/extras", controller.getMealExtras);
 
 export default router;
