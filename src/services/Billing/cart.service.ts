@@ -75,12 +75,12 @@ export class CartService {
   async getCartWeb(
     customer_id: string | null, 
     roles: string[], 
-    filters: IPaginationFilter, 
+    filters: IPaginationFilter & {session_id?: string}, 
     device_id?: string, 
-    session_id?: string
+    // session_id?: string
   ): Promise<CartRo> {
   
-    console.log({ customer_id, roles, filters, device_id, session_id });
+    console.log({ customer_id, roles, filters, device_id });
   
     let _cart;
     let items;
@@ -91,10 +91,10 @@ export class CartService {
         paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
       ]);
     } 
-    else if (device_id && session_id ) {
+    else if (device_id && filters.session_id ) {
       [_cart, items] = await Promise.all([
-        cart.findOneAndUpdate({ device_id, session_id }, { device_id, session_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { device_id, session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+        cart.findOneAndUpdate({ device_id, session_id: filters.session_id }, { device_id, session_id: filters.session_id }, getUpdateOptions()).lean<Cart>().exec(),
+        paginate<CartItem[]>("cartItem", { device_id, session_id: filters.session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
       ]);
     } 
     // else if (device_id && session_id && customer_id ) {
@@ -109,21 +109,21 @@ export class CartService {
     //   _cart.total = __cartSes?.total + __cartSesCus?.total
     // } 
 
-    else if (device_id && session_id && customer_id) {
+    else if (device_id && filters.session_id && customer_id) {
       [_cart, items] = await Promise.all([
-        cart.findOneAndUpdate({ device_id, session_id, customer: customer_id }, { device_id, session_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { device_id, session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+        cart.findOneAndUpdate({ device_id,session_id: filters.session_id, customer: customer_id }, { device_id, session_id: filters.session_id }, getUpdateOptions()).lean<Cart>().exec(),
+        paginate<CartItem[]>("cartItem", { device_id, session_id: filters.session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
       ]);
     
     }
     
-    else if (session_id) {
+    else if (filters.session_id) {
       [_cart, items] = await Promise.all([
-        cart.findOneAndUpdate({ session_id }, { session_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+        cart.findOneAndUpdate({ session_id: filters.session_id }, { session_id: filters.session_id }, getUpdateOptions()).lean<Cart>().exec(),
+        paginate<CartItem[]>("cartItem", { session_id: filters.session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
       ]);
     } else {
-      throw createError("Customer ID, device ID, or temp ID must be provided", 400);
+      throw createError(" device_id, customer_id, or session_id must be provided", 400);
     }
   
     return { cart: _cart, items };

@@ -42,7 +42,7 @@ export class CartController {
   
       const customer_id = customer?.sub || null;
   
-      const data = await service.getCartWeb(customer_id, customer?.roles || [], query, device_id, body.session_id);
+      const data = await service.getCartWeb(customer_id, customer?.roles || [], query, device_id);
   
       sendResponse(res, 200, data);
     } catch (error) {
