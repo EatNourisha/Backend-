@@ -5,8 +5,8 @@ import { CartController } from "../../controllers";
 const router = Router();
 const controller = new CartController();
 
-router.get("/", controller.getCart);
-// router.get("/", authGuard, controller.getCart);
+router.get("/web", controller.getCartWeb);
+router.get("/", authGuard, controller.getCart);
 // router.put("/", authGuard, controller.addItemToCart);
 router.put("/", controller.addItemToCart);
 router.delete("/", controller.removeItemFromCart);

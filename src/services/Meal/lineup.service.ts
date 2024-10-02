@@ -139,6 +139,7 @@ export class MealLineupService {
       }
     }
 
+  const mealSelectionCount: { [mealId: string]: number } = {};
     // Extract all mealIds from the DTO
     const mealIds = [
       dto?.monday?.lunch?.mealId,
@@ -157,13 +158,34 @@ export class MealLineupService {
       dto?.sunday?.dinner?.mealId,
     ].filter((mealId) => mealId != null);
 
-    for (const mealId of mealIds) {
-      const _mealPack = await mealPack.findById(mealId).exec();
-      if (_mealPack && _mealPack.available_quantity !== undefined) {
-        _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
-        await _mealPack.save();
+  for (const mealId of mealIds) {
+    mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
+  }
+  for (const mealId of Object.keys(mealSelectionCount)) {
+    const _mealPack = await mealPack.findById(mealId).exec();
+    const selectedQuantity = mealSelectionCount[mealId];
+
+    if (_mealPack && _mealPack.available_quantity !== undefined) {
+      if (selectedQuantity > _mealPack.available_quantity) {
+        throw createError(
+          `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+          400
+        );
       }
+
+      _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
+      await _mealPack.save();
     }
+  }
+
+
+    // for (const mealId of mealIds) {
+    //   const _mealPack = await mealPack.findById(mealId).exec();
+    //   if (_mealPack && _mealPack.available_quantity !== undefined) {
+    //     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
+    //     await _mealPack.save();
+    //   }
+    // }
 
     const cusLineup = await lineup.findOne({ customer: customer_id, week: dto?.week || 1, status: "active" });
 
