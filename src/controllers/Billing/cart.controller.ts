@@ -24,17 +24,17 @@ export class CartController {
       sendError(error, next);
     }
   }
-  // async getCart(req: Request, res: Response, next: NextFunction) {
-  //   try {
-  //     const { customer, query } = req;
-  //     const data = await service.getCart(customer.sub, customer.roles, query);
-  //     sendResponse(res, 200, data);
-  //   } catch (error) {
-  //     sendError(error, next);
-  //   }
-  // }
-
   async getCart(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, query } = req;
+      const data = await service.getCart(customer.sub, customer.roles, query);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+  async getCartWeb(req: Request, res: Response, next: NextFunction) {
     try {
       const { customer, body, headers, query } = req;
       
@@ -42,7 +42,7 @@ export class CartController {
   
       const customer_id = customer?.sub || null;
   
-      const data = await service.getCart(customer_id, customer?.roles || [], query, device_id);
+      const data = await service.getCartWeb(customer_id, customer?.roles || [], query, device_id, body.session_id);
   
       sendResponse(res, 200, data);
     } catch (error) {
