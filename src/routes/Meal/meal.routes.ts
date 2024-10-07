@@ -32,7 +32,7 @@ router.get("/category", deviceGuard, categController.getcategory);
 
 router.post("/extras", authGuard, controller.createMealExtras);
 router.put("/extras/:id", authGuard, controller.updateMealExtras);
-// router.put("/duplicate/meal/packs", controller.duplicateMealPacks);
+router.put("/duplicate/meal/packs", controller.duplicateMealPacks);
 router.delete("/extras/:id", authGuard, controller.deleteMealExtras);
 router.get("/extras", controller.getMealExtras);
 
