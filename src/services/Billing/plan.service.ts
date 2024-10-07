@@ -110,7 +110,7 @@ export class PlanService {
 
   async getPlans(
     // roles: string[],
-    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string }
+    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string, interval?: string }
   ): Promise<PaginatedDocument<Plan[]>> {
     // await RoleService.hasPermission(roles, AvailableResource.PLAN, [PermissionScope.READ, PermissionScope.ALL]);
 
@@ -127,6 +127,10 @@ export class PlanService {
   
     if (filters?.continent) {
       Object.assign(queries, { continent: filters.continent });
+    }
+  
+    if (filters?.interval) {
+      Object.assign(queries, { subscription_interval: filters.interval });
     }
   
     const weekendQuery = filters?.weekend ? { weekend: filters.weekend } : {};

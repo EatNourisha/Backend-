@@ -207,8 +207,27 @@ export class BillingService {
     // cancels the subscription when it ends when set to true
     const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
 
-   let procode: string | undefined = dto?.promo_code?.toLowerCase()
-    
+    let procode: string | undefined = dto?.promo_code?.toLowerCase()
+
+    //****************************************************** */
+    // This is to handle the 5th time order customer coupon code
+    // This is to handle the 5th time order customer coupon code
+    //****************************************************** */
+
+   if (procode === 'fifthtimeorder' || procode === 'FifthTimeOrder' ) {
+    const customerData = await customer.findById(customer_id);
+    const now = new Date();
+    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+  
+    if (daysSinceReset >= 30) {
+      if (customerData!.lineupCount < 4) {
+        procode = 'Not a 5th order'; 
+        // customerData!.lineupCount = 0;
+        // customerData!.lastLineupReset = now;
+      }
+    }
+  }
+
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
     

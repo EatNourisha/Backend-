@@ -160,6 +160,12 @@ export class Customer extends BaseEntity {
   @prop()
   device_id?: string;
 
+  @prop({default: Date.now})
+  lastLineupReset: Date;
+
+  @prop({default: 0})
+  lineupCount: number;
+
 
 }
 

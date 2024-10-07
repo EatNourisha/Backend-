@@ -201,8 +201,43 @@ export class MealLineupService {
       returning = true;
     }
 
+    //****************************************************** */
+    // This is to handle the 5th time order customer coupon code
+    // This is to handle the 5th time order customer coupon code
+    //****************************************************** */
+    const _cusLineup = await lineup.findOne({ customer: customer_id }).sort({ createdAt: -1 });
+    const customerData = await customer.findById(customer_id);
+    const now = new Date();
+
+    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysSinceReset >= 30 && customerData!.lineupCount >= 4) {
+      const lastLineupDate = _cusLineup!.createdAt;
+      const daysSinceLastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
+
+
+      if (daysSinceLastLineup <= 7) {
+        customerData!.lineupCount = 0;
+        customerData!.lastLineupReset = now;
+      } else {
+        customerData!.lineupCount += 1; 
+      }
+    } else if(daysSinceReset >30 && customerData!.lineupCount < 4){
+      customerData!.lineupCount = 1;
+      customerData!.lastLineupReset = now;
+
+    }
     
-    
+    else {
+      customerData!.lineupCount += 1; 
+    }
+
+    if (customerData!.lineupCount === 4) {
+      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 100% on us");
+    }
+
+    await customerData!.save();
+
     const _lineup = await lineup.create({
       ...dto,
       customer: customer_id,
@@ -348,33 +383,12 @@ export class MealLineupService {
   }
 
   static async validateLockedLineupChange(customer_id: string): Promise<void> {
-    // const acc = await customer.findById(customer_id).select(["preference"]).lean<Customer>().exec();
-    // if (!acc) throw createError("Customer not found", 404);
-
-    // const pref = acc?.preference;
-    // if (!pref || (!!pref && !pref?.next_lineup_change_exp)) return;
-
-    // if (!!pref && !!pref?.next_lineup_change_exp && Date.now() < pref?.next_lineup_change_exp)
-    //   throw createError(
-    //     `Changes to your lineup is locked till ${format(pref.next_lineup_change_exp, "eee DD, MMM yyyy at hh:mm aaa")}`,
-    //     400
-    //   );
-
     const result = await DeliveryService.canUpdateLineup(customer_id);
     if (!result) return;
 
-    // if (result?.is_locked && Date.now() < result.next_change_date.getTime())
-    //   throw createError(`Changes to your lineup is locked till ${format(result.next_change_date, "eee dd, MMM yyyy, hh:mm aa")}`, 400);
   }
 
   static async lockLineupChange(customer_id: string, dryRun = true) {
-    // const exp = setExpiration(7);
-    // const update = await customer
-    //   .findByIdAndUpdate(customer_id, { preference: { next_lineup_change_exp: exp, is_lineup_locked: true } })
-    //   .lean<Customer>()
-    //   .exec();
-    // if (!update && !dryRun) throw createError("Unable to lock lineup changes", 400);
-    // return;
 
     const info = await DeliveryService.updateNextLineupChangeDate(customer_id);
     if (!info && !dryRun) throw createError("Unable to lock lineup changes", 400);
@@ -476,51 +490,6 @@ export class MealLineupService {
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup ?? {};
   }
-
-  // async getLineups(
-  //   roles: string[], 
-  //   silent = false, 
-  //   status?: string, 
-  //   week?: string, 
-  //   limit?: number, 
-  //   page?: number
-  // ): Promise<MealLineup | null> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-  
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-  //     path: day,
-  //     populate: [
-  //       { path: 'breakfast.mealId' },
-  //       { path: 'breakfast.extraId' },
-  //       { path: 'lunch.mealId' },
-  //       { path: 'lunch.extraId' },
-  //       { path: 'dinner.mealId' },
-  //       { path: 'dinner.extraId' },
-  //     ],
-  //   }));
-  
-  //   const filter: any = {};
-  //   if (status) filter.status = status;
-  //   if (week) filter.week = week;
-  
-  //   // Defaulting limit and page if they aren't provided
-  //   const effectiveLimit = limit ?? 10;
-  //   const effectivePage = page ?? 1;
-  
-  //   const _lineup = await lineup.find(filter)
-  //     .populate(pops)
-  //     .sort({ createdAt: -1 })
-  //     .limit(effectiveLimit)
-  //     .skip((effectivePage - 1) * effectiveLimit)
-  //     .lean<MealLineup>()
-  //     .exec();
-  
-  //   if (!_lineup && !silent) throw createError("No lineups", 404);
-  //   return _lineup ?? [];
-  // }
 
   async getLineups(
     roles: string[], 
@@ -661,11 +630,8 @@ export class MealLineupService {
     return lastLineup;
   }
    
-  // static async constructMealAnalysis()
-
-  // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
-  // When typescript compiles the AccountEventListener, the addEvent decorator will be executed.
   static mountEventListener() {
     new LineupEventListener();
   }
+
 }
