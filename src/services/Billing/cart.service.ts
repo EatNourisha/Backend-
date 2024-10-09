@@ -14,6 +14,8 @@ import { startOfMonth } from 'date-fns';
 interface CartItemDto {
   itemId: string;
   quantity: number;
+  proteinId?: string,
+  swallowId?: string,
 }
 
 interface CartRo {
@@ -40,7 +42,7 @@ export class CartService {
 
     const [_cart, items] = await Promise.all([
       cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
-      paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+      paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item", "swallow", "protein"] }),
     ]);
 
     return { cart: _cart, items };
@@ -94,7 +96,7 @@ export class CartService {
     else if (device_id && filters.session_id ) {
       [_cart, items] = await Promise.all([
         cart.findOneAndUpdate({ device_id, session_id: filters.session_id }, { device_id, session_id: filters.session_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { device_id, session_id: filters.session_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+        paginate<CartItem[]>("cartItem", { device_id, session_id: filters.session_id, quantity: { $gt: 0 } }, filters, { populate: ["item", "swallow", "protein"] }),
       ]);
     } 
     // else if (device_id && session_id && customer_id ) {
@@ -282,8 +284,6 @@ export class CartService {
 
 
   private static async calcItemPrice(
-    // customer_id: string,
-    // cart_id: string,
     cart: Cart,
     dto: CartItemDto,
     cart_session_id: string,
@@ -306,13 +306,31 @@ export class CartService {
       .exec();
 
     if (!!cart_item && dto?.quantity > (cart_item?.quantity ?? 0)) throw createError("Invalid quantity", 400);
-
+  
+    // if (dto?.proteinId || dto?.swallowId) {
+    //   if (!neg) {
+    //     await mealextras.findByIdAndUpdate(
+    //       dto?.proteinId || dto?.swallowId,
+    //       { $inc: { available_quantity: -dto.quantity } },  
+    //       { session }
+    //     );
+    //   } else {
+    //     await mealextras.findByIdAndUpdate(
+    //       dto?.proteinId || dto?.swallowId,
+    //       { $inc: { available_quantity: dto.quantity } },  
+    //       { session }
+    //     );
+    //   }
+    // }
+  
     cart_item = await cartItem
       .findOneAndUpdate(
         { cart: cart_id, item: dto.itemId, customer: customer_id, session_id: cart_session_id },
         {
           cart: cart_id,
           item: dto.itemId,
+          protein: dto?.proteinId,
+          swallow: dto?.swallowId,
           customer: customer_id,
           session_id: cart_session_id,
           $inc: { quantity: shouldNegate(dto.quantity) },
@@ -320,13 +338,13 @@ export class CartService {
         { ...getUpdateOptions(), session }
       )
       .select(["item", "quantity"])
-      .populate(["item"])
+      .populate(["item", "protein", "swallow"])
       .lean<CartItem>()
       .exec();
-
+  
     const item = cart_item?.item as MealPack;
     if (!item) throw createError("Cart item not found", 404);
-
+  
     return {
       item: cart_item,
       subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),
@@ -334,6 +352,60 @@ export class CartService {
       total: Math.max(0, add(total, shouldNegate(item?.price?.amount * dto?.quantity))),
     };
   }
+
+  // private static async calcItemPrice(
+  //   // customer_id: string,
+  //   // cart_id: string,
+  //   cart: Cart,
+  //   dto: CartItemDto,
+  //   cart_session_id: string,
+  //   neg = false,
+  //   session?: ClientSession
+  // ) {
+  //   if (!Number.isInteger(dto?.quantity)) throw createError("😒 quantity must be an integer", 400);
+
+  //   const { customer: customer_id, _id: cart_id, total, subtotal, deliveryFee } = cart;
+
+  //   const shouldNegate = (
+  //     (neg: boolean) => (value: number) =>
+  //       when(neg, value * -1, value)
+  //   )(neg);
+
+  //   let cart_item = await cartItem
+  //     .findOne({ cart: cart_id, item: dto?.itemId, customer: customer_id, session_id: cart_session_id })
+  //     .select(["quantity"])
+  //     .lean<CartItem>()
+  //     .exec();
+
+  //   if (!!cart_item && dto?.quantity > (cart_item?.quantity ?? 0)) throw createError("Invalid quantity", 400);
+
+  //   cart_item = await cartItem
+  //     .findOneAndUpdate(
+  //       { cart: cart_id, item: dto.itemId, customer: customer_id, session_id: cart_session_id },
+  //       {
+  //         cart: cart_id,
+  //         item: dto.itemId,
+  //         customer: customer_id,
+  //         session_id: cart_session_id,
+  //         $inc: { quantity: shouldNegate(dto.quantity) },
+  //       },
+  //       { ...getUpdateOptions(), session }
+  //     )
+  //     .select(["item", "quantity"])
+  //     .populate(["item"])
+  //     .lean<CartItem>()
+  //     .exec();
+
+  //   const item = cart_item?.item as MealPack;
+  //   if (!item) throw createError("Cart item not found", 404);
+
+  //   return {
+  //     item: cart_item,
+  //     subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),
+  //     deliveryFee: Math.max(0, add(deliveryFee, shouldNegate(item?.price?.deliveryFee * dto?.quantity))),
+  //     total: Math.max(0, add(total, shouldNegate(item?.price?.amount * dto?.quantity))),
+  //   };
+  // }
 
   private static async updateCartInfo(
     cart_id: string,
