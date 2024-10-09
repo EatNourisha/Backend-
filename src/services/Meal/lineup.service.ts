@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription} from "../../models";
+import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -158,6 +158,24 @@ export class MealLineupService {
       dto?.sunday?.dinner?.mealId,
     ].filter((mealId) => mealId != null);
 
+    // Extract all mealIds from the DTO
+    const extraIds = [
+      dto?.monday?.lunch?.extraId,
+      dto?.monday?.dinner?.extraId,
+      dto?.tuesday?.lunch?.extraId,
+      dto?.tuesday?.dinner?.extraId,
+      dto?.wednesday?.lunch?.extraId,
+      dto?.wednesday?.dinner?.extraId,
+      dto?.thursday?.lunch?.extraId,
+      dto?.thursday?.dinner?.extraId,
+      dto?.friday?.lunch?.extraId,
+      dto?.friday?.dinner?.extraId,
+      dto?.saturday?.lunch?.extraId,
+      dto?.saturday?.dinner?.extraId,
+      dto?.sunday?.lunch?.extraId,
+      dto?.sunday?.dinner?.extraId,
+    ].filter((extraId) => extraId != null);
+
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
   }
@@ -175,6 +193,26 @@ export class MealLineupService {
 
       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
       await _mealPack.save();
+    }
+  }
+
+  for (const extraId of extraIds) {
+    mealSelectionCount[extraId.toString()] = (mealSelectionCount[extraId.toString()] || 0) + 1;
+  }
+  for (const extraId of Object.keys(mealSelectionCount)) {
+    const _extra = await mealextras.findById(extraId).exec();
+    const selectedQuantity = mealSelectionCount[extraId];
+
+    if (_extra && _extra.available_quantity !== undefined) {
+      if (selectedQuantity > _extra.available_quantity) {
+        throw createError(
+          `You can't select ${_extra.name} more than availabe quantity, try selecting ${_extra.available_quantity} only.`,
+          400
+        );
+      }
+
+      _extra.available_quantity = Math.max(0, _extra.available_quantity - selectedQuantity);
+      await _extra.save();
     }
   }
 
