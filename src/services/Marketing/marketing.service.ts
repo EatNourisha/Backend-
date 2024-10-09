@@ -1,7 +1,8 @@
 import { CustomerDto, UpdateContactSubscriptionDto } from "../../interfaces";
 import { MailchimpService } from "./mailchimp.service";
-import { Address } from "../../models/customer";
+import customer, { Address, Customer } from "../../models/customer";
 import { SenderService } from "./sender.service";
+import { mailJetSendMail } from "../../config/mailjet";
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -57,3 +58,222 @@ export class MarketingService {
     }
   }
 }
+
+  //****************************************************** */
+  // Marketing Email Blueprint
+  //****************************************************** */
+
+
+export async function welcomeEmail1(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Welcome to Nourisha ${cus.first_name}`;
+
+  const body = `
+
+
+  Dear ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function welcomeEmail2(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Why Nourisha (why and how)`;
+
+  const body = `
+
+
+  Dear ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function welcomeEmail3(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = 
+  `
+  ${cus.first_name}, is Nourisha Whetting Your Appetite?
+`
+;
+  const body = 
+  `
+  Hey there, ${cus.first_name}!
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function welcomeEmail4(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Pssst🤭…We have a little welcome gift for you!
+`;
+
+  const body = `
+
+
+  Dear ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function welcomeEmail5(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = 
+  `
+  ${cus.first_name}, Ready for a Taste Adventure?  
+
+`
+;
+  const body = 
+  `
+Dear NourishedFoodie,
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function welcomeEmail6(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `No subject provided`;
+
+  const body = `
+
+
+  Dear ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function cartAbandonment1(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `${cus.first_name}, Your Delicious African Meal is Still Waiting for You!
+`;
+  const body = `
+  Hello ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function cartAbandonment2(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Still Thinking About Your Nourisha Feast?
+`;
+  const body = `
+  Hey there, ${cus.first_name}
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function cartAbandonment3(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Hey  ${cus.first_name}, your Nourisha Meal Cart Misses You!
+
+`;
+  const body = `
+  Hello ${cus.first_name},
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function subAbandonment1(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `${cus.first_name}, Your Nourisha Feast Awaits!
+`;
+  const body = `
+  Hello ${cus.first_name},
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function subAbandonment2(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = ` Your Time is Precious - Let Us Handle Lunch & Dinner for You!
+
+`;
+  const body = `
+  Hello there, ${cus.first_name},
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+
+export async function subAbandonment3(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Spice Up Your Food Game with Nourisha
+
+`;
+  const body = `
+  Hey ${cus.first_name},
+  `
+;
+  await mailJetSendMail(
+    body,
+    `${subject}`,
+    [`${email}`]
+  );
+};
+

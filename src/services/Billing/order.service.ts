@@ -218,6 +218,10 @@ async getClosedOrdersHistory(
 
     const cus = _cart?.customer as Customer;
 
+    if(dto.coupon?.toLowerCase() === 'loyaltyreward'){
+      throw createError('Coupon is only valid for a weekly plan subscription')
+    }
+
     let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
     const gift = await giftpurchase.findOne({ code: dto?.coupon, status: 'active' }) 
 

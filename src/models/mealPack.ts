@@ -111,6 +111,9 @@ export class MealPack extends BaseEntity {
   @prop({ ref: 'MealExtras' })
   expected_proteins?: Ref<MealExtras>[];
 
+  @prop({ ref: 'MealExtras' })
+  expected_swallows?: Ref<MealExtras>[];
+
   @prop()
   continent: string;
 
