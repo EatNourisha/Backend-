@@ -369,7 +369,7 @@ export class MealService {
       Object.assign(queries, { type: filters.type });
     }
     // Ensure that only meal extra with available_quantity >= 1 are fetched
-    Object.assign(queries, { available_quantity: { $gte: 1 } });
+    // Object.assign(queries, { available_quantity: { $gte: 1 } });
 
     return await paginate("mealextras", queries, filters);
   }
@@ -385,7 +385,7 @@ export class MealService {
     }
 
     // Ensure that only meal extra with available_quantity >= 1 are fetched
-    Object.assign(queries, { available_quantity: { $gte: 1 } });
+    // Object.assign(queries, { available_quantity: { $gte: 1 } });
   
     return await paginate("mealextras", queries, filters);
   }
