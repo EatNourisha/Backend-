@@ -14,6 +14,9 @@ export class MealExtras extends BaseEntity {
   @prop()
   type?: string;
   
+  @prop()
+  available_quantity?: number;
+  
 }
 
 export default getModelForClass(MealExtras);

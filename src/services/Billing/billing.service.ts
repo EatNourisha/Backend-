@@ -210,23 +210,23 @@ export class BillingService {
     let procode: string | undefined = dto?.promo_code?.toLowerCase()
 
     //****************************************************** */
-    // This is to handle the 5th time order customer coupon code
-    // This is to handle the 5th time order customer coupon code
+    // This is to handle the 5th time order loyalty reward coupon code
+    // This is to handle the 5th time order loyalty reward coupon code
     //****************************************************** */
 
-   if (procode === 'fifthtimeorder' || procode === 'FifthTimeOrder' ) {
-    const customerData = await customer.findById(customer_id);
-    const now = new Date();
-    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+  //  if (procode === 'loyaltyreward' || procode === 'loyaltyreward' ) {
+  //   const customerData = await customer.findById(customer_id);
+  //   const now = new Date();
+  //   const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
   
-    if (daysSinceReset >= 30) {
-      if (customerData!.lineupCount < 4) {
-        procode = 'Not a 5th order'; 
-        // customerData!.lineupCount = 0;
-        // customerData!.lastLineupReset = now;
-      }
-    }
-  }
+  //   if (daysSinceReset >= 30) {
+  //     if (customerData!.lineupCount < 4) {
+  //       procode = 'Not a 5th order'; 
+  //       // customerData!.lineupCount = 0;
+  //       // customerData!.lastLineupReset = now;
+  //     }
+  //   }
+  // }
 
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
@@ -234,6 +234,21 @@ export class BillingService {
     if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
         promo_code = promo?.stripe_id;
     }
+
+    if (promo?.code === 'loyaltyreward') {    
+      const customerData = await customer.findById(customer_id);
+    const now = new Date();
+    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+
+    if(_plan.subscription_interval === 'month'){
+      throw createError('Coupon is only valid for a weekly plan subscription')
+    }
+    
+    if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
+        throw createError('Not your fifth time order in the last 30days')
+    }
+  }
+
 
     let cus_stripe = cus?.stripe_id
     const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
