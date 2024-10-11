@@ -115,7 +115,7 @@ export class MealLineupService {
     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
 
       if (subscriptionCheck?.continent === "Asian" || subscriptionCheck?.continent === "Asia") {
-        const asianDels = await adminSettings.findOne(); 
+        const asianDels = await adminSettings.findOne();
 
         const currentDay = new Date().getDay();
 
