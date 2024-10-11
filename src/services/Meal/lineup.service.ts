@@ -139,6 +139,19 @@ export class MealLineupService {
       }
     }
 
+    // const _days = [
+    //   dto?.monday,
+    //   dto?.tuesday,
+    //   dto?.wednesday,
+    //   dto?.thursday,
+    //   dto?.friday,
+    //   dto?.saturday,
+    //   dto?.sunday,
+    // ].filter((day) => day != null || '') ;
+
+    // for ( const day of _days){
+    // }
+
   const mealSelectionCount: { [mealId: string]: number } = {};
     // Extract all mealIds from the DTO
     const mealIds = [
@@ -158,7 +171,7 @@ export class MealLineupService {
       dto?.sunday?.dinner?.mealId,
     ].filter((mealId) => mealId != null);
 
-    // Extract all mealIds from the DTO
+    // Extract all swallow extraIds from the DTO
     const extraIds = [
       dto?.monday?.lunch?.extraId,
       dto?.monday?.dinner?.extraId,
@@ -175,6 +188,25 @@ export class MealLineupService {
       dto?.sunday?.lunch?.extraId,
       dto?.sunday?.dinner?.extraId,
     ].filter((extraId) => extraId != null);
+
+    // Extract all swallow extraIds from the DTO
+    const proteinIds = [
+      dto?.monday?.lunch?.proteinId,
+      dto?.monday?.dinner?.proteinId,
+      dto?.tuesday?.lunch?.proteinId,
+      dto?.tuesday?.dinner?.proteinId,
+      dto?.wednesday?.lunch?.proteinId,
+      dto?.wednesday?.dinner?.proteinId,
+      dto?.thursday?.lunch?.proteinId,
+      dto?.thursday?.dinner?.proteinId,
+      dto?.friday?.lunch?.proteinId,
+      dto?.friday?.dinner?.proteinId,
+      dto?.saturday?.lunch?.proteinId,
+      dto?.saturday?.dinner?.proteinId,
+      dto?.sunday?.lunch?.proteinId,
+      dto?.sunday?.dinner?.proteinId,
+    ].filter((proteinId) => proteinId != null );
+
 
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
@@ -204,18 +236,37 @@ export class MealLineupService {
     const selectedQuantity = mealSelectionCount[extraId];
 
     if (_extra && _extra.available_quantity !== undefined) {
-      if (selectedQuantity > _extra.available_quantity) {
-        throw createError(
-          `You can't select ${_extra.name} more than availabe quantity, try selecting ${_extra.available_quantity} only.`,
-          400
-        );
-      }
+      // if (selectedQuantity > _extra.available_quantity) {
+      //   throw createError(
+      //     `You can't select ${_extra.name} more than availabe quantity, try selecting ${_extra.available_quantity} only.`,
+      //     400
+      //   );
+      // }
 
       _extra.available_quantity = Math.max(0, _extra.available_quantity - selectedQuantity);
       await _extra.save();
     }
   }
 
+  for (const proteinId of proteinIds) {
+    mealSelectionCount[proteinId.toString()] = (mealSelectionCount[proteinId.toString()] || 0) + 1;
+  }
+  for (const proteinId of Object.keys(mealSelectionCount)) {
+    const _extra = await mealextras.findById(proteinId).exec();
+    const selectedQuantity = mealSelectionCount[proteinId];
+
+    if (_extra && _extra.available_quantity !== undefined) {
+      // if (selectedQuantity > _extra.available_quantity) {
+      //   throw createError(
+      //     `You can't select ${_extra.name} more than availabe quantity, try selecting ${_extra.available_quantity} only.`,
+      //     400
+      //   );
+      // }
+
+      _extra.available_quantity = Math.max(0, _extra.available_quantity - selectedQuantity);
+      await _extra.save();
+    }
+  }
 
     // for (const mealId of mealIds) {
     //   const _mealPack = await mealPack.findById(mealId).exec();
