@@ -53,8 +53,8 @@ export class MealService {
     const slug = createSlug(dto.name);
     if (await MealService.checkMealPackExists("slug", slug)) throw createError("Meal pack already exist", 400);
 
-    const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.image_url, slug });
-    // const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
+    // const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.image_url, slug });
+    const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
     return _meal_pack;
   }
 
