@@ -44,9 +44,9 @@ export class MealService {
   }
 
   async createMealPack(dto: CreateMealPackDto, roles: string[]): Promise<MealPack> {
-    validateFields(dto, ["name", "meals", "images", "price", "orderType", "country"]);
+    validateFields(dto, ["name", "meals", "image_url", "price", "orderType", "country"]);
     if (!!dto?.price) validateFields(dto.price, ["amount", "deliveryFee"]);
-    if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
+    // if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
 
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.CREATE, PermissionScope.ALL]);
 
