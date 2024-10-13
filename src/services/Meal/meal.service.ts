@@ -44,17 +44,17 @@ export class MealService {
   }
 
   async createMealPack(dto: CreateMealPackDto, roles: string[]): Promise<MealPack> {
-    validateFields(dto, ["name", "meals", "images", "price", "orderType", "country"]);
+    validateFields(dto, ["name", "meals", "image_url", "price", "orderType", "country"]);
     if (!!dto?.price) validateFields(dto.price, ["amount", "deliveryFee"]);
-    if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
+    // if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
 
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.CREATE, PermissionScope.ALL]); 
 
     const slug = createSlug(dto.name);
     if (await MealService.checkMealPackExists("slug", slug)) throw createError("Meal pack already exist", 400);
 
-    // const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.image_url, slug });
-    const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
+    const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.image_url, slug });
+    // const _meal_pack = await mealPack.create({ ...dto, image_url: dto?.images[0], slug });
     return _meal_pack;
   }
 
