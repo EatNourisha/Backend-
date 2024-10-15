@@ -48,31 +48,31 @@ export class CartService {
     return { cart: _cart, items };
   }
 
-  async getCart2(customer_id: string | null, roles: string[], filters: IPaginationFilter, device_id?: string): Promise<CartRo> {
-    console.log('DEVICE_ID', device_id)
-    // await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+  // async getCart2(customer_id: string | null, roles: string[], filters: IPaginationFilter, device_id?: string): Promise<CartRo> {
+  //   console.log('DEVICE_ID', device_id)
+  //   // await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    console.log({ customer_id, roles, filters, device_id });
+  //   console.log({ customer_id, roles, filters, device_id });
   
-    let _cart;
-    let items;
+  //   let _cart;
+  //   let items;
   
-    if (customer_id) {
-      [_cart, items] = await Promise.all([
-        cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
-      ]);
-    } else if (device_id) {
-      [_cart, items] = await Promise.all([
-        cart.findOneAndUpdate({ device_id }, { device_id }, getUpdateOptions()).lean<Cart>().exec(),
-        paginate<CartItem[]>("cartItem", { device_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
-      ]);
-    } else {
-      throw createError("Customer or device ID must be provided", 400);
-    }
+  //   if (customer_id) {
+  //     [_cart, items] = await Promise.all([
+  //       cart.findOneAndUpdate({ customer: customer_id }, { customer: customer_id }, getUpdateOptions()).lean<Cart>().exec(),
+  //       paginate<CartItem[]>("cartItem", { customer: customer_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+  //     ]);
+  //   } else if (device_id) {
+  //     [_cart, items] = await Promise.all([
+  //       cart.findOneAndUpdate({ device_id }, { device_id }, getUpdateOptions()).lean<Cart>().exec(),
+  //       paginate<CartItem[]>("cartItem", { device_id, quantity: { $gt: 0 } }, filters, { populate: ["item"] }),
+  //     ]);
+  //   } else {
+  //     throw createError("Customer or device ID must be provided", 400);
+  //   }
   
-    return { cart: _cart, items };
-  }
+  //   return { cart: _cart, items };
+  // }
 
   async getCartWeb(
     customer_id: string | null, 
