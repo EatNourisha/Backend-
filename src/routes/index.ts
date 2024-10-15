@@ -34,7 +34,7 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 // import { authGuard } from "../middlewares";
-import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup } from "../models";
+import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup, order, subscription } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
 import AppUpdate from "./appupdate.routes";
@@ -93,30 +93,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
   }
 
   switch (event.type) {
-    case "checkout.session.completed": {
-      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-      .then(response => {
-        console.log('############ ZAPIER EVENT FOR SINGLE MEAL Checkout Session #########', response.data);
-      })
-      .catch(error => {
-        console.log('There was an error making the request!', error);
-      });
-  
+    case "checkout.session.completed": {  
       break;
     }
     case "setup_intent.succeeded": {
       await BillingHooks.setupIntentSucceeded(event);
       break;
     }
-    case "payment_intent.created": {
-      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-      .then(response => {
-        console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI - CREATED #########', response.data);
-      })
-      .catch(error => {
-        console.log('There was an error making the request!', error);
-      });
-  
+    case "payment_intent.created": {  
       await BillingHooks.paymentIntentCreated(event);
       break;
     }
@@ -168,7 +152,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
     axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
-      console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI - SUCCEEDED #########', response.data);
+      console.log('ZAPIER EVENT FOR SINGLE MEAL', response.data);
     })
     .catch(error => {
       console.log('There was an error making the request!', error);
@@ -221,15 +205,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
     //   }
     // }
 
-    axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-    .then(response => {
-      console.log('ZAPIER EVENT FOR SUB - CREATED EVENT', response.data);
-    })
-    .catch(error => {
-      console.log('There was an error making the request!', error);
-    });
-
-
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }
@@ -249,6 +224,18 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       }
     }
 
+    const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+    const lineupExists = await lineup.exists({ customer: cus?._id });
+
+    let returning = false
+
+    if (orderExists || lineupExists) {
+      returning = true
+    }
+
+   const _sub = await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning})
+      console.log('######### SUB ###########', _sub)
+    
     axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
       console.log('ZAPIER EVENT FOR SUB - UPDDATE EVENT', response.data);
