@@ -94,6 +94,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
   switch (event.type) {
     case "checkout.session.completed": {
+      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+      .then(response => {
+        console.log('############ ZAPIER EVENT FOR SINGLE MEAL Checkout Session #########', response.data);
+      })
+      .catch(error => {
+        console.log('There was an error making the request!', error);
+      });
+  
       break;
     }
     case "setup_intent.succeeded": {
@@ -101,6 +109,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       break;
     }
     case "payment_intent.created": {
+      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+      .then(response => {
+        console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI - CREATED #########', response.data);
+      })
+      .catch(error => {
+        console.log('There was an error making the request!', error);
+      });
+  
       await BillingHooks.paymentIntentCreated(event);
       break;
     }
@@ -152,7 +168,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
     axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
-      console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI #########', response.data);
+      console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI - SUCCEEDED #########', response.data);
     })
     .catch(error => {
       console.log('There was an error making the request!', error);
@@ -194,6 +210,34 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
       await lineup.updateMany({ customer: cus?._id , week: 1 },{ $set: { status: 'deactivated' } }, { multi: true }).exec();
       
+    //   const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
+
+    //   if (trans?.applied_promo !== null) {
+    //     const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+    //     if (promo) {
+    //     const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+    //     await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
+    //   }
+    // }
+
+    axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+    .then(response => {
+      console.log('ZAPIER EVENT FOR SUB - CREATED EVENT', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
+
+
+      await BillingHooks.customerSubscriptionCreated(event);
+      break;
+    }
+    case "customer.subscription.updated": {
+      const data = event.data.object as any;
+      const customerId = data?.customer;
+      const cus = await customer.findOne({ stripe_id: customerId });
+
       const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
 
       if (trans?.applied_promo !== null) {
@@ -202,21 +246,17 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         if (promo) {
         const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
         await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
-
-        
       }
     }
+
     axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
-      console.log('############ ZAPIER EVENT FOR SUB#########', response.data);
+      console.log('ZAPIER EVENT FOR SUB - UPDDATE EVENT', response.data);
     })
     .catch(error => {
       console.log('There was an error making the request!', error);
     });
-      await BillingHooks.customerSubscriptionCreated(event);
-      break;
-    }
-    case "customer.subscription.updated": {
+
       await BillingHooks.customerSubscriptionUpdated(event);
       break;
     }
