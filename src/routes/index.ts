@@ -152,7 +152,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
     axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
-      console.log('ZAPIER EVENT FOR SINGLE MEAL', response.data);
+      console.log('ZAPIER EVENT', response.data);
     })
     .catch(error => {
       console.log('There was an error making the request!', error);
@@ -233,16 +233,15 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       returning = true
     }
 
-   const _sub = await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning})
-      console.log('######### SUB ###########', _sub)
+   await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning})
     
-    axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-    .then(response => {
-      console.log('ZAPIER EVENT FOR SUB - UPDDATE EVENT', response.data);
-    })
-    .catch(error => {
-      console.log('There was an error making the request!', error);
-    });
+    // axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+    // .then(response => {
+    //   console.log('ZAPIER EVENT FOR SUB - UPDDATE EVENT', response.data);
+    // })
+    // .catch(error => {
+    //   console.log('There was an error making the request!', error);
+    // });
 
       await BillingHooks.customerSubscriptionUpdated(event);
       break;
