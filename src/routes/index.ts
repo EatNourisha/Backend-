@@ -114,14 +114,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .lean<Transaction>()
         .exec();
 
-      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-      .then(response => {
-        console.log(response.data);
-      })
-      .catch(error => {
-        console.log('There was an error making the request!', error);
-      });
-
       if (tx?.reason === "Gift-Card"|| "Custom-Gift") {
       const gift = await giftpurchase
           .findOneAndUpdate({ customer: cus?._id, reference: data?.id }, { status: GiftStatus.ACTIVE })
@@ -158,6 +150,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .lean<GiftPurchase>()
         .exec();
     }
+
+    axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+    .then(response => {
+      console.log('############ ZAPIER EVENT FOR SINGLE MEAL PI #########', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
 
       await BillingHooks.paymentIntentSucceeded(tx, event);
       break;
@@ -204,16 +204,16 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
         await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
 
-        axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-        .then(response => {
-          console.log(response.data);
-        })
-        .catch(error => {
-          console.log('There was an error making the request!', error);
-        });
-              
-        }
+        
       }
+    }
+    axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+    .then(response => {
+      console.log('############ ZAPIER EVENT FOR SUB#########', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }
