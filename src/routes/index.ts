@@ -41,6 +41,7 @@ import AppUpdate from "./appupdate.routes";
 import bodyParser from "body-parser";
 import { GiftStatus } from "../models/giftPurchase";
 import {sendGiftBought, sendGiftRecipient, sendGiftSent}  from "../services/giftCardEmail.service";
+import axios from "axios";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -111,6 +112,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .findOneAndUpdate({ reference: data?.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
         .lean<Transaction>()
         .exec();
+
+      axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.log('There was an error making the request!', error);
+      });
 
       if (tx?.reason === "Gift-Card"|| "Custom-Gift") {
       const gift = await giftpurchase
@@ -194,9 +203,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
         await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
 
-            // const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-            // await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
-            
+        axios.get('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
+          console.log('There was an error making the request!', error);
+        });
+              
         }
       }
       await BillingHooks.customerSubscriptionCreated(event);
