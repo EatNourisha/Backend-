@@ -48,7 +48,7 @@ export class MealService {
     if (!!dto?.price) validateFields(dto.price, ["amount", "deliveryFee"]);
     // if (!!dto?.images && dto?.images?.length < 1) throw createError("At least one image is required", 400);
 
-    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.CREATE, PermissionScope.ALL]);
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.CREATE, PermissionScope.ALL]); 
 
     const slug = createSlug(dto.name);
     if (await MealService.checkMealPackExists("slug", slug)) throw createError("Meal pack already exist", 400);
@@ -122,7 +122,7 @@ export class MealService {
     }
   
     if (filters?.category) {
-      Object.assign(queries, { category: filters.category });
+      Object.assign(queries, { category: filters.category});
     }
   
     Object.assign(queries, { orderType: { $ne: 'bulk-order' } });    
@@ -472,7 +472,10 @@ export class MealService {
       throw createError("No meal found matching the criteria.", 400);
     }
   
-    return _meal;
+    return {
+      totalcount: _meal.length,
+      meals: _meal,
+    };
   }
 
 }
