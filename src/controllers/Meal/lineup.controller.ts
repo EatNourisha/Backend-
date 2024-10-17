@@ -17,6 +17,18 @@ export class MealLineupController {
     }
   }
 
+  async createLineupWeb(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body, customer, query } = req;
+      const { week } = query;
+      const newBody = { ...body, week };
+      const data = await service.createLineupWeb(customer.sub, newBody, customer.roles);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
   async updateLineup(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, customer, params } = req;

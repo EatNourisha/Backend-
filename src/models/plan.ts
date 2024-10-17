@@ -53,6 +53,12 @@ export class Plan extends BaseEntity {
   @prop()
   continent?: string;
 
+  @prop()
+  meal_number?: number;
+
+  @prop()
+  amount_permeal?: number;
+
 }
 
 export default getModelForClass(Plan);

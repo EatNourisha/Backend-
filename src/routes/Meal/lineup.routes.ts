@@ -15,6 +15,7 @@ router.get("/all/previous/lineups", authGuard, controller.customerPreviousLineup
 router.get("/import/previous/:id", authGuard, controller.importPreviousLineupById);
 
 router.post("/", authGuard, subscriptionGuard, controller.createLineup);
+router.post("/web", authGuard, subscriptionGuard, controller.createLineupWeb);
 router.put("/:id", authGuard, subscriptionGuard, controller.updateLineup);
 router.put("/swallow/:id", authGuard, subscriptionGuard, controller.updateSwallow);
 

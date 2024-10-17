@@ -347,6 +347,222 @@ export class MealLineupService {
     return _lineup;
   }
 
+  async createLineupWeb(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
+    // if (dto?.in_week === false || dto?.in_week === null) {
+    //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ]);
+    // }
+
+    // if (dto?.in_week === true) {
+    //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", ]);
+    // }
+
+    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+    const subscriptionCheck = await subscription.findOne({ customer: customer_id });
+    const endDate = subscriptionCheck?.end_date;
+
+    if(subscriptionCheck?.continent !== 'Asian'){
+      if (dto?.in_week === false || dto?.in_week === null) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
+      }
+  
+      if (dto?.in_week === true) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
+      }
+  
+
+    }
+
+    let deli_date: Date | undefined = dto.delivery_date;
+    if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
+
+      if (subscriptionCheck?.continent === "Asian" || subscriptionCheck?.continent === "Asia") {
+        const asianDels = await adminSettings.findOne();
+
+        const currentDay = new Date().getDay();
+
+        // Orders placed Wednesday to Saturday will be delivered next Tuesday
+        if (currentDay >= 3 && currentDay <= 6) {
+          deli_date = asianDels?.wed_sat;
+        }
+
+        // Orders placed on Sunday to Tuesday are delivered the following Tuesday
+        else {
+          deli_date = asianDels?.sun_tue;
+        }
+      }
+    }
+
+  const mealSelectionCount: { [mealId: string]: number } = {};
+    // Extract all mealIds from the DTO
+    const mealIds = [
+      dto?.monday?.lunch?.mealId,
+      dto?.monday?.dinner?.mealId,
+      dto?.tuesday?.lunch?.mealId,
+      dto?.tuesday?.dinner?.mealId,
+      dto?.wednesday?.lunch?.mealId,
+      dto?.wednesday?.dinner?.mealId,
+      dto?.thursday?.lunch?.mealId,
+      dto?.thursday?.dinner?.mealId,
+      dto?.friday?.lunch?.mealId,
+      dto?.friday?.dinner?.mealId,
+      dto?.saturday?.lunch?.mealId,
+      dto?.saturday?.dinner?.mealId,
+      dto?.sunday?.lunch?.mealId,
+      dto?.sunday?.dinner?.mealId,
+    ].filter((mealId) => mealId != null);
+
+    // Extract all swallow extraIds from the DTO
+    const extraIds = [
+      dto?.monday?.lunch?.extraId,
+      dto?.monday?.dinner?.extraId,
+      dto?.tuesday?.lunch?.extraId,
+      dto?.tuesday?.dinner?.extraId,
+      dto?.wednesday?.lunch?.extraId,
+      dto?.wednesday?.dinner?.extraId,
+      dto?.thursday?.lunch?.extraId,
+      dto?.thursday?.dinner?.extraId,
+      dto?.friday?.lunch?.extraId,
+      dto?.friday?.dinner?.extraId,
+      dto?.saturday?.lunch?.extraId,
+      dto?.saturday?.dinner?.extraId,
+      dto?.sunday?.lunch?.extraId,
+      dto?.sunday?.dinner?.extraId,
+    ].filter((extraId) => extraId != null);
+
+    // Extract all swallow extraIds from the DTO
+    const proteinIds = [
+      dto?.monday?.lunch?.proteinId,
+      dto?.monday?.dinner?.proteinId,
+      dto?.tuesday?.lunch?.proteinId,
+      dto?.tuesday?.dinner?.proteinId,
+      dto?.wednesday?.lunch?.proteinId,
+      dto?.wednesday?.dinner?.proteinId,
+      dto?.thursday?.lunch?.proteinId,
+      dto?.thursday?.dinner?.proteinId,
+      dto?.friday?.lunch?.proteinId,
+      dto?.friday?.dinner?.proteinId,
+      dto?.saturday?.lunch?.proteinId,
+      dto?.saturday?.dinner?.proteinId,
+      dto?.sunday?.lunch?.proteinId,
+      dto?.sunday?.dinner?.proteinId,
+    ].filter((proteinId) => proteinId != null );
+
+
+  for (const mealId of mealIds) {
+    mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
+  }
+  for (const mealId of Object.keys(mealSelectionCount)) {
+    const _mealPack = await mealPack.findById(mealId).exec();
+    const selectedQuantity = mealSelectionCount[mealId];
+
+    if (_mealPack && _mealPack.available_quantity !== undefined) {
+      if (selectedQuantity > _mealPack.available_quantity) {
+        throw createError(
+          `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+          400
+        );
+      }
+
+      _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
+      await _mealPack.save();
+    }
+  }
+
+  for (const extraId of extraIds) {
+    mealSelectionCount[extraId.toString()] = (mealSelectionCount[extraId.toString()] || 0) + 1;
+  }
+  for (const extraId of Object.keys(mealSelectionCount)) {
+    const _extra = await mealextras.findById(extraId).exec();
+    const selectedQuantity = mealSelectionCount[extraId];
+
+    if (_extra && _extra.available_quantity !== undefined) {
+      _extra.available_quantity = Math.max(0, _extra.available_quantity - selectedQuantity);
+      await _extra.save();
+    }
+  }
+
+  for (const proteinId of proteinIds) {
+    mealSelectionCount[proteinId.toString()] = (mealSelectionCount[proteinId.toString()] || 0) + 1;
+  }
+  for (const proteinId of Object.keys(mealSelectionCount)) {
+    const _extra = await mealextras.findById(proteinId).exec();
+    const selectedQuantity = mealSelectionCount[proteinId];
+
+    if (_extra && _extra.available_quantity !== undefined) {
+
+      _extra.available_quantity = Math.max(0, _extra.available_quantity - selectedQuantity);
+      await _extra.save();
+    }
+  }
+    // const cartExists = await cart.exists({ customer: customer_id });
+    const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
+    const lineupExists = await lineup.exists({ customer: customer_id });
+
+    let returning = false;
+
+    if (orderExists || lineupExists) {
+      returning = true;
+    }
+
+    //****************************************************** */
+    // This is to handle the 5th time order customer coupon code
+    // This is to handle the 5th time order customer coupon code
+    //****************************************************** */
+    const _cusLineup = await lineup.findOne({ customer: customer_id }).sort({ createdAt: -1 });
+    const customerData = await customer.findById(customer_id);
+    const now = new Date();
+
+    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysSinceReset >= 30 && customerData!.lineupCount >= 4) {
+      const lastLineupDate = _cusLineup!.createdAt;
+      const daysSinceLastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
+
+
+      if (daysSinceLastLineup <= 7) {
+        customerData!.lineupCount = 0;
+        customerData!.lastLineupReset = now;
+      } else {
+        customerData!.lineupCount += 1; 
+      }
+    } else if(daysSinceReset >30 && customerData!.lineupCount < 4){
+      customerData!.lineupCount = 1;
+      customerData!.lastLineupReset = now;
+
+    }
+    
+    else {
+      customerData!.lineupCount += 1; 
+    }
+
+    if (customerData!.lineupCount === 4) {
+      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 100% on us");
+    }
+
+    await customerData!.save();
+
+    const _lineup = await lineup.create({
+      ...dto,
+      customer: customer_id,
+      sub_end_date: endDate,
+      week: dto?.week || 1,
+      plan: subscriptionCheck?.plan,
+      isReturningCustomer: returning,
+    });
+    _lineup.delivery_date = deli_date ?? new Date();
+   await _lineup.save()
+    await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
+      delivery_date: deli_date }).exec();
+    await MealLineupService.lockLineupChange(customer_id);
+
+    // Emit event
+    await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+
+    return _lineup;
+  }
+
+
   async updateSwallow(customer_id: string, lineup_id: string, roles: string[], dto:CreateLineupDto): Promise<MealLineup> {
     
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.UPDATE, PermissionScope.ALL]);
