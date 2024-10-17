@@ -49,6 +49,9 @@ export class Subscription extends BaseEntity {
 
   @prop()
   returning_client?: boolean;
+
+  @prop()
+  used_sub?: boolean;
 }
 
 export default getModelForClass(Subscription);

@@ -472,7 +472,10 @@ export class MealService {
       throw createError("No meal found matching the criteria.", 400);
     }
   
-    return _meal;
+    return {
+      totalcount: _meal.length,
+      meals: _meal,
+    };
   }
 
 }

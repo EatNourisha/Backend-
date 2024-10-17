@@ -339,6 +339,13 @@ export class MealLineupService {
    await _lineup.save()
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
       delivery_date: deli_date }).exec();
+
+      const __sub = await subscription.findOne({ customer: customer_id });
+      if (__sub) {
+        __sub.used_sub = true;
+        await __sub.save();
+      }
+
     await MealLineupService.lockLineupChange(customer_id);
 
     // Emit event
@@ -554,7 +561,13 @@ export class MealLineupService {
    await _lineup.save()
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
       delivery_date: deli_date }).exec();
-    await MealLineupService.lockLineupChange(customer_id);
+
+      const __sub = await subscription.findOne({ customer: customer_id });
+      if (__sub) {
+        __sub.used_sub = true;
+        await __sub.save();
+      }
+  await MealLineupService.lockLineupChange(customer_id);
 
     // Emit event
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });

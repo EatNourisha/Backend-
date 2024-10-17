@@ -242,7 +242,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       returning = true
     }
 
-   await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning})
+   await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
     
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
