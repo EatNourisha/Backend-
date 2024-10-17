@@ -200,4 +200,15 @@ export class MealController {
     }
   }
 
+  async searchMeal(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { body } = req;
+      const data = await service.searchMeal(body.searchPhrase);
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+
 }
