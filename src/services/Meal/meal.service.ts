@@ -460,6 +460,19 @@ export class MealService {
       console.error('Error duplicating mealPacks:', err);
     }
   }
-    
+  
+  async searchMeal(searchPhrase: string): Promise<any> {
+    const _meal = await mealPack.find({
+      $or: [
+        { name: { $regex: searchPhrase, $options: 'i' } },
+      ],
+    }).lean();
+  
+    if (_meal.length === 0) {
+      throw createError("No meal found matching the criteria.", 400);
+    }
+  
+    return _meal;
+  }
 
 }
