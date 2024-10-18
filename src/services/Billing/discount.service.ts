@@ -68,7 +68,11 @@ export class DiscountService {
   async getPromoCodeByCode(code: string) {
     try {
       
-      const promo = await promoCode.findOne({ "code": code }).exec();
+    const promo = await promoCode.findOne({ "code": code.toLowerCase()})
+      .populate([
+        { path: 'coupon' },
+    ])
+    .exec();
       return promo; 
     } catch (error) {
       // Handle any errors that occur during the database query
