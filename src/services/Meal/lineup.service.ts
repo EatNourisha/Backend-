@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras} from "../../models";
+import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras, transaction, promoCode} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -327,6 +327,10 @@ export class MealLineupService {
 
     await customerData!.save();
 
+    const trans = await transaction.findOne({customer: customer_id, status: 'successful'}).sort({createdAt: -1})
+
+    const promo = await promoCode.findById(trans?.applied_promo)
+
     const _lineup = await lineup.create({
       ...dto,
       customer: customer_id,
@@ -334,7 +338,9 @@ export class MealLineupService {
       week: dto?.week || 1,
       plan: subscriptionCheck?.plan,
       isReturningCustomer: returning,
+      coupon_applied: promo?.code.toLocaleUpperCase()
     });
+
     _lineup.delivery_date = deli_date ?? new Date();
    await _lineup.save()
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
@@ -549,6 +555,10 @@ export class MealLineupService {
 
     await customerData!.save();
 
+    const trans = await transaction.findOne({customer: customer_id, status: 'successful'}).sort({createdAt: -1})
+
+    const promo = await promoCode.findById(trans?.applied_promo)
+
     const _lineup = await lineup.create({
       ...dto,
       customer: customer_id,
@@ -556,6 +566,7 @@ export class MealLineupService {
       week: dto?.week || 1,
       plan: subscriptionCheck?.plan,
       isReturningCustomer: returning,
+      coupon_applied: promo?.code.toLocaleUpperCase()
     });
     _lineup.delivery_date = deli_date ?? new Date();
    await _lineup.save()
