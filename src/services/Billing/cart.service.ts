@@ -319,23 +319,7 @@ export class CartService {
       .exec();
 
     if (!!cart_item && dto?.quantity > (cart_item?.quantity ?? 0)) throw createError("Invalid quantity", 400);
-  
-    // if (dto?.proteinId || dto?.swallowId) {
-    //   if (!neg) {
-    //     await mealextras.findByIdAndUpdate(
-    //       dto?.proteinId || dto?.swallowId,
-    //       { $inc: { available_quantity: -dto.quantity } },  
-    //       { session }
-    //     );
-    //   } else {
-    //     await mealextras.findByIdAndUpdate(
-    //       dto?.proteinId || dto?.swallowId,
-    //       { $inc: { available_quantity: dto.quantity } },  
-    //       { session }
-    //     );
-    //   }
-    // }
-  
+    
     cart_item = await cartItem
       .findOneAndUpdate(
         { cart: cart_id, item: dto.itemId, customer: customer_id, session_id: cart_session_id },
