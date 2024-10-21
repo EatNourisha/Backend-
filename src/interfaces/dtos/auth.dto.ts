@@ -4,7 +4,8 @@ export class loginDto {
   email: string;
   password: string;
   device_id?: string;
-  temp_id?: string
+  ILocalCartItem?: string
+
 }
 
 export class registerDto {
@@ -18,5 +19,5 @@ export class registerDto {
   phone: string;
   ref_code?: string;
   device_id?: string;
-  temp_id?: string;
+  ILocalCartItem?: string;
 }
