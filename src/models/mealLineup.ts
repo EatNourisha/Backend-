@@ -91,6 +91,9 @@ export class MealLineup extends BaseEntity {
   @prop({default:false})
   isReturningCustomer?: boolean;
 
+  @prop()
+  coupon_applied?: string;
+
 }
 
 export default getModelForClass(MealLineup);
