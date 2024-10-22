@@ -73,6 +73,12 @@ export class DiscountService {
         { path: 'coupon' },
     ])
     .exec();
+
+    if (promo){
+      if (promo?.max_redemptions < 1){
+        throw createError(`Oops sorry, the coupon has reached it maximum redemption`, 400);
+      }
+    }
       return promo; 
     } catch (error) {
       // Handle any errors that occur during the database query
