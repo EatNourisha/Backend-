@@ -20,13 +20,6 @@ export class Cart extends BaseEntity {
 
   @prop()
   session_id: string;
-
-  @prop()
-  temp_id?: string;
-
-  @prop()
-  device_id?: string;
-
 }
 
 export default getModelForClass(Cart);

@@ -52,6 +52,10 @@ const defaultAccessControls: AccessControlType = {
         name: AvailableResource.CUSTOMGIFT,
         scopes: [PermissionScope.CREATE, PermissionScope.DELETE],
       },
+      {
+        name: AvailableResource.ADMIN_SETTINGS,
+        scopes: [PermissionScope.CREATE, PermissionScope.DELETE],
+      },
     ],
   },
   superadmin: {
