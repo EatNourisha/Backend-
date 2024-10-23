@@ -13,6 +13,7 @@ router.get("/byId/:lineupId", authGuard, controller.getLineupByLineId);
 router.get("/import/previous", authGuard, controller.importPreviousLineup);
 router.get("/all/previous/lineups", authGuard, controller.customerPreviousLineups);
 router.get("/import/previous/:id", authGuard, controller.importPreviousLineupById);
+router.get("/asian/delivery/dates", authGuard, controller.getAsianDelivery);
 
 router.post("/", authGuard, subscriptionGuard, controller.createLineup);
 router.post("/web", authGuard, subscriptionGuard, controller.createLineupWeb);

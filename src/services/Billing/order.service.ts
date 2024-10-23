@@ -78,6 +78,16 @@ export class OrderService {
     } catch (error) {}
   }
 
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+  ////////********************************* */
+
+
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
 
@@ -88,8 +98,14 @@ export class OrderService {
     else if (is_admin) populate_order.push("customer");
 
     const [_order, items] = await Promise.all([
-      order.findById(order_id).populate(populate_order).lean<Order>().exec(),
-      paginate<OrderItem[]>("orderItem", query, filters, { populate: ["item"] }),
+      order.findById(order_id).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec(),
+      paginate<OrderItem[]>("orderItem", query, filters, { populate: "item"}),
     ]);
 
     return { order: _order, items };
@@ -183,6 +199,44 @@ async getClosedOrdersHistory(
 }
 
 
+// async getOpenOrdersHistory(
+//   customer_id: string,
+//   roles: string[],
+// ){
+//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+//   const _order = await Promise.all([
+//     order.find({customer: customer_id, delivery_date: { $gt: new Date() }}).populate( [
+//       {path: "customer"},
+//       {path: "orderExtras.item"},
+//       {path: "orderExtras.protein"},
+//       {path: "orderExtras.swallow"},
+
+//     ]).lean<Order>().sort({createdAt:-1}).exec(),
+
+//   ])
+
+//   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+//     path: day,
+//     populate: [
+//       { path: 'breakfast.mealId' },
+//       { path: 'breakfast.extraId' },
+//       { path: 'lunch.mealId' },
+//       { path: 'lunch.extraId' },
+//       { path: 'dinner.mealId' },
+//       { path: 'dinner.extraId' }
+//     ]
+//   })) 
+
+//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
+//   .populate(pops)
+//   .lean<MealLineup>()
+//   .exec();
+
+//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
+//   // const _orders = _order as Order[];
+//   return {_order, _lineup};
+// }
+
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
     validateFields(dto, ["status"]);
 
@@ -250,6 +304,20 @@ async getClosedOrdersHistory(
       returning = true
     }
 
+    const _items = await cartItem
+    .find({ 
+      customer: customer_id, 
+      cart: _cart?._id, 
+      session_id: _cart?.session_id, 
+      quantity: { $gt: 0 } 
+    })
+    .lean<CartItem[]>()
+    .exec();
+  
+  const _extras = _items.map(i => {
+    return {item: i.item, swallow: i.swallow, protein: i.protein};  
+  });
+  
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
@@ -265,9 +333,8 @@ async getClosedOrdersHistory(
       delivery_period: dto?.delivery_period,
       coupon: dto?.coupon,
       swallow: dto?.swallow,
-      extras: dto.extras,
-      isReturningCustomer: returning
-
+      isReturningCustomer: returning,
+      orderExtras: _extras
       });
 
     const { order: _order, items } = result;
@@ -312,6 +379,11 @@ async getClosedOrdersHistory(
               cart_session_id: _order?.ref,
               item: item?.item as string,
               quantity: item?.quantity,
+              extras: {
+                item: item.item,
+                protein: item?.protein,
+                swallow: item?.swallow,
+              }
             })),
             { session: txSession }
           ),
@@ -452,20 +524,6 @@ async getClosedOrdersHistory(
       status: 'payment_received',
     };
 
-    // const today = new Date();
-    // const oneMonthAgo = new Date();
-    // oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    // const query = {
-    //   createdAt: {
-    //     $gte: new Date(new Date().setDate(new Date().getDate() - 30)),  
-    //     $lte: new Date(),  
-    //   },
-    //   status: 'payment_received',
-    //   delivery_date: { $lt: today }
-      
-    //   delivery_date: { $lt: today, $gte: oneMonthAgo },
-    // };
-  
     const populate = [
       {
         path: "items",
