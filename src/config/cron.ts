@@ -4,7 +4,9 @@ import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
 import {CustomerService} from "../services/customer.service"
-import moment from 'moment';
+// import moment from 'moment';
+import { addDays } from 'date-fns';
+
 
 
 cron.schedule('* */1 * * *', async () => {
@@ -202,39 +204,63 @@ cron.schedule('*/30 * * * *', async () => {
 });
 
 
+// cron.schedule('* */1 * * *', async () => {
+//     // console.log("######### asian delivery Job runs every 1 min");
+//     try {
+//     const setting = await adminSettings.findOne();
+//     if (setting) {
+//         const currentDate = moment();
+//         const wedSatDate = moment(setting.wed_sat);
+
+//     if (wedSatDate.isBefore(currentDate)) {
+//         const nextTuesday = currentDate.day(2); 
+
+//         if (currentDate.day() === 2 && currentDate.hour() >= 12) {
+//             nextTuesday.add(7, 'days');
+//         }
+
+//         setting.wed_sat = nextTuesday.toDate();
+//     }
+
+//     const sunTueDate = moment(setting.sun_tue);
+//     if (sunTueDate.isBefore(currentDate)) {
+//         let nextUpperTuesday = currentDate.day(2); 
+
+//         if (currentDate.day() === 2 && currentDate.hour() < 12) {
+//             nextUpperTuesday = currentDate;
+//         } else {
+//             nextUpperTuesday.add(7, 'days');
+//         }
+
+//         setting.sun_tue = nextUpperTuesday.toDate();
+//     }
+
+//         await setting.save();
+//     }
+//     } catch (error) {
+//         console.error('Error updating settings:', error);
+//     }
+// }, {
+//     scheduled: true,
+//     timezone: "Europe/London"
+// });
+
 cron.schedule('* */1 * * *', async () => {
-    // console.log("######### asian delivery Job runs every 1 min");
+    // console.log("######### Asian delivery Job runs every 1 min");
     try {
-    const setting = await adminSettings.findOne();
-    if (setting) {
-        const currentDate = moment();
-        const wedSatDate = moment(setting.wed_sat);
+        const setting = await adminSettings.findOne();
+        if (setting) {
+            const currentDate = new Date();
+            let wedSatDate = setting.wed_sat;
 
-    if (wedSatDate.isBefore(currentDate)) {
-        const nextTuesday = currentDate.day(2); 
+            if (wedSatDate! <= currentDate) {
+                setting.wed_sat = addDays(wedSatDate!, 7);;
+                let nextUpperTuesday = addDays(wedSatDate!, 14); 
+                setting.sun_tue = nextUpperTuesday;
+            }
 
-        if (currentDate.day() === 2 && currentDate.hour() >= 12) {
-            nextTuesday.add(7, 'days');
+            await setting.save();
         }
-
-        setting.wed_sat = nextTuesday.toDate();
-    }
-
-    const sunTueDate = moment(setting.sun_tue);
-    if (sunTueDate.isBefore(currentDate)) {
-        let nextUpperTuesday = currentDate.day(2); 
-
-        if (currentDate.day() === 2 && currentDate.hour() < 12) {
-            nextUpperTuesday = currentDate;
-        } else {
-            nextUpperTuesday.add(7, 'days');
-        }
-
-        setting.sun_tue = nextUpperTuesday.toDate();
-    }
-
-        await setting.save();
-    }
     } catch (error) {
         console.error('Error updating settings:', error);
     }
@@ -242,8 +268,6 @@ cron.schedule('* */1 * * *', async () => {
     scheduled: true,
     timezone: "Europe/London"
 });
-
-
 
 // cron.schedule('0 * * * *', async () => { 
     
