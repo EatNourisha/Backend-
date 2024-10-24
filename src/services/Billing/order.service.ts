@@ -162,6 +162,7 @@ async getOpenOrdersHistory(
 
   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
   .populate(pops)
+  .populate({path: 'plan'})
   .lean<MealLineup>()
   .exec();
 

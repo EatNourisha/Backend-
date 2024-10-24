@@ -959,29 +959,20 @@ export class MealLineupService {
     return lastLineup;
   }
 
-  async getAsianDelivery(customer_id: string) {  
-    const subscriptionCheck = await subscription.findOne({ customer: customer_id });
-    let deli_date: Date | undefined;
+  async getAsianDelivery() {  
   
-    // Default delivery date to today in case conditions aren't met
-    deli_date = new Date(); 
+      let deli_date = new Date(); 
   
-    if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-      if (subscriptionCheck?.continent === "Asian") {
         const asianDels = await adminSettings.findOne();
   
         const currentDay = new Date().getDay();
   
         if (currentDay >= 3 && currentDay <= 6) {
-          deli_date = asianDels?.wed_sat;
+          deli_date = asianDels?.wed_sat!;
         } else {
-          deli_date = asianDels?.sun_tue;
+          deli_date = asianDels?.sun_tue!;
         }
-      }
-    }
-  
-    // Ensure a delivery date is returned
-    return deli_date || new Date(); // Return the calculated delivery date or the current date
+      return deli_date 
   }
   
    
