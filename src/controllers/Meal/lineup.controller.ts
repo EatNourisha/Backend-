@@ -147,8 +147,8 @@ export class MealLineupController {
 
   async getAsianDelivery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer } = req;
-      const data = await service.getAsianDelivery(customer.sub);
+      const {  } = req;
+      const data = await service.getAsianDelivery();
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
