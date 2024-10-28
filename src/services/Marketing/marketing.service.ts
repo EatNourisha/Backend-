@@ -178,37 +178,56 @@ export async function welcomeEmail6(email: string, payload: any) {
   );
 };
 
-export async function cartAbandonment1(email: string, payload: any) {
-  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+// export async function cartAbandonment1(email?: string, payload?: any) {
+//   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
 
-  const subject = `${cus.first_name}, Your Delicious African Meal is Still Waiting for You!
-`;
-  const body = `
-  Hello ${cus.first_name}
+//   const subject = `${cus.first_name}, Your Delicious African Meal is Still Waiting for You!
+// `;
+//   const body = `
+//   Hello ${cus.first_name}
+//   `
+// ;
+//   await mailJetSendMail(
+//     body,
+//     `${subject}`,
+//     [`${email}`]
+//   );
+// };
+
+export async function cartAbandonment1( payload?: any) {
   `
-;
-  await mailJetSendMail(
-    body,
-    `${subject}`,
-    [`${email}`]
-  );
+  ${payload.greeting}, ${payload.firstName}
+
+  this is the first cart
+  `
+
 };
 
-export async function cartAbandonment2(email: string, payload: any) {
-  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
 
-  const subject = `Still Thinking About Your Nourisha Feast?
-`;
-  const body = `
-  Hey there, ${cus.first_name}
+export async function cartAbandonment2( payload?: any) {
+ return `
+  ${payload.greeting}, ${payload.firstName}
+
+    this is the second cart
+ 
   `
-;
-  await mailJetSendMail(
-    body,
-    `${subject}`,
-    [`${email}`]
-  );
 };
+
+// export async function cartAbandonment2(email?: string, payload?: any) {
+//   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+//   const subject = `Still Thinking About Your Nourisha Feast?
+// `;
+//   const body = `
+//   Hey there, ${cus.first_name}
+//   `
+// ;
+//   await mailJetSendMail(
+//     body,
+//     `${subject}`,
+//     [`${email}`]
+//   );
+// };
 
 export async function cartAbandonment3(email: string, payload: any) {
   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();

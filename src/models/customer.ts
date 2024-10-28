@@ -166,6 +166,15 @@ export class Customer extends BaseEntity {
   @prop({default: 0})
   lineupCount: number;
 
+  @prop({default: 'Newbie'})
+  level: string;
+
+  @prop({default: false})
+  newUser: boolean;
+
+  @prop()
+  activeLineup: boolean;
+
 
 }
 
