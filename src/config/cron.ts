@@ -1,5 +1,5 @@
-import { sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer, subscription, adminSettings } from "../models"; // Adjust this path as needed
+import {  sendGiftRecipient, sendGiftSent } from "../services";
+import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, order } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
@@ -23,9 +23,14 @@ cron.schedule('* */1 * * *', async () => {
         await Promise.all(_lineup.map(async (line: any) => {
             await line.updateOne({ status: 'inactive' });
             const sub = await subscription.findOne({customer: line.customer}).exec()
+            const cus = await customer.findOne({_id: line.customer}).exec()
             if(sub){
                 sub.status = 'inactive'
                 await sub.save()
+            }
+            if(cus){
+                cus.activeLineup = false
+                await cus.save()
             }
             
         }));
@@ -203,47 +208,21 @@ cron.schedule('*/30 * * * *', async () => {
     timezone: "Europe/London"
 });
 
-
-// cron.schedule('* */1 * * *', async () => {
-//     // console.log("######### asian delivery Job runs every 1 min");
+// cron.schedule('0 * * * *', async () => { 
+    
 //     try {
-//     const setting = await adminSettings.findOne();
-//     if (setting) {
-//         const currentDate = moment();
-//         const wedSatDate = moment(setting.wed_sat);
+//         // console.log("#########777777 Job runs evert 1 houre);
 
-//     if (wedSatDate.isBefore(currentDate)) {
-//         const nextTuesday = currentDate.day(2); 
-
-//         if (currentDate.day() === 2 && currentDate.hour() >= 12) {
-//             nextTuesday.add(7, 'days');
-//         }
-
-//         setting.wed_sat = nextTuesday.toDate();
-//     }
-
-//     const sunTueDate = moment(setting.sun_tue);
-//     if (sunTueDate.isBefore(currentDate)) {
-//         let nextUpperTuesday = currentDate.day(2); 
-
-//         if (currentDate.day() === 2 && currentDate.hour() < 12) {
-//             nextUpperTuesday = currentDate;
-//         } else {
-//             nextUpperTuesday.add(7, 'days');
-//         }
-
-//         setting.sun_tue = nextUpperTuesday.toDate();
-//     }
-
-//         await setting.save();
-//     }
+//         const dublicates = await MealService.duplicateAndEditMealPacks();
+//         console.log('dublicated meals', dublicates)
 //     } catch (error) {
-//         console.error('Error updating settings:', error);
+//         console.error("Error running findInactiveCustomers job:", error);
 //     }
 // }, {
 //     scheduled: true,
 //     timezone: "Europe/London"
 // });
+
 
 cron.schedule('* */1 * * *', async () => {
     // console.log("######### Asian delivery Job runs every 1 min");
@@ -269,20 +248,724 @@ cron.schedule('* */1 * * *', async () => {
     timezone: "Europe/London"
 });
 
-// cron.schedule('0 * * * *', async () => { 
-    
-//     try {
-//         // console.log("#########777777 Job runs evert 1 houre);
+//*********************************************************** */
+// Email Marketing Blueprint Automation
+// Email Marketing Blueprint Automation
+// Email Marketing Blueprint Automation
+//*********************************************************** */
 
-//         const dublicates = await MealService.duplicateAndEditMealPacks();
-//         console.log('dublicated meals', dublicates)
+
+//*********************************************************** */
+// Welcome
+// Welcome
+// Welcome
+//*********************************************************** */
+
+cron.schedule('* * * * *', async () => {
+    // console.log("######### Welcome emails Job runs every 1 min");
+    try {
+        const customers = await customer.find();
+
+    await Promise.all(customers.map(async (cus: any) => {
+        // const orderExists = await order.exists({ customer: cus?._id, status: "payment_received", delivery_date: { $lte: new Date() } });
+
+        const _cus = await customer.findById(cus?._id);
+
+        const orderExists = await order.exists({ customer: cus?._id, status: "payment_received" });
+        const lineupExists = await lineup.exists({ customer: cus?._id });
+    
+        let returning = false;
+    
+        if (orderExists || lineupExists) {
+            returning = true;
+        }
+
+        if (returning === false) {
+            if (_cus?.createdAt) {
+                const createdAt = new Date(_cus.createdAt);
+                const currentDate = new Date();
+        
+                const timeDifference = currentDate.getTime() - createdAt.getTime();
+                const daysDifference = timeDifference / (1000 * 3600 * 24);
+
+                const minutesDifference = timeDifference / (1000 * 60); 
+        
+                if (Math.floor(minutesDifference) === 300) {
+                    // Welcome email 2 runs here
+                }
+    
+                if (Math.floor(daysDifference) === 2) {
+                    // Welcome email 3 runs here
+                }
+
+                if (Math.floor(daysDifference) === 4) {
+                    // Welcome email 4 runs here
+                }
+                if (Math.floor(daysDifference) === 9) {
+                    // Welcome email 5 runs here
+                }
+                if (Math.floor(daysDifference) === 14) {
+                    // Welcome email 6 runs here
+                }
+                if (Math.floor(daysDifference) === 19) {
+                    // Welcome email 7 runs here
+                }
+                if (Math.floor(daysDifference) === 24) {
+                    // Welcome email 8 runs here
+                    // console.log('Sending welcome email 6');
+                }
+
+            }
+
+
+        }
+                
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+//*********************************************************** */
+// Cart Abandonment
+// Cart Abandonment
+// Cart Abandonment
+//*********************************************************** */
+
+// let lastLogMessage: any = '';
+
+// cron.schedule('* */1 * * *', async () => {
+//     console.log("######### Cart emails Job runs every 1 min");
+//     try {
+//         const _orders = await order.find({ status: 'processing' }).sort({ createdAt: -1 });
+
+//         await Promise.all(_orders.map(async (ord) => {
+//             const _cus = await customer.findById(ord?.customer);
+//             const _order = await order.findOne({ customer: _cus?._id }).sort({ createdAt: -1 });
+
+//             if (_order?.status === 'processing' && _order?.createdAt) {
+//                 const createdAt = new Date(_order.createdAt);
+//                 const currentDate = new Date();
+
+//                 const timeDifference = currentDate.getTime() - createdAt.getTime();
+//                 const daysDifference = timeDifference / (1000 * 3600 * 24);
+//                 const minutesDifference = timeDifference / (1000 * 60);
+
+//                 if (Math.floor(minutesDifference) === 10) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         // const logMessage = await cartAbandonment1(_cus?.email, 'Cart 1' );
+//                         const logMessage = 'Cart abandonment email 1 sent';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+//                     }
+//                 }
+
+//                 if (Math.floor(daysDifference) === 3) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         const logMessage = 'Cart 2 body sent here';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+                        
+//                     }
+//                 }
+
+
+//                 // if (Math.floor(daysDifference) === 3) {
+//                 //     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                 //     if (!lineupExists) {
+//                 //         // const logMessage = 'Cart abandonment email 2 sent';
+//                 //         // const logMessage = await cartAbandonment2( _cus?._id, {customer: _cus?._id } );
+//                 //         const logMessage = await cartAbandonment2( {greeting: "hello", firstName: 'Zuby' } );
+//                 //         if (lastLogMessage !== logMessage) {
+//                 //             console.log(logMessage);
+//                 //             lastLogMessage = logMessage;
+//                 //         }
+                        
+//                 //     }
+//                 // }
+
+//                 if (Math.floor(daysDifference) === 7) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         const logMessage = 'Cart abandonment email 3 sent';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+//                     }
+//                 }
+
+//                 if (Math.floor(daysDifference) === 11) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         const logMessage = 'Cart abandonment email 4 sent';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+//                     }
+//                 }
+
+//                 if (Math.floor(daysDifference) === 15) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         const logMessage = 'Cart abandonment email 5 sent';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+//                     }
+//                 }
+
+//                 if (Math.floor(daysDifference) === 19) {
+//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+//                     if (!lineupExists) {
+//                         const logMessage = 'Cart abandonment email 6 sent';
+//                         if (lastLogMessage !== logMessage) {
+//                             console.log(logMessage);
+//                             lastLogMessage = logMessage;
+//                         }
+//                     }
+//                 }
+//             }
+//         }));
+
 //     } catch (error) {
-//         console.error("Error running findInactiveCustomers job:", error);
+//         console.error('Error updating settings:', error);
 //     }
 // }, {
 //     scheduled: true,
 //     timezone: "Europe/London"
 // });
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("######### Cart emails Job runs every 1 min");
+    try {
+        const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
+
+    await Promise.all(_orders.map(async (ord: any) => {
+        const _cus = await customer.findById(ord?.customer);
+        const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
+
+        if(_order?.status === 'processing'){
+        if (_order?.createdAt) {
+            const createdAt = new Date(_order.createdAt);
+            const currentDate = new Date();
+    
+            const timeDifference = currentDate.getTime() - createdAt.getTime();
+            const daysDifference = timeDifference / (1000 * 3600 * 24);
+            const minutesDifference = timeDifference / (1000 * 60); 
+        
+            if (Math.floor(minutesDifference) === 10) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+        
+                let returning = false;
+        
+                if (lineupExists) {
+                    returning = true;
+                }
+                if (!returning) {
+                    // Send Cart Abandonment Email 1
+                    console.log('Cart abandonment email 1 sent');
+                }
+            }
+
+            if (Math.floor(daysDifference) === 3) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 2 runs here
+                    // console.log('Cart abandonment email 2 sent');
+                }
+
+                }
+            if (Math.floor(daysDifference) === 7) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 3 runs here
+                    console.log('Cart abandonment email 3 sent');
+                }
+            }
+            if (Math.floor(daysDifference) === 11) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 4 runs here
+                    console.log('Cart abandonment email 4 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 15) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 5 runs here
+                    console.log('Cart abandonment email 5 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 19) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 6 runs here
+                    console.log('Cart abandonment email 6 sent');
+                }
+
+            }
+
+        }
+
+
+    }
+
+                
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+//*********************************************************** */
+// Post subscription 
+// Post subscription 
+// Post subscription 
+//*********************************************************** */
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("######### Post Subscription emails Job runs every 1 min");
+    try {
+        const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
+
+    await Promise.all(_orders.map(async (ord: any) => {
+        const _cus = await customer.findById(ord?.customer);
+        const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
+
+        if(_order?.status === 'processing'){
+        if (_order?.createdAt) {
+            const createdAt = new Date(_order.createdAt);
+            const currentDate = new Date();
+    
+            const timeDifference = currentDate.getTime() - createdAt.getTime();
+            const daysDifference = timeDifference / (1000 * 3600 * 24);
+        
+
+            if (Math.floor(daysDifference) === 9) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Post Subscription Email 1 runs here
+                    console.log('Post Subscription email 1 sent');
+                }
+
+                }
+            if (Math.floor(daysDifference) === 19) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 2 runs here
+                    console.log('Post Subscription email 2 sent');
+                }
+            }
+            if (Math.floor(daysDifference) === 29) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 3 runs here
+                    console.log('Post Subscription email 3 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 39) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 4 runs here
+                    console.log('Post Subscription email 4 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 49) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 5 runs here
+                    console.log('Post Subscription email 5 sent');
+                }
+
+            }
+
+            if (Math.floor(daysDifference) === 59) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 6 runs here
+                    console.log('Post Subscription email 6 sent');
+                }
+
+            }
+
+            if (Math.floor(daysDifference) === 69) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 7 runs here
+                    console.log('Post Subscription email 7 sent');
+                }
+
+            }
+
+            if (Math.floor(daysDifference) === 79) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 8 runs here
+                    console.log('Post Subscription email 8 sent');
+                }
+
+            }
+
+            if (Math.floor(daysDifference) === 89) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 8 runs here
+                    console.log('Post Subscription email 9 sent');
+                }
+
+            }
+
+        }
+
+
+    }
+
+                
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+//*********************************************************** */
+// Re-engagement
+// Re-engagement
+// Re-engagement
+//*********************************************************** */
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("######### Re-engagement emails Job runs every 1 min");
+    try {
+        const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
+
+    await Promise.all(_orders.map(async (ord: any) => {
+        const _cus = await customer.findById(ord?.customer);
+        const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
+
+        if(_order?.status === 'processing'){
+        if (_order?.createdAt) {
+            const createdAt = new Date(_order.createdAt);
+            const currentDate = new Date();
+    
+            const timeDifference = currentDate.getTime() - createdAt.getTime();
+            const daysDifference = timeDifference / (1000 * 3600 * 24);
+        
+
+            if (Math.floor(daysDifference) === 13) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Re-engagement Email 1 runs here
+                    console.log('Re-engagement email 1 sent');
+                }
+
+                }
+            if (Math.floor(daysDifference) === 27) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 2 runs here
+                    console.log('Re-engagement email 2 sent');
+                }
+            }
+            if (Math.floor(daysDifference) === 41) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 3 runs here
+                    console.log('Re-engagement email 3 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 55) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 4 runs here
+                    console.log('Re-engagement email 4 sent');
+                }
+
+            }
+            if (Math.floor(daysDifference) === 69) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 5 runs here
+                    console.log('Re-engagement email 5 sent');
+                }
+
+            }
+
+            if (Math.floor(daysDifference) === 83) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+                let returning = false;
+            
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 6 runs here
+                    console.log('Re-engagement email 6 sent');
+                }
+
+            }
+
+        }
+
+    }
+
+                
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+
+//*********************************************************** */
+// customer retention
+// customer retention
+// customer retention
+//*********************************************************** */
+
+cron.schedule('* * * * *', async () => {
+    // console.log("######### customer retention emails Job runs every 1 min");
+    try {
+        const customers = await customer.find();
+
+    await Promise.all(customers.map(async (cus: any) => {
+        const _cus = await customer.findById(cus?._id);
+
+            if (_cus?.createdAt) {
+                const createdAt = new Date(_cus.createdAt);
+                const currentDate = new Date();
+        
+                const monthsDifference = 
+                (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
+                (currentDate.getMonth() - createdAt.getMonth());
+            
+            // Check for exact monthly anniversary
+            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
+                if (_cus?.level === 'Newbie') {
+                    // Customer retention email 1 runs here
+                    // console.log('Sending customer retention email 1');
+                }
+            }
+            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
+                if (_cus?.level === 'Newbie') {
+                        // Customer retention email 2 runs here
+                        // console.log('Sending customer retention email 2');
+                    }
+                } 
+                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
+                    if (_cus?.level === 'Newbie') {
+                        // Customer retention email 3 runs here 
+                        // console.log('Sending customer retention email 3');
+                    }
+                }
+             }
+            
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+//*********************************************************** */
+// Email Course
+// Email Course
+// Email Course
+//*********************************************************** */
+
+cron.schedule('* * * * *', async () => {
+    // console.log("######### Email Course emails Job runs every 1 min");
+    try {
+        const customers = await customer.find();
+
+    await Promise.all(customers.map(async (cus: any) => {
+        const _cus = await customer.findById(cus?._id);
+
+            if (_cus?.createdAt) {
+                const createdAt = new Date(_cus.createdAt);
+                const currentDate = new Date();
+        
+                const monthsDifference = 
+                (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
+                (currentDate.getMonth() - createdAt.getMonth());
+            
+            // Check for exact monthly anniversary
+            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
+                    // Email Course email 1 runs here
+                    // console.log('Sending Email Course email 1');
+            }
+            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 2 runs here
+                        // console.log('Sending Email Course email 2');
+                } 
+                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 3 runs here 
+                        // console.log('Sending Email Course email 3');
+                }
+                if (monthsDifference === 4 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 4 runs here 
+                        // console.log('Sending Email Course email 3');
+                }
+             }
+            
+    }));
+
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+
 
 
 export default cron

@@ -14,77 +14,6 @@ import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 
 export class MealLineupService {
-//   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
-    
-//     if (dto?.in_week === false || dto?.in_week === null) {
-//       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "delivery_date"]);
-//     }
-
-//     if(dto?.in_week === true){
-//       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "delivery_date"]);
-//     }
-
-//   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-
-//     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
-//     const endDate = subscriptionCheck?.end_date; 
-    
-//     if (subscriptionCheck?.status === "active" && subscriptionCheck?.start_date && subscriptionCheck.end_date) {
-//         const startDate = new Date(subscriptionCheck.start_date).getTime(); 
-//         const endDate = new Date(subscriptionCheck.end_date).getTime(); 
-        
-//         const subDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-        
-//         if (subDuration === 7 && dto.week > 1) {
-//             throw createError("Only monthly subscribers can create more than one lineup", 404);
-//         }
-//     }
-
-//     // Extract all mealIds from the DTO
-//     const mealIds = [
-//     dto?.monday?.lunch?.mealId, dto?.monday?.dinner?.mealId,
-//     dto?.tuesday?.lunch?.mealId, dto?.tuesday?.dinner?.mealId,
-//     dto?.wednesday?.lunch?.mealId, dto?.wednesday?.dinner?.mealId,
-//     dto?.thursday?.lunch?.mealId, dto?.thursday?.dinner?.mealId,
-//     dto?.friday?.lunch?.mealId, dto?.friday?.dinner?.mealId,
-//     dto?.saturday?.lunch?.mealId, dto?.saturday?.dinner?.mealId,
-//     dto?.sunday?.lunch?.mealId, dto?.sunday?.dinner?.mealId
-//     ].filter(mealId => mealId != null); 
-
-//     for (const mealId of mealIds) {
-//     const _mealPack = await mealPack.findById(mealId).exec();
-//     if (_mealPack && _mealPack.available_quantity !== undefined) {
-
-//     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - 1);
-//     await _mealPack.save(); 
-      
-//     } 
-//     }    
-    
-//     const cusLineup = await lineup.findOne({customer: customer_id, week: dto?.week || 1, status: "active"})
-
-//     if(cusLineup) throw createError('Customer lineup for this week already exists', 404);
-
-//     // const cartExists = await cart.exists({ customer: customer_id });
-//     const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
-//     const lineupExists = await lineup.exists({ customer: customer_id });
-
-//     let returning = false
-
-//     if (orderExists || lineupExists) {
-//       returning = true
-//     }
-
-//     const _lineup = await lineup.create({ ...dto, customer: customer_id, sub_end_date: endDate, week: dto?.week ||1 , plan: subscriptionCheck?.plan, isReturningCustomer: returning});
-//     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date}).exec();
-//     await MealLineupService.lockLineupChange(customer_id);
-
-//   // Emit event
-//   await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
-
-//   return _lineup;
-// }
-
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     if (dto?.in_week === false || dto?.in_week === null) {
       validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ]);
@@ -139,21 +68,7 @@ export class MealLineupService {
       }
     }
 
-    // const _days = [
-    //   dto?.monday,
-    //   dto?.tuesday,
-    //   dto?.wednesday,
-    //   dto?.thursday,
-    //   dto?.friday,
-    //   dto?.saturday,
-    //   dto?.sunday,
-    // ].filter((day) => day != null || '') ;
-
-    // for ( const day of _days){
-    // }
-
   const mealSelectionCount: { [mealId: string]: number } = {};
-    // Extract all mealIds from the DTO
     const mealIds = [
       dto?.monday?.lunch?.mealId,
       dto?.monday?.dinner?.mealId,
@@ -171,7 +86,6 @@ export class MealLineupService {
       dto?.sunday?.dinner?.mealId,
     ].filter((mealId) => mealId != null);
 
-    // Extract all swallow extraIds from the DTO
     const extraIds = [
       dto?.monday?.lunch?.extraId,
       dto?.monday?.dinner?.extraId,
@@ -189,7 +103,6 @@ export class MealLineupService {
       dto?.sunday?.dinner?.extraId,
     ].filter((extraId) => extraId != null);
 
-    // Extract all swallow extraIds from the DTO
     const proteinIds = [
       dto?.monday?.lunch?.proteinId,
       dto?.monday?.dinner?.proteinId,
@@ -322,11 +235,53 @@ export class MealLineupService {
     }
 
     if (customerData!.lineupCount === 4) {
-      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 100% on us");
+      if(customerData!.level === 'Newbie' || customerData!.level === null){
+        customerData!.level ='Novice'
+        await customerData?.save()
+        /// Novice star email will be sent here too
+      }
+      if(customerData!.level === 'Novice'){
+        customerData!.level ='OG'
+        await customerData?.save()
+        /// OG star email will be sent here too
+      }
+      if(customerData!.level === 'OG'){
+        customerData!.level ='Upgraded'
+        await customerData?.save()
+        /// Upgraded star email will be sent here too
+      }
+      if(customerData!.level === 'Upgraded'){
+        customerData!.level ='Rich'
+        await customerData?.save()
+        /// Rich star email will be sent here too
+      }
+      if(customerData!.level === 'Rich'){
+        customerData!.level ='Insider'
+        await customerData?.save()
+        /// Insider star email will be sent here too
+      }
+      if(customerData!.level === 'Insider'){
+        customerData!.level ='Special'
+        await customerData?.save()
+        /// Special star email will be sent here too
+      }
+      if(customerData!.level === 'Special'){
+        customerData!.level ='Hero'
+        await customerData?.save()
+        /// Hero star email will be sent here too
+
+      }
+      if(customerData!.level === 'Hero'){
+        customerData!.level ='Ambassador'
+        await customerData?.save()
+
+        /// Ambassador star email will be sent here too
+      }
+
+      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 99% on us");
     }
 
     await customerData!.save();
-
     const trans = await transaction.findOne({customer: customer_id, status: 'successful'}).sort({createdAt: -1})
 
     const promo = await promoCode.findById(trans?.applied_promo)
@@ -341,6 +296,10 @@ export class MealLineupService {
       coupon_applied: promo?.code.toLocaleUpperCase()
     });
 
+    if(customerData){
+      customerData.activeLineup = true
+      await customerData.save()
+    }
     _lineup.delivery_date = deli_date ?? new Date();
    await _lineup.save()
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
@@ -361,14 +320,6 @@ export class MealLineupService {
   }
 
   async createLineupWeb(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
-    // if (dto?.in_week === false || dto?.in_week === null) {
-    //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", ]);
-    // }
-
-    // if (dto?.in_week === true) {
-    //   validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", ]);
-    // }
-
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
@@ -407,7 +358,6 @@ export class MealLineupService {
     }
 
   const mealSelectionCount: { [mealId: string]: number } = {};
-    // Extract all mealIds from the DTO
     const mealIds = [
       dto?.monday?.lunch?.mealId,
       dto?.monday?.dinner?.mealId,
@@ -425,7 +375,6 @@ export class MealLineupService {
       dto?.sunday?.dinner?.mealId,
     ].filter((mealId) => mealId != null);
 
-    // Extract all swallow extraIds from the DTO
     const extraIds = [
       dto?.monday?.lunch?.extraId,
       dto?.monday?.dinner?.extraId,
@@ -443,7 +392,6 @@ export class MealLineupService {
       dto?.sunday?.dinner?.extraId,
     ].filter((extraId) => extraId != null);
 
-    // Extract all swallow extraIds from the DTO
     const proteinIds = [
       dto?.monday?.lunch?.proteinId,
       dto?.monday?.dinner?.proteinId,
@@ -508,7 +456,6 @@ export class MealLineupService {
       await _extra.save();
     }
   }
-    // const cartExists = await cart.exists({ customer: customer_id });
     const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
     const lineupExists = await lineup.exists({ customer: customer_id });
 
@@ -550,7 +497,50 @@ export class MealLineupService {
     }
 
     if (customerData!.lineupCount === 4) {
-      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 100% on us");
+      if(customerData!.level === 'Newbie' || customerData!.level === null){
+        customerData!.level ='Novice'
+        await customerData?.save()
+        /// Novice star email will be sent here too
+      }
+      if(customerData!.level === 'Novice'){
+        customerData!.level ='OG'
+        await customerData?.save()
+        /// OG star email will be sent here too
+      }
+      if(customerData!.level === 'OG'){
+        customerData!.level ='Upgraded'
+        await customerData?.save()
+        /// Upgraded star email will be sent here too
+      }
+      if(customerData!.level === 'Upgraded'){
+        customerData!.level ='Rich'
+        await customerData?.save()
+        /// Rich star email will be sent here too
+      }
+      if(customerData!.level === 'Rich'){
+        customerData!.level ='Insider'
+        await customerData?.save()
+        /// Insider star email will be sent here too
+      }
+      if(customerData!.level === 'Insider'){
+        customerData!.level ='Special'
+        await customerData?.save()
+        /// Special star email will be sent here too
+      }
+      if(customerData!.level === 'Special'){
+        customerData!.level ='Hero'
+        await customerData?.save()
+        /// Hero star email will be sent here too
+
+      }
+      if(customerData!.level === 'Hero'){
+        customerData!.level ='Ambassador'
+        await customerData?.save()
+
+        /// Ambassador star email will be sent here too
+      }
+
+      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 99% on us");
     }
 
     await customerData!.save();
@@ -635,10 +625,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
   
@@ -663,10 +656,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
 
@@ -691,10 +687,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     })) as any[];
 
@@ -736,10 +735,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
     console.log("Silent", silent);
@@ -838,10 +840,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
   
@@ -878,10 +883,13 @@ export class MealLineupService {
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
   

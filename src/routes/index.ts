@@ -158,6 +158,11 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         .exec();
     }
 
+    if(cus){
+      cus.newUser = false
+      await cus?.save()
+    }
+
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
       console.log('ZAPIER EVENT', response.data);

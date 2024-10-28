@@ -155,6 +155,7 @@ async getCountriesById(_id: string) {
       ref_code: nanoid(7).toLowerCase(),
       roles: roles ?? [],
       is_email_verified: false,
+      newUser: true
     })) as Customer;
 
     await Promise.allSettled([
