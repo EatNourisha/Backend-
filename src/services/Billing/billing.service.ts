@@ -209,24 +209,14 @@ export class BillingService {
 
     let procode: string | undefined = dto?.promo_code?.toLowerCase()
 
-    //****************************************************** */
-    // This is to handle the 5th time order loyalty reward coupon code
-    // This is to handle the 5th time order loyalty reward coupon code
-    //****************************************************** */
-
-  //  if (procode === 'loyaltyreward' || procode === 'loyaltyreward' ) {
-  //   const customerData = await customer.findById(customer_id);
-  //   const now = new Date();
-  //   const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-  
-  //   if (daysSinceReset >= 30) {
-  //     if (customerData!.lineupCount < 4) {
-  //       procode = 'Not a 5th order'; 
-  //       // customerData!.lineupCount = 0;
-  //       // customerData!.lastLineupReset = now;
-  //     }
-  //   }
-  // }
+    if(procode === 'signupsave5'){
+      if(cus?.newUser === false){
+        throw createError('Not eligible to use this coupon')
+      }
+    }
+    if(cus?.newUser === true){ 
+      procode = 'signupsave5'
+    }
 
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
@@ -381,7 +371,7 @@ export class BillingHooks {
     
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
-      status: TransactionStatus.SUCCESSFUL,
+      // status: TransactionStatus.SUCCESSFUL,
       invoice_url: data?.hosted_invoice_url,
       invoice_download_url: data?.invoice_pdf,
     });

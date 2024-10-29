@@ -273,12 +273,24 @@ async getClosedOrdersHistory(
 
     const cus = _cart?.customer as Customer;
 
-    if(dto.coupon?.toLowerCase() === 'loyaltyreward'){
+    let coup = dto?.coupon
+
+    if(coup?.toLowerCase() === 'loyaltyreward'){
       throw createError('Coupon is only valid for a weekly plan subscription')
     }
 
-    let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, dto?.coupon!);
-    const gift = await giftpurchase.findOne({ code: dto?.coupon, status: 'active' }) 
+    if(coup === 'signupsave5'){
+      if(cus?.newUser === false){
+        throw createError('Not eligible to use this coupon')
+      }
+    }
+  
+    if(cus?.newUser === true){
+      coup = 'signupsave5'
+    }
+  
+    let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, coup!);
+    const gift = await giftpurchase.findOne({ code: coup, status: 'active' }) 
 
     if (!amount_off || amount_off === 0){
       if (gift && gift.amount !== undefined) {
@@ -332,7 +344,7 @@ async getClosedOrdersHistory(
       actual_discounted_amount: amount_off ?? 0,
       weekend_delivery: dto?.weekend_delivery,
       delivery_period: dto?.delivery_period,
-      coupon: dto?.coupon,
+      coupon: coup,
       swallow: dto?.swallow,
       isReturningCustomer: returning,
       orderExtras: _extras
