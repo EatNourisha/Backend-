@@ -196,29 +196,18 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       const data = event.data.object as any;
       const customerId = data?.customer;
       const cus = await customer.findOne({ stripe_id: customerId });
-      await transaction
-        .findOneAndUpdate(
-          { subscription_reference: data?.id, stripe_customer_id: data?.customer },
-          { status: TransactionStatus.SUCCESSFUL }
-        )
-        .lean<Transaction>()
-        .exec();
+      // await transaction
+      //   .findOneAndUpdate(
+      //     { subscription_reference: data?.id, stripe_customer_id: data?.customer },
+      //     { status: TransactionStatus.SUCCESSFUL }
+      //   )
+      //   .lean<Transaction>()
+      //   .exec();
 
       await customer.findOneAndUpdate({ _id: cus?._id }, { lineup: null }).lean<Customer>().exec();
 
       await lineup.updateMany({ customer: cus?._id , week: 1 },{ $set: { status: 'deactivated' } }, { multi: true }).exec();
       
-    //   const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
-
-    //   if (trans?.applied_promo !== null) {
-    //     const promo = await promoCode.findById(trans?.applied_promo).exec();
-
-    //     if (promo) {
-    //     const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-    //     await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
-    //   }
-    // }
-
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }
