@@ -240,6 +240,16 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
 
    await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
+
+
+   if (trans?.applied_promo !== null) {
+     const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+   if (promo) {
+   await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
+   }
+   }
+
     
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
