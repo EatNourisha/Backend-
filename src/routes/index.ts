@@ -236,6 +236,9 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       returning = true
     }
 
+     await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
+
+
    await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
     
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
