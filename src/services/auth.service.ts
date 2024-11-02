@@ -98,11 +98,7 @@ export class AuthService {
     payload.exp = expiration;
 
     // send email here.
-    NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
-
-    // if(!isTesting) await EmailService.sendEmail("Welcome to Nourisha", acc?.email, Template.WELCOME, {
-    //   name: `${acc?.first_name}`,
-    // });
+    // NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });                     
 
     return { payload, token };
   }

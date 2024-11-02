@@ -26,6 +26,7 @@ import { createError, createSlug, getUpdateOptions, paginate, removeForcedInputs
 import { AvailableResource, PermissionScope } from "../../valueObjects";
 import { when } from "../../utils/when";
 import { OrderType } from "../../models/mealPack";
+import { mealpaginate } from "../../utils/paginate";
 
 // import config from "../../config";
 
@@ -152,7 +153,7 @@ export class MealService {
     Object.assign(queries, { available_quantity: { $gte: 1 } });
 
   
-    return await paginate("mealPack", queries, filters);
+    return await mealpaginate("mealPack", queries, filters);
   }
 
 
@@ -168,7 +169,7 @@ export class MealService {
 
     Object.assign(queries, { orderType: { $in: ["single order", "subscription", "both", null] } });
 
-    return await paginate("mealPack", queries, filters);
+    return await mealpaginate("mealPack", queries, filters);
   }
   
   async getBulkMealPacksAdmin(
@@ -183,7 +184,7 @@ export class MealService {
 
     Object.assign(queries, { orderType: "bulk-order" });
 
-    return await paginate("mealPack", queries, filters);
+    return await mealpaginate("mealPack", queries, filters);
   }
   
   // async getMealPacksAdmin(

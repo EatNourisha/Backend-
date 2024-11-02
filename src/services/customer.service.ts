@@ -45,6 +45,7 @@ import { OrderStatus } from "../models/order";
 import { add } from "date-fns";
 import { MarketingService } from "./Marketing/marketing.service";
 import mealLineup from "../models/mealLineup";
+// import { Referral1 } from "./Marketing/bluePrint.service";
 // import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
 
@@ -145,8 +146,15 @@ async getCountriesById(_id: string) {
     const result = await country.findById(_id);
     return result;
   }
- 
+
+  
   async createCustomer(input: CustomerDto, roles?: string[]): Promise<Customer> {
+    const _inviter = await customer.findOne({ref_code: input?.ref_code})
+
+    if(_inviter){
+      // await Referral1(_inviter?.email, {customer: _inviter?._id})
+    }
+
    const em = await this.validateEmail(input?.email) 
     if(!em) throw createError("email must have an @ symbol", 404);
     let acc = (await customer.create({
