@@ -5,12 +5,14 @@ export const auditLogs = async (req: Request, _: Response, next: NextFunction) =
   const authService = new AuthService();
   const auditService = new AuditService();
   let token = (req.headers['x-access-token'] || req.headers.authorization) as string;
-  let deviceId = req.headers['device-id'] as string;
+   req.headers['device-id'] as string;
+  // let deviceId = req.headers['device-id'] as string;
 
   if (token) {
     token = token.startsWith('Bearer ') ? token.slice(7, token.length) : token;
     try {
-      const payload = await authService.validateAuthCode(token, deviceId);
+      const payload = await authService.validateAuthCode(token);
+      // const payload = await authService.validateAuthCode(token, deviceId);
       if (payload) {
         await CustomerService.updateLastSeen(payload.sub);
         req.query.userId = payload.sub;
