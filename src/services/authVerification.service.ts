@@ -9,6 +9,7 @@ import { nanoid } from "nanoid";
 // import { isTesting } from "../config";
 import { NourishaBus } from "../libs";
 import { sendMobilResetEmail, sendWelcomeEmail } from "./authEmail.service";
+// import { welcomeEmail1 } from "./Marketing/bluePrint.service";
 // import { EmailQueue } from "../queues";
 // import EmailService, { Template } from "./email.service";
 
@@ -149,14 +150,13 @@ export class AuthVerificationService {
     // send welcome email instead, since emails are not verified on the mobile app at the moment
 
     const payload ={
+      userId: acc?._id!, 
       email: acc?.email!, 
       name: acc?.first_name!
     }
 
-    // NourishaBus.emit("customer:send_welcome_email", { email: acc?.email!, name: acc?.first_name! });
+    // await welcomeEmail1(acc?.email, {customer:payload.userId})
     await sendWelcomeEmail(payload.email, payload)
-    // EmailQueue.add({type: "send_verification_email", ...payload})
-    // if(!isTesting) await EmailService.sendEmail("📧 Verify your email address", acc?.email, Template.VERIFICATION, {...payload});
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
 
     return verification as AuthVerification;

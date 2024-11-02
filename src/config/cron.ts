@@ -254,6 +254,23 @@ cron.schedule('* */1 * * *', async () => {
 // Email Marketing Blueprint Automation
 //*********************************************************** */
 
+// cron.schedule('* * * * *', async () => {
+//     console.log("######### BluePrint emails Job runs every 1 min");
+//     try {
+//         await AllWelcomeEmails()
+//         await AllCartEmails()
+//         await AllReEngagementEmails()
+//         await AllCustomerRetentionEmails()
+
+//     } catch (error) {
+//         console.error('Error updating settings:', error);
+//     }
+// }, {
+//     scheduled: true,
+//     timezone: "Europe/London"
+// });
+
+
 
 //*********************************************************** */
 // Welcome
@@ -262,7 +279,8 @@ cron.schedule('* */1 * * *', async () => {
 //*********************************************************** */
 
 // cron.schedule('* * * * *', async () => {
-//     // console.log("######### Welcome emails Job runs every 1 min");
+//     console.log("######### Welcome emails Job runs every 1 min");
+
 //     try {
 //         const customers = await customer.find();
 
@@ -336,109 +354,115 @@ cron.schedule('* */1 * * *', async () => {
 // Cart Abandonment
 //*********************************************************** */
 
-// let lastLogMessage: any = '';
-
 // cron.schedule('* */1 * * *', async () => {
-//     console.log("######### Cart emails Job runs every 1 min");
+//     // console.log("######### Cart emails Job runs every 1 min");
 //     try {
-//         const _orders = await order.find({ status: 'processing' }).sort({ createdAt: -1 });
+//         const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
 
-//         await Promise.all(_orders.map(async (ord) => {
-//             const _cus = await customer.findById(ord?.customer);
-//             const _order = await order.findOne({ customer: _cus?._id }).sort({ createdAt: -1 });
+//     await Promise.all(_orders.map(async (ord: any) => {
+//         const _cus = await customer.findById(ord?.customer);
+//         const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
 
-//             if (_order?.status === 'processing' && _order?.createdAt) {
-//                 const createdAt = new Date(_order.createdAt);
-//                 const currentDate = new Date();
-
-//                 const timeDifference = currentDate.getTime() - createdAt.getTime();
-//                 const daysDifference = timeDifference / (1000 * 3600 * 24);
-//                 const minutesDifference = timeDifference / (1000 * 60);
-
-//                 if (Math.floor(minutesDifference) === 10) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         // const logMessage = await cartAbandonment1(_cus?.email, 'Cart 1' );
-//                         const logMessage = 'Cart abandonment email 1 sent';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-//                     }
+//         if(_order?.status === 'processing'){
+//         if (_order?.createdAt) {
+//             const createdAt = new Date(_order.createdAt);
+//             const currentDate = new Date();
+    
+//             const timeDifference = currentDate.getTime() - createdAt.getTime();
+//             const daysDifference = timeDifference / (1000 * 3600 * 24);
+//             const minutesDifference = timeDifference / (1000 * 60); 
+        
+//             if (Math.floor(minutesDifference) === 10) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
+        
+//                 let returning = false;
+        
+//                 if (lineupExists) {
+//                     returning = true;
 //                 }
-
-//                 if (Math.floor(daysDifference) === 3) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         const logMessage = 'Cart 2 body sent here';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-                        
-//                     }
-//                 }
-
-
-//                 // if (Math.floor(daysDifference) === 3) {
-//                 //     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                 //     if (!lineupExists) {
-//                 //         // const logMessage = 'Cart abandonment email 2 sent';
-//                 //         // const logMessage = await cartAbandonment2( _cus?._id, {customer: _cus?._id } );
-//                 //         const logMessage = await cartAbandonment2( {greeting: "hello", firstName: 'Zuby' } );
-//                 //         if (lastLogMessage !== logMessage) {
-//                 //             console.log(logMessage);
-//                 //             lastLogMessage = logMessage;
-//                 //         }
-                        
-//                 //     }
-//                 // }
-
-//                 if (Math.floor(daysDifference) === 7) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         const logMessage = 'Cart abandonment email 3 sent';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-//                     }
-//                 }
-
-//                 if (Math.floor(daysDifference) === 11) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         const logMessage = 'Cart abandonment email 4 sent';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-//                     }
-//                 }
-
-//                 if (Math.floor(daysDifference) === 15) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         const logMessage = 'Cart abandonment email 5 sent';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-//                     }
-//                 }
-
-//                 if (Math.floor(daysDifference) === 19) {
-//                     const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-//                     if (!lineupExists) {
-//                         const logMessage = 'Cart abandonment email 6 sent';
-//                         if (lastLogMessage !== logMessage) {
-//                             console.log(logMessage);
-//                             lastLogMessage = logMessage;
-//                         }
-//                     }
+//                 if (!returning) {
+//                     // Send Cart Abandonment Email 1
+//                     // console.log('Cart abandonment email 1 sent');
 //                 }
 //             }
-//         }));
+
+//             if (Math.floor(daysDifference) === 3) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            
+//                 let returning = false;
+            
+//                 if ( lineupExists) {
+//                     returning = true;
+//                 }
+//                 if (returning === false) {
+//                     //  Cart Abdonment Email 2 runs here
+//                     // console.log('Cart abandonment email 2 sent');
+//                 }
+
+//                 }
+//             if (Math.floor(daysDifference) === 7) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+//                 let returning = false;
+            
+//                 if ( lineupExists) {
+//                     returning = true;
+//                 }
+//                 if (returning === false) {
+//                     //  Cart Abdonment Email 3 runs here
+//                     // console.log('Cart abandonment email 3 sent');
+//                 }
+//             }
+//             if (Math.floor(daysDifference) === 11) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+//                 let returning = false;
+            
+//                 if ( lineupExists) {
+//                     returning = true;
+//                 }
+//                 if (returning === false) {
+//                     //  Cart Abdonment Email 4 runs here
+//                     // console.log('Cart abandonment email 4 sent');
+//                 }
+
+//             }
+//             if (Math.floor(daysDifference) === 15) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+//                 let returning = false;
+            
+//                 if ( lineupExists) {
+//                     returning = true;
+//                 }
+//                 if (returning === false) {
+//                     //  Cart Abdonment Email 5 runs here
+//                     // console.log('Cart abandonment email 5 sent');
+//                 }
+
+//             }
+//             if (Math.floor(daysDifference) === 19) {
+//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+        
+//                 let returning = false;
+            
+//                 if ( lineupExists) {
+//                     returning = true;
+//                 }
+//                 if (returning === false) {
+//                     //  Cart Abdonment Email 6 runs here
+//                     // console.log('Cart abandonment email 6 sent');
+//                 }
+
+//             }
+
+//         }
+
+
+//     }
+
+                
+//     }));
 
 //     } catch (error) {
 //         console.error('Error updating settings:', error);
@@ -447,124 +471,6 @@ cron.schedule('* */1 * * *', async () => {
 //     scheduled: true,
 //     timezone: "Europe/London"
 // });
-
-cron.schedule('* */1 * * *', async () => {
-    // console.log("######### Cart emails Job runs every 1 min");
-    try {
-        const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
-
-    await Promise.all(_orders.map(async (ord: any) => {
-        const _cus = await customer.findById(ord?.customer);
-        const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
-
-        if(_order?.status === 'processing'){
-        if (_order?.createdAt) {
-            const createdAt = new Date(_order.createdAt);
-            const currentDate = new Date();
-    
-            const timeDifference = currentDate.getTime() - createdAt.getTime();
-            const daysDifference = timeDifference / (1000 * 3600 * 24);
-            const minutesDifference = timeDifference / (1000 * 60); 
-        
-            if (Math.floor(minutesDifference) === 10) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt: { $gte: _order.createdAt } });
-        
-                let returning = false;
-        
-                if (lineupExists) {
-                    returning = true;
-                }
-                if (!returning) {
-                    // Send Cart Abandonment Email 1
-                    // console.log('Cart abandonment email 1 sent');
-                }
-            }
-
-            if (Math.floor(daysDifference) === 3) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
-            
-                let returning = false;
-            
-                if ( lineupExists) {
-                    returning = true;
-                }
-                if (returning === false) {
-                    //  Cart Abdonment Email 2 runs here
-                    // console.log('Cart abandonment email 2 sent');
-                }
-
-                }
-            if (Math.floor(daysDifference) === 7) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
-        
-                let returning = false;
-            
-                if ( lineupExists) {
-                    returning = true;
-                }
-                if (returning === false) {
-                    //  Cart Abdonment Email 3 runs here
-                    // console.log('Cart abandonment email 3 sent');
-                }
-            }
-            if (Math.floor(daysDifference) === 11) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
-        
-                let returning = false;
-            
-                if ( lineupExists) {
-                    returning = true;
-                }
-                if (returning === false) {
-                    //  Cart Abdonment Email 4 runs here
-                    // console.log('Cart abandonment email 4 sent');
-                }
-
-            }
-            if (Math.floor(daysDifference) === 15) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
-        
-                let returning = false;
-            
-                if ( lineupExists) {
-                    returning = true;
-                }
-                if (returning === false) {
-                    //  Cart Abdonment Email 5 runs here
-                    // console.log('Cart abandonment email 5 sent');
-                }
-
-            }
-            if (Math.floor(daysDifference) === 19) {
-                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
-        
-                let returning = false;
-            
-                if ( lineupExists) {
-                    returning = true;
-                }
-                if (returning === false) {
-                    //  Cart Abdonment Email 6 runs here
-                    // console.log('Cart abandonment email 6 sent');
-                }
-
-            }
-
-        }
-
-
-    }
-
-                
-    }));
-
-    } catch (error) {
-        console.error('Error updating settings:', error);
-    }
-}, {
-    scheduled: true,
-    timezone: "Europe/London"
-});
 
 //*********************************************************** */
 // Post subscription 
@@ -670,7 +576,7 @@ cron.schedule('* */1 * * *', async () => {
 //                 }
 //                 if (returning === false) {
 //                     //  Cart Abdonment Email 6 runs here
-//                     // console.log('Post Subscription email 6 sent');
+//                     console.log('Post Subscription email 6 sent');
 //                 }
 
 //             }
@@ -715,7 +621,7 @@ cron.schedule('* */1 * * *', async () => {
 //                 }
 //                 if (returning === false) {
 //                     //  Cart Abdonment Email 8 runs here
-//                     // console.log('Post Subscription email 9 sent');
+//                     console.log('Post Subscription email 9 sent');
 //                 }
 
 //             }
@@ -742,123 +648,123 @@ cron.schedule('* */1 * * *', async () => {
 // Re-engagement
 //*********************************************************** */
 
-// cron.schedule('* */1 * * *', async () => {
-//     // console.log("######### Re-engagement emails Job runs every 1 min");
-//     try {
-//         const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
+cron.schedule('* */1 * * *', async () => {
+    // console.log("######### Re-engagement emails Job runs every 1 min");
+    try {
+        const _orders = await order.find({status: 'processing'}).sort({createdAt:-1});
 
-//     await Promise.all(_orders.map(async (ord: any) => {
-//         const _cus = await customer.findById(ord?.customer);
-//         const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
+    await Promise.all(_orders.map(async (ord: any) => {
+        const _cus = await customer.findById(ord?.customer);
+        const _order = await order.findOne({customer: _cus?._id}).sort({createdAt:-1});
 
-//         if(_order?.status === 'processing'){
-//         if (_order?.createdAt) {
-//             const createdAt = new Date(_order.createdAt);
-//             const currentDate = new Date();
+        if(_order?.status === 'processing'){
+        if (_order?.createdAt) {
+            const createdAt = new Date(_order.createdAt);
+            const currentDate = new Date();
     
-//             const timeDifference = currentDate.getTime() - createdAt.getTime();
-//             const daysDifference = timeDifference / (1000 * 3600 * 24);
+            const timeDifference = currentDate.getTime() - createdAt.getTime();
+            const daysDifference = timeDifference / (1000 * 3600 * 24);
         
 
-//             if (Math.floor(daysDifference) === 13) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            if (Math.floor(daysDifference) === 13) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
             
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Re-engagement Email 1 runs here
-//                     // console.log('Re-engagement email 1 sent');
-//                 }
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Re-engagement Email 1 runs here
+                    // console.log('Re-engagement email 1 sent');
+                }
 
-//                 }
-//             if (Math.floor(daysDifference) === 27) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+                }
+            if (Math.floor(daysDifference) === 27) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Cart Abdonment Email 2 runs here
-//                     // console.log('Re-engagement email 2 sent');
-//                 }
-//             }
-//             if (Math.floor(daysDifference) === 41) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 2 runs here
+                    // console.log('Re-engagement email 2 sent');
+                }
+            }
+            if (Math.floor(daysDifference) === 41) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Cart Abdonment Email 3 runs here
-//                     // console.log('Re-engagement email 3 sent');
-//                 }
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 3 runs here
+                    // console.log('Re-engagement email 3 sent');
+                }
 
-//             }
-//             if (Math.floor(daysDifference) === 55) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            }
+            if (Math.floor(daysDifference) === 55) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Cart Abdonment Email 4 runs here
-//                     // console.log('Re-engagement email 4 sent');
-//                 }
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 4 runs here
+                    // console.log('Re-engagement email 4 sent');
+                }
 
-//             }
-//             if (Math.floor(daysDifference) === 69) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            }
+            if (Math.floor(daysDifference) === 69) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Cart Abdonment Email 5 runs here
-//                     // console.log('Re-engagement email 5 sent');
-//                 }
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 5 runs here
+                    // console.log('Re-engagement email 5 sent');
+                }
 
-//             }
+            }
 
-//             if (Math.floor(daysDifference) === 83) {
-//                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
+            if (Math.floor(daysDifference) === 83) {
+                const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
-//                 let returning = false;
+                let returning = false;
             
-//                 if ( lineupExists) {
-//                     returning = true;
-//                 }
-//                 if (returning === false) {
-//                     //  Cart Abdonment Email 6 runs here
-//                     // console.log('Re-engagement email 6 sent');
-//                 }
+                if ( lineupExists) {
+                    returning = true;
+                }
+                if (returning === false) {
+                    //  Cart Abdonment Email 6 runs here
+                    // console.log('Re-engagement email 6 sent');
+                }
 
-//             }
+            }
 
-//         }
+        }
 
-//     }
+    }
 
                 
-//     }));
+    }));
 
-//     } catch (error) {
-//         console.error('Error updating settings:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
 
 
 //*********************************************************** */
@@ -867,52 +773,52 @@ cron.schedule('* */1 * * *', async () => {
 // customer retention
 //*********************************************************** */
 
-// cron.schedule('* * * * *', async () => {
-//     // console.log("######### customer retention emails Job runs every 1 min");
-//     try {
-//         const customers = await customer.find();
+cron.schedule('* * * * *', async () => {
+    // console.log("######### customer retention emails Job runs every 1 min");
+    try {
+        const customers = await customer.find();
 
-//     await Promise.all(customers.map(async (cus: any) => {
-//         const _cus = await customer.findById(cus?._id);
+    await Promise.all(customers.map(async (cus: any) => {
+        const _cus = await customer.findById(cus?._id);
 
-//             if (_cus?.createdAt) {
-//                 const createdAt = new Date(_cus.createdAt);
-//                 const currentDate = new Date();
+            if (_cus?.createdAt) {
+                const createdAt = new Date(_cus.createdAt);
+                const currentDate = new Date();
         
-//                 const monthsDifference = 
-//                 (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
-//                 (currentDate.getMonth() - createdAt.getMonth());
+                const monthsDifference = 
+                (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
+                (currentDate.getMonth() - createdAt.getMonth());
             
-//             // Check for exact monthly anniversary
-//             if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
-//                 if (_cus?.level === 'Newbie') {
-//                     // Customer retention email 1 runs here
-//                     // console.log('Sending customer retention email 1');
-//                 }
-//             }
-//             if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
-//                 if (_cus?.level === 'Newbie') {
-//                         // Customer retention email 2 runs here
-//                         // console.log('Sending customer retention email 2');
-//                     }
-//                 } 
-//                 if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
-//                     if (_cus?.level === 'Newbie') {
-//                         // Customer retention email 3 runs here 
-//                         // console.log('Sending customer retention email 3');
-//                     }
-//                 }
-//              }
+            // Check for exact monthly anniversary
+            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
+                if (_cus?.level === 'Newbie') {
+                    // Customer retention email 1 runs here
+                    // console.log('Sending customer retention email 1');
+                }
+            }
+            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
+                if (_cus?.level === 'Newbie') {
+                        // Customer retention email 2 runs here
+                        // console.log('Sending customer retention email 2');
+                    }
+                } 
+                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
+                    if (_cus?.level === 'Newbie') {
+                        // Customer retention email 3 runs here 
+                        // console.log('Sending customer retention email 3');
+                    }
+                }
+             }
             
-//     }));
+    }));
 
-//     } catch (error) {
-//         console.error('Error updating settings:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
 
 //*********************************************************** */
 // Email Course
@@ -920,50 +826,50 @@ cron.schedule('* */1 * * *', async () => {
 // Email Course
 //*********************************************************** */
 
-// cron.schedule('* * * * *', async () => {
-//     // console.log("######### Email Course emails Job runs every 1 min");
-//     try {
-//         const customers = await customer.find();
+cron.schedule('* * * * *', async () => {
+    // console.log("######### Email Course emails Job runs every 1 min");
+    try {
+        const customers = await customer.find();
 
-//     await Promise.all(customers.map(async (cus: any) => {
-//         const _cus = await customer.findById(cus?._id);
+    await Promise.all(customers.map(async (cus: any) => {
+        const _cus = await customer.findById(cus?._id);
 
-//             if (_cus?.createdAt) {
-//                 const createdAt = new Date(_cus.createdAt);
-//                 const currentDate = new Date();
+            if (_cus?.createdAt) {
+                const createdAt = new Date(_cus.createdAt);
+                const currentDate = new Date();
         
-//                 const monthsDifference = 
-//                 (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
-//                 (currentDate.getMonth() - createdAt.getMonth());
+                const monthsDifference = 
+                (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
+                (currentDate.getMonth() - createdAt.getMonth());
             
-//             // Check for exact monthly anniversary
-//             if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
-//                     // Email Course email 1 runs here
-//                     // console.log('Sending Email Course email 1');
-//             }
-//             if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
-//                         // Email Course email 2 runs here
-//                         // console.log('Sending Email Course email 2');
-//                 } 
-//                 if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
-//                         // Email Course email 3 runs here 
-//                         // console.log('Sending Email Course email 3');
-//                 }
-//                 if (monthsDifference === 4 && currentDate.getDate() === createdAt.getDate()) {
-//                         // Email Course email 4 runs here 
-//                         // console.log('Sending Email Course email 3');
-//                 }
-//              }
+            // Check for exact monthly anniversary
+            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
+                    // Email Course email 1 runs here
+                    // console.log('Sending Email Course email 1');
+            }
+            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 2 runs here
+                        // console.log('Sending Email Course email 2');
+                } 
+                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 3 runs here 
+                        // console.log('Sending Email Course email 3');
+                }
+                if (monthsDifference === 4 && currentDate.getDate() === createdAt.getDate()) {
+                        // Email Course email 4 runs here 
+                        // console.log('Sending Email Course email 3');
+                }
+             }
             
-//     }));
+    }));
 
-//     } catch (error) {
-//         console.error('Error updating settings:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
 
 
 

@@ -12,6 +12,7 @@ import { NourishaBus } from "../../libs";
 import LineupEventListener from "../../listeners/lineup.listener";
 import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
+// import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecilaEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
@@ -224,7 +225,7 @@ export class MealLineupService {
       } else {
         customerData!.lineupCount += 1; 
       }
-    } else if(daysSinceReset >30 && customerData!.lineupCount < 4){
+    } else if(daysSinceReset > 30 && customerData!.lineupCount < 4){
       customerData!.lineupCount = 1;
       customerData!.lastLineupReset = now;
 
@@ -234,52 +235,61 @@ export class MealLineupService {
       customerData!.lineupCount += 1; 
     }
 
-    if (customerData!.lineupCount === 4) {
-      if(customerData!.level === 'Newbie' || customerData!.level === null){
-        customerData!.level ='Novice'
-        await customerData?.save()
-        /// Novice star email will be sent here too
-      }
-      if(customerData!.level === 'Novice'){
-        customerData!.level ='OG'
-        await customerData?.save()
-        /// OG star email will be sent here too
-      }
-      if(customerData!.level === 'OG'){
-        customerData!.level ='Upgraded'
-        await customerData?.save()
-        /// Upgraded star email will be sent here too
-      }
-      if(customerData!.level === 'Upgraded'){
-        customerData!.level ='Rich'
-        await customerData?.save()
-        /// Rich star email will be sent here too
-      }
-      if(customerData!.level === 'Rich'){
-        customerData!.level ='Insider'
-        await customerData?.save()
-        /// Insider star email will be sent here too
-      }
-      if(customerData!.level === 'Insider'){
-        customerData!.level ='Special'
-        await customerData?.save()
-        /// Special star email will be sent here too
-      }
-      if(customerData!.level === 'Special'){
-        customerData!.level ='Hero'
-        await customerData?.save()
-        /// Hero star email will be sent here too
+    if(customerData!.lineupCount === 5){
+      customerData!.lineupCount = 0;
+      customerData!.lastLineupReset = now;
+  }
 
-      }
-      if(customerData!.level === 'Hero'){
-        customerData!.level ='Ambassador'
-        await customerData?.save()
+  if (customerData!.lineupCount === 4) {
+    // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
 
-        /// Ambassador star email will be sent here too
-      }
 
-      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 99% on us");
+    if(customerData!.level === 'Newbie' || customerData!.level === null){
+      
+      customerData!.level ='Novice'
+      await customerData?.save()
+      // await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Novice'){
+      customerData!.level ='OG'
+      await customerData?.save()
+      // await OGEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+
+    if(customerData!.level === 'OG'){
+      customerData!.level ='Upgraded'
+      await customerData?.save()
+      // await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
     }
+    if(customerData!.level === 'Upgraded'){
+      customerData!.level ='Rich'
+      await customerData?.save()
+      // await RichEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Rich'){
+      customerData!.level ='Insider'
+      await customerData?.save()
+      // await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Insider'){
+      customerData!.level ='Special'
+      await customerData?.save()
+      // await SpecilaEmail(customerData?.email!, {customer: customerData?._id})
+    }
+    if(customerData!.level === 'Special'){
+      customerData!.level ='Hero'
+      await customerData?.save()
+      // await HeroEmail(customerData?.email!, {customer: customerData?._id})
+
+    }else
+    if(customerData!.level === 'Hero'){
+      customerData!.level ='Ambassador'
+      await customerData?.save()
+      // await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+    }
+    await customerData?.save()
+
+  }
 
     await customerData!.save();
     const trans = await transaction.findOne({customer: customer_id, status: 'successful'}).sort({createdAt: -1})
@@ -486,7 +496,7 @@ export class MealLineupService {
       } else {
         customerData!.lineupCount += 1; 
       }
-    } else if(daysSinceReset >30 && customerData!.lineupCount < 4){
+    } else if(daysSinceReset > 30 && customerData!.lineupCount < 4){
       customerData!.lineupCount = 1;
       customerData!.lastLineupReset = now;
 
@@ -496,52 +506,61 @@ export class MealLineupService {
       customerData!.lineupCount += 1; 
     }
 
-    if (customerData!.lineupCount === 4) {
-      if(customerData!.level === 'Newbie' || customerData!.level === null){
-        customerData!.level ='Novice'
-        await customerData?.save()
-        /// Novice star email will be sent here too
-      }
-      if(customerData!.level === 'Novice'){
-        customerData!.level ='OG'
-        await customerData?.save()
-        /// OG star email will be sent here too
-      }
-      if(customerData!.level === 'OG'){
-        customerData!.level ='Upgraded'
-        await customerData?.save()
-        /// Upgraded star email will be sent here too
-      }
-      if(customerData!.level === 'Upgraded'){
-        customerData!.level ='Rich'
-        await customerData?.save()
-        /// Rich star email will be sent here too
-      }
-      if(customerData!.level === 'Rich'){
-        customerData!.level ='Insider'
-        await customerData?.save()
-        /// Insider star email will be sent here too
-      }
-      if(customerData!.level === 'Insider'){
-        customerData!.level ='Special'
-        await customerData?.save()
-        /// Special star email will be sent here too
-      }
-      if(customerData!.level === 'Special'){
-        customerData!.level ='Hero'
-        await customerData?.save()
-        /// Hero star email will be sent here too
+    if(customerData!.lineupCount === 5){
+      customerData!.lineupCount = 0;
+      customerData!.lastLineupReset = now;
+  }
 
-      }
-      if(customerData!.level === 'Hero'){
-        customerData!.level ='Ambassador'
-        await customerData?.save()
+  if (customerData!.lineupCount === 4) {
+    // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
 
-        /// Ambassador star email will be sent here too
-      }
 
-      console.log("Congratulations! You've placed your 4th lineup in the last 30 days. Your next subscription within 7 days will be 99% on us");
+    if(customerData!.level === 'Newbie' || customerData!.level === null){
+      
+      customerData!.level ='Novice'
+      await customerData?.save()
+      // await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Novice'){
+      customerData!.level ='OG'
+      await customerData?.save()
+      // await OGEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+
+    if(customerData!.level === 'OG'){
+      customerData!.level ='Upgraded'
+      await customerData?.save()
+      // await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
     }
+    if(customerData!.level === 'Upgraded'){
+      customerData!.level ='Rich'
+      await customerData?.save()
+      // await RichEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Rich'){
+      customerData!.level ='Insider'
+      await customerData?.save()
+      // await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+    }else
+    if(customerData!.level === 'Insider'){
+      customerData!.level ='Special'
+      await customerData?.save()
+      // await SpecilaEmail(customerData?.email!, {customer: customerData?._id})
+    }
+    if(customerData!.level === 'Special'){
+      customerData!.level ='Hero'
+      await customerData?.save()
+      // await HeroEmail(customerData?.email!, {customer: customerData?._id})
+
+    }else
+    if(customerData!.level === 'Hero'){
+      customerData!.level ='Ambassador'
+      await customerData?.save()
+      // await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+    }
+    await customerData?.save()
+
+  }
 
     await customerData!.save();
 

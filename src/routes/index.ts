@@ -77,6 +77,7 @@ routes.use("/cs", CsTeamRouter);
 // });
 
 routes.get("/healthcheck", (_, res, __) => {
+  console.log('Health Check Health Check Health Check')
   sendResponse(res, 200, { message: "OK" });
 });
 
