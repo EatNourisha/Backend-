@@ -103,18 +103,8 @@ export class AuthService {
     return { payload, token };
   }
 
-  // async validateAuthCode(token: string, device_id: string): Promise<AuthPayload> {
-  //   const auth = await authToken.findOne({ token, device_id }).select("token").lean().exec();
-  //   if (!auth) throw createError("Authorization code is invalid", 401);
-  //   const payload: AuthPayload = verify(auth.token, config.JWT_SECRET, {
-  //     audience: config.JWT_AUDIENCE,
-  //   }) as AuthPayload;
-  //   if (Date.now() > (payload.exp as number)) throw createError("Token expired", 401);
-  //   return payload;
-  // }
-
-  async validateAuthCode(token: string): Promise<AuthPayload> {
-    const auth = await authToken.findOne({ token }).select("token").lean().exec();
+  async validateAuthCode(token: string, device_id: string): Promise<AuthPayload> {
+    const auth = await authToken.findOne({ token, device_id }).select("token").lean().exec();
     if (!auth) throw createError("Authorization code is invalid", 401);
     const payload: AuthPayload = verify(auth.token, config.JWT_SECRET, {
       audience: config.JWT_AUDIENCE,
