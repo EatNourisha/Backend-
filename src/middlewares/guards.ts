@@ -7,16 +7,14 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
   const authService = new AuthService();
   consola.info("Authenticating...");
   let token = (req.headers["x-access-token"] || req.headers.authorization) as string;
-  // let deviceId = req.headers["device-id"] as string;
-   req.headers["device-id"] as string;
+  let deviceId = req.headers["device-id"] as string;
   
   if (!token) return next(createError("Authorization field is missing", 401));
-  // if (!deviceId) return next(createError("device-id header field is missing", 401));
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
   token = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
  
   try {
-    // let payload = await authService.validateAuthCode(token, deviceId);
-    let payload = await authService.validateAuthCode(token);
+    let payload = await authService.validateAuthCode(token, deviceId);
     if (!payload) return next(createError("Authorization failed", 401));
     await CustomerService.updateLastSeen(payload.sub);
     req.query.userId = payload.sub;
@@ -29,10 +27,8 @@ export const authGuard = async (req: Request, _: Response, next: NextFunction) =
 };
 
 export const deviceGuard = async (req: Request, _: Response, next: NextFunction) => {
-  req.headers["device-id"] as string;
-  // let deviceId = req.headers["device-id"] as string;
-  // if (!deviceId) return next(createError("device-id header field is missing", 401));
-
+  let deviceId = req.headers["device-id"] as string;
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
 
   next();
 };
@@ -41,14 +37,12 @@ export const subscriptionGuard = async (req: Request, _: Response, next: NextFun
   const authService = new AuthService();
   consola.info("Authenticating...");
   let token = (req.headers["x-access-token"] || req.headers.authorization) as string;
-  req.headers["device-id"] as string;
-  // let deviceId = req.headers["device-id"] as string;
+  let deviceId = req.headers["device-id"] as string;
   if (!token) return next(createError("Authorization field is missing", 401));
-  // if (!deviceId) return next(createError("device-id header field is missing", 401));
+  if (!deviceId) return next(createError("device-id header field is missing", 401));
   token = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
   try {
-    let payload = await authService.validateAuthCode(token);
-    // let payload = await authService.validateAuthCode(token, deviceId);
+    let payload = await authService.validateAuthCode(token, deviceId);
     if (!payload) return next(createError("Authorization failed", 401));
 
     const sub = await SubscriptionService.getSub(payload.sub);

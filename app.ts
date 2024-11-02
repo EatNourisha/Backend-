@@ -166,13 +166,14 @@ app.use(handleError);
       process.exit(0);
     });
 
-    process.on("SIGTERM", async () => {
-      console.log("A SIG-TERM has occurred");
-      EventManager.unsubscribeEvents();
-      await closeWorkers();
-      connection.disconnect();
-      process.exit(0);
-    });
+    // process.on("SIGTERM", async () => {
+    //   console.log("A SIG-TERM has occurred");
+    //   EventManager.unsubscribeEvents();
+    //   await closeWorkers();
+    //   connection.disconnect();
+    //   process.exit(0);
+    // });
+
     console.log(`🚀 ${config.NAME} service::v${config.VERSION} listening on http://localhost:${config.PORT}`);
   });
 })(); // IIFE (Immediatly Invoked Function Express)
