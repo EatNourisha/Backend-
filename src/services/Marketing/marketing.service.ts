@@ -4,6 +4,7 @@ import { Address } from "../../models/customer";
 import { SenderService } from "./sender.service";
 // import customer, { Address } from "../../models/customer";
 // import { lineup, order } from "../../models";
+// import { cartAbandonment1 } from "./bluePrint.service";
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -175,7 +176,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 console.log('Cart abandonment email 2 sent');
-//                 // await cartAbandonment2(_cus?.email!, {customer: _cus?._id})
+//                 await cartAbandonment1(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
 
 //             }
 
@@ -190,7 +191,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 3 runs here
-//                 console.log('Cart abandonment email 3 sent');
+//                 // console.log('Cart abandonment email 3 sent');
 //             }
 //         }
 //         if (Math.floor(daysDifference) === 11) {
@@ -203,7 +204,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 4 runs here
-//                 console.log('Cart abandonment email 4 sent');
+//                 // console.log('Cart abandonment email 4 sent');
 //             }
 
 //         }
@@ -217,7 +218,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 5 runs here
-//                 console.log('Cart abandonment email 5 sent');
+//                 // console.log('Cart abandonment email 5 sent');
 //             }
 
 //         }
@@ -231,7 +232,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 6 sent');
+//                 // console.log('Cart abandonment email 6 sent');
 //             }
 
 //         }
@@ -246,7 +247,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 7 sent');
+//                 // console.log('Cart abandonment email 7 sent');
 //             }
 
 //         }
@@ -261,7 +262,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 8 sent');
+//                 // console.log('Cart abandonment email 8 sent');
 //             }
 
 //         }
@@ -276,7 +277,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 9 sent');
+//                 // console.log('Cart abandonment email 9 sent');
 //             }
 
 //         }
@@ -291,7 +292,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 10 sent');
+//                 // console.log('Cart abandonment email 10 sent');
 //             }
 
 //         }
@@ -306,7 +307,7 @@ export class MarketingService {
 //             }
 //             if (returning === false) {
 //                 //  Cart Abdonment Email 6 runs here
-//                 console.log('Cart abandonment email 11 sent');
+//                 // console.log('Cart abandonment email 11 sent');
 //             }
 
 //         }
