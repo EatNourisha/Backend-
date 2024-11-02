@@ -33,10 +33,10 @@ export class AuthController {
 
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      // const body = req.body;
-      // const deviceId = req.headers["device-id"] as string;
-      const {body, headers}= req;
-      const deviceId = headers['device-id'] || body.device_id;
+      const body = req.body;
+      const deviceId = req.headers["device-id"] as string;
+      // const {body, headers}= req;
+      // const deviceId = headers['device-id'] || body.device_id;
       const data = await service.login(body, deviceId);
       sendResponse(res, 200, data);
     } catch (error) {
