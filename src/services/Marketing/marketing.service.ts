@@ -4,8 +4,8 @@ import { MailchimpService } from "./mailchimp.service";
 import { SenderService } from "./sender.service";
 import customer, { Address } from "../../models/customer";
 import { lineup, order } from "../../models";
-import { customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2, welcomeEmail3, welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
-// import { cartAbandonment1 } from "./bluePrint.service";
+import { customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6 } from "./bluePrint.service";
+// import { customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2,  welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -66,77 +66,90 @@ export class MarketingService {
 // Marketing Email Blueprint
 //****************************************************** */
 
-export async function AllWelcomeEmails() {
+// export async function AllWelcomeEmails() {
 
-  try {
-    const customers = await customer.find();
+//   try {
+//     const customers = await customer.find();
 
-await Promise.all(customers.map(async (cus: any) => {    
-    const _cus = await customer.findById(cus?._id);
+// await Promise.all(customers.map(async (cus: any) => {    
+//     const _cus = await customer.findById(cus?._id);
     
-    const orderExists = await order.exists({ customer: cus?._id, status: "payment_received" });
-    const lineupExists = await lineup.exists({ customer: cus?._id });
+//     const orderExists = await order.exists({ customer: cus?._id, status: "payment_received" });
+//     const lineupExists = await lineup.exists({ customer: cus?._id });
     
-    let returning = false;
+//     let returning = false;
     
-    if (orderExists || lineupExists) {
-      returning = true;
-    }
+//     if (orderExists || lineupExists) {
+//       returning = true;
+//     }
     
-    if (returning === false) {
-      if (_cus?.createdAt) {
-            const createdAt = new Date(_cus.createdAt);
-            const currentDate = new Date();
+//     if (returning === false) {
+//       if (_cus?.createdAt) {
+//             const createdAt = new Date(_cus.createdAt);
+//             const currentDate = new Date();
     
-            const timeDifference = currentDate.getTime() - createdAt.getTime();
-            const daysDifference = timeDifference / (1000 * 3600 * 24);
+//             const timeDifference = currentDate.getTime() - createdAt.getTime();
+//             const daysDifference = timeDifference / (1000 * 3600 * 24);
 
-            const minutesDifference = timeDifference / (1000 * 60); 
+//             const minutesDifference = timeDifference / (1000 * 60); 
     
-            if (Math.floor(minutesDifference) === 300) {
-                // console.log('5 hours welcome email 1')
-              await welcomeEmail2(_cus.email, {customer: _cus?._id})
+//             if (Math.floor(minutesDifference) === 300 && _cus.EMAILS.welcome.welcome2 === false ) {
+//                 console.log('5 hours welcome email 2')
+//               await welcomeEmail2(_cus.email, {customer: _cus?._id}) 
+//               _cus.EMAILS.welcome.welcome2 = true
+//               await _cus.save()
 
-            }
+//             }
 
-            if (Math.floor(daysDifference) === 2) {
-                // console.log('3 days welcome email 2')
-                await welcomeEmail3(_cus.email, {customer: _cus?._id})
-            }
+//             if (Math.floor(daysDifference) === 2 && _cus.EMAILS.welcome.welcome3 === false ) {
+//                 console.log('3 days welcome email 3')
+//                 // await welcomeEmail3(_cus.email, {customer: _cus?._id}) 
+//                 _cus.EMAILS.welcome.welcome3 = true
+//                 await _cus.save()
+//             }
 
-            if (Math.floor(daysDifference) === 4) {
-              // console.log('5 day welcome email 3')
-                await welcomeEmail4(_cus.email, {customer: _cus?._id})
-            }
-            if (Math.floor(daysDifference) === 9) {
-              // console.log('10 day welcome email 4')
-              await welcomeEmail5(_cus.email, {customer: _cus?._id})
-            }
-            if (Math.floor(daysDifference) === 14) {
-              // console.log('15 day welcome email 5')
-              await welcomeEmail6(_cus.email, {customer: _cus?._id})
-            }
-            if (Math.floor(daysDifference) === 19) {
-              // console.log('20 day welcome email 6')
-              await welcomeEmail7(_cus.email, {customer: _cus?._id})
-            }
-            if (Math.floor(daysDifference) === 24) {
-              // console.log('25 day welcome email 7')
-              await welcomeEmail8(_cus.email, {customer: _cus?._id})
-            }
+//             if (Math.floor(daysDifference) === 4 && _cus.EMAILS.welcome.welcome4 === false) {
+//               console.log('5 day welcome email 4')
+//                 await welcomeEmail4(_cus.email, {customer: _cus?._id}) 
+//                 _cus.EMAILS.welcome.welcome4 = true
+//                 await _cus.save()
+//             }
+//             if (Math.floor(daysDifference) === 9 && _cus.EMAILS.welcome.welcome5 === false) {
+//               console.log('10 day welcome email 5')
+//               await welcomeEmail5(_cus.email, {customer: _cus?._id}) 
+//               _cus.EMAILS.welcome.welcome5 = true
+//               await _cus.save()
+//             }
+//             if (Math.floor(daysDifference) === 14 && _cus.EMAILS.welcome.welcome6 === false) {
+//               console.log('15 day welcome email 6')
+//               await welcomeEmail6(_cus.email, {customer: _cus?._id}) 
+//               _cus.EMAILS.welcome.welcome6 = true
+//               await _cus.save()
+//             }
+//             if (Math.floor(daysDifference) === 19 && _cus.EMAILS.welcome.welcome7 === false) {
+//               console.log('20 day welcome email 7')
+//               await welcomeEmail7(_cus.email, {customer: _cus?._id}) 
+//               _cus.EMAILS.welcome.welcome7 = true
+//               await _cus.save()
+//             }
+//             if (Math.floor(daysDifference) === 24 && _cus.EMAILS.welcome.welcome8 === false) {
+//               // console.log('25 day welcome email 8')
+//               await welcomeEmail8(_cus.email, {customer: _cus?._id}) 
+//               _cus.EMAILS.welcome.welcome8 = true
+//               await _cus.save()
+//             }
 
-        }
-
-
-    }
+//         }
+    
+//     }
             
-}));
+// }));
 
-} catch (error) {
-    console.error('Error updating settings:', error);
-}
+// } catch (error) {
+//     console.error('Error updating settings:', error);
+// }
 
-};
+// };
 
 export async function AllCartEmails(){
 
@@ -614,36 +627,46 @@ export async function AllCustomerRetentionEmails(){
 
     await Promise.all(customers.map(async (cus: any) => {
         const _cus = await customer.findById(cus?._id);
-
+                
             if (_cus?.createdAt) {
-                const createdAt = new Date(_cus.createdAt);
-                const currentDate = new Date();
-        
-                const monthsDifference = 
-                (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
-                (currentDate.getMonth() - createdAt.getMonth());
-            
-            // Check for exact monthly anniversary
-            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
-                if (_cus?.level === 'Newbie') {
-                  // console.log('Sending customer retention email 1');
-                  await customerRetention1(_cus?.email!, {customer: _cus?._id})
-                }
-            }
-            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
-                if (_cus?.level === 'Newbie') {
-                  // console.log('Sending customer retention email 2');
-                  await customerRetention2(_cus?.email!, {customer: _cus?._id})
-                    }
-                } 
-                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
-                    if (_cus?.level === 'Newbie') {
-                      // console.log('Sending customer retention email 3');
-                      await customerRetention3(_cus?.email!, {customer: _cus?._id})
-                    }
-                }
-             }
-            
+              const createdAt = new Date(_cus.createdAt);
+              const currentDate = new Date();
+          
+              const monthsDifference = 
+                  (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
+                  (currentDate.getMonth() - createdAt.getMonth());
+          
+              if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate() && 
+                  currentDate.getHours() === createdAt.getHours() && 
+                  currentDate.getMinutes() === createdAt.getMinutes()) {
+                  
+                  if (_cus?.level === 'Newbie' || _cus?.level === null) {
+                      console.log('Sending customer retention email 1');
+                      await customerRetention1(_cus?.email!, { customer: _cus?._id });
+                  }
+              }
+          
+              if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate() && 
+                  currentDate.getHours() === createdAt.getHours() && 
+                  currentDate.getMinutes() === createdAt.getMinutes()) {
+                  
+                  if (_cus?.level === 'Newbie' || _cus?.level === null) {
+                      console.log('Sending customer retention email 2');
+                      await customerRetention2(_cus?.email!, { customer: _cus?._id });
+                  }
+              }
+          
+              if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate() && 
+                  currentDate.getHours() === createdAt.getHours() && 
+                  currentDate.getMinutes() === createdAt.getMinutes()) {
+                  
+                  if (_cus?.level === 'Newbie' || _cus?.level === null) {
+                      console.log('Sending customer retention email 3');
+                      await customerRetention3(_cus?.email!, { customer: _cus?._id });
+                  }
+              }
+          }
+          
     }));
 
     } catch (error) {

@@ -16686,9 +16686,7 @@ const body = `
                     </tr>
                     <tr>
                         <td align="center">
-                            <a class="ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                href="#">Download app
-                            </a>
+                            
                             <a class="ctaButton" style="background: #FE7E00; color: black;" aria-label=""
                                 href="https://www.eatnourisha.com">Visit website
                             </a>
