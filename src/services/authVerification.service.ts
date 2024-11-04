@@ -8,8 +8,8 @@ import { nanoid } from "nanoid";
 // import { EmailService, Template } from "./email.service";
 // import { isTesting } from "../config";
 import { NourishaBus } from "../libs";
-import { sendMobilResetEmail, sendWelcomeEmail } from "./authEmail.service";
-// import { welcomeEmail1 } from "./Marketing/bluePrint.service";
+import { sendMobilResetEmail } from "./authEmail.service";
+import { welcomeEmail1 } from "./Marketing/bluePrint.service";
 // import { EmailQueue } from "../queues";
 // import EmailService, { Template } from "./email.service";
 
@@ -155,8 +155,8 @@ export class AuthVerificationService {
       name: acc?.first_name!
     }
 
-    // await welcomeEmail1(acc?.email, {customer:payload.userId})
-    await sendWelcomeEmail(payload.email, payload)
+    await welcomeEmail1(acc?.email, {customer:payload.userId})
+    // await sendWelcomeEmail(payload.email, payload)
     console.log("\nEMAIL VERIFICATION CODE", verification?.code);
 
     return verification as AuthVerification;
