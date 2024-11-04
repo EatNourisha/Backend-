@@ -28,6 +28,170 @@ export class Address {
   @prop()
   postcode: string;
 }
+export class welcome {
+  @prop({default:false})
+  welcome1: boolean;
+
+  @prop({default:false})
+  welcome2: boolean;
+
+  @prop({default:false})
+  welcome3: boolean;
+
+  @prop({default:false})
+  welcome4: boolean;
+
+  @prop({default:false})
+  welcome5: boolean;
+
+  @prop({default:false})
+  welcome6: boolean;
+
+  @prop({default:false})
+  welcome7: boolean;
+
+  @prop({default:false})
+  welcome8: boolean;
+}
+export class reengage {
+  @prop({default:false})
+  reengage1: boolean;
+
+  @prop({default:false})
+  reengage2: boolean;
+
+  @prop({default:false})
+  reengage3: boolean;
+
+  @prop({default:false})
+  reengage4: boolean;
+
+  @prop({default:false})
+  reengage5: boolean;
+
+  @prop({default:false})
+  reengage6: boolean;
+
+}
+export class postsub {
+  @prop({default:false})
+  postsub1: boolean;
+
+  @prop({default:false})
+  postsub2: boolean;
+
+  @prop({default:false})
+  postsub3: boolean;
+
+  @prop({default:false})
+  postsub4: boolean;
+
+  @prop({default:false})
+  postsub5: boolean;
+
+  @prop({default:false})
+  postsub6: boolean;
+
+  @prop({default:false})
+  postsub7: boolean;
+
+  @prop({default:false})
+  postsub8: boolean;
+
+  @prop({default:false})
+  postsub9: boolean;
+
+  @prop({default:false})
+  postsub10: boolean;
+
+  @prop({default:false})
+  postsub11: boolean;
+
+  @prop({default:false})
+  postsub12: boolean;
+
+  @prop({default:false})
+  postsub13: boolean;
+}
+
+export class cart {
+  @prop({default:false})
+  cart1: boolean;
+
+  @prop({default:false})
+  cart2: boolean;
+
+  @prop({default:false})
+  cart3: boolean;
+
+  @prop({default:false})
+  cart4: boolean;
+
+  @prop({default:false})
+  cart5: boolean;
+
+  @prop({default:false})
+  cart6: boolean;
+
+  @prop({default:false})
+  cart7: boolean;
+
+  @prop({default:false})
+  cart8: boolean;
+
+  @prop({default:false})
+  cart9: boolean;
+}
+
+export class course {
+  @prop({default:false})
+  course1: boolean;
+
+  @prop({default:false})
+  course2: boolean;
+
+  @prop({default:false})
+  course3: boolean;
+
+  @prop({default:false})
+  course4: boolean;
+
+}
+
+export class retention {
+  @prop({default:false})
+  retention1: boolean;
+
+  @prop({default:false})
+  retention2: boolean;
+
+  @prop({default:false})
+  retention3: boolean;
+
+  @prop({default:false})
+  retention4: boolean;
+
+}
+
+export class Emails {
+  @prop()
+  welcome: welcome;
+
+  @prop()
+  reengage: reengage;
+
+  @prop()
+  postsub: postsub;
+
+  @prop()
+  course: course;
+
+  @prop()
+  retention: retention;
+
+  @prop()
+  cart: cart;
+}
 
 export enum DeliveryDay {
   MONDAY = "monday",
@@ -174,6 +338,9 @@ export class Customer extends BaseEntity {
 
   @prop()
   activeLineup: boolean;
+
+  @prop()
+  EMAILS: Emails;
 
 
 }

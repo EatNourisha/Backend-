@@ -250,7 +250,13 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
    }
    }
 
-    
+   if (trans.status === 'successful' && trans.itemRefPath === 'Subscription') {
+    if (cus) {
+      cus.activeLineup = false;
+      await cus.save();
+    }
+  }
+      
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
       console.log('ZAPIER EVENT FOR SUB', response.data);
