@@ -12,7 +12,7 @@ import { NourishaBus } from "../../libs";
 import LineupEventListener from "../../listeners/lineup.listener";
 import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
-import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "services/Marketing/bluePrint.service";
+import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
 // import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecilaEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
 
 export class MealLineupService {
