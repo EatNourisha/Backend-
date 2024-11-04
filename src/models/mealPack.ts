@@ -123,6 +123,13 @@ export class MealPack extends BaseEntity {
   @prop({ type: MealInfo, _id: false })
   mealInfo?: MealInfo;
 
+  @prop({ ref: () => "Customer" })
+  lastEditedBy?: Ref<Customer>;
+
+  @prop()
+  lastEdited?: string;
+
+
 
 }
 

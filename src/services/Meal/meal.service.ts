@@ -59,13 +59,13 @@ export class MealService {
     return _meal_pack;
   }
 
-  async updateMealPack(id: string, dto: Partial<CreateMealPackDto>, roles: string[]): Promise<MealPack> {
+  async updateMealPack(customerId: string, id: string, dto: Partial<CreateMealPackDto>, roles: string[]): Promise<MealPack> {
     if (!!dto?.price) validateFields(dto.price, ["amount"]);
     removeForcedInputs(dto?.price!, ["previousAmount"]);
 
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.UPDATE, PermissionScope.ALL]);
 
-    let _meal = await mealPack.findById(id).lean<MealPack>().exec();
+    let _meal = await mealPack.findById(id).lean<MealPack>().populate({path: 'lastEditedBy'}).exec();
     if (!_meal) throw createError("Meal pack does not exist", 404);
 
     dto.price = {
@@ -74,6 +74,7 @@ export class MealService {
       deliveryFee: dto?.price?.deliveryFee ?? _meal?.price?.deliveryFee,
     } as any;
 
+    const _cus = await customer.findById(customerId)
 
     _meal = await mealPack
       .findByIdAndUpdate(
@@ -84,6 +85,8 @@ export class MealService {
           // product_id: product?.id ?? _meal?.product_id,
           // price_id: price?.id ?? _meal?.price_id,
           image_url: dto?.image_url,
+          lastEditedBy: _cus?._id,
+          lastEdited: `${_meal.lastEditedBy.first_name} ${_meal.lastEditedBy.last_name}`
           // image_url: !_meal?.image_url && dto?.images ? dto?.images[0] : _meal?.image_url,
         },
         { new: true }
@@ -169,7 +172,7 @@ export class MealService {
 
     Object.assign(queries, { orderType: { $in: ["single order", "subscription", "both", null] } });
 
-    return await mealpaginate("mealPack", queries, filters);
+    return await paginate("mealPack", queries, filters);
   }
   
   async getBulkMealPacksAdmin(
@@ -254,11 +257,10 @@ export class MealService {
 
   async getMealPackById(id: string, roles: string[]): Promise<MealPack> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-    const _meal_pack = await mealPack.findById(id).populate("meals").lean<MealPack>().exec();
+    const _meal_pack = await mealPack.findById(id).populate(["meals", "lastEditedBy"]).lean<MealPack>().exec();
     if (!_meal_pack) throw createError("Meal pack not found", 404);
     return _meal_pack;
   }
-
   static async checkMealExists(key: keyof Meal, value: string): Promise<boolean> {
     const count = await meal.countDocuments({ [key]: value }).exec();
     return count > 0;

@@ -4190,8 +4190,9 @@ export async function welcomeEmail1(email: string, payload: any) {
                         border="0"
                       >
                         <tr>
-                        ${_order?.orderExtras?.map((ord) => {
-                          return `                          <td
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                         
+                           <td
                             class="stack-column"
                             style="
                               background-color: white;
@@ -4282,7 +4283,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                         class="ctaButton"
                         style="background: #def54c; color: #000"
                         aria-label="Claim Welcome Discount Now"
-                        href="#"
+                        href="https://www.eatnourisha.com"
                         >Complete Your Order Now
                       </a>
                     </td>
@@ -4420,7 +4421,14 @@ export async function welcomeEmail1(email: string, payload: any) {
   
   export async function cartAbandonment2(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
+      const _order = await order.findById(payload.orderId).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec()
+
     const subject = `Still Thinking About Your Nourisha Feast?`;
   
 const body = `
@@ -4731,6 +4739,8 @@ const body = `
                         border="0"
                       >
                         <tr>
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                          
                           <td
                             class="stack-column"
                             style="
@@ -4750,7 +4760,7 @@ const body = `
                               <tr>
                                 <td class="stack-column-center">
                                   <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
+                                    src="${ord.item.image_url}"
                                     alt="food"
                                     style="
                                       margin-bottom: 12px;
@@ -4770,7 +4780,7 @@ const body = `
                                       font-weight: 800;
                                     "
                                   >
-                                    £15.00
+                                    £${ord.item.price.amount}.00
                                   </p>
                                   <p
                                     style="
@@ -4779,123 +4789,15 @@ const body = `
                                       font-weight: 600;
                                     "
                                   >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
+                                    ${ord.item.name}
                                   </p>
                                 </td>
                               </tr>
                             </table>
                           </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column-center">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column-center">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
+
+                        `;
+                      }).join('')}
                         </tr>
                       </table>
                     </td>
@@ -5084,7 +4986,14 @@ const body = `
   
   export async function cartAbandonment3(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
+      const _order = await order.findById(payload.orderId).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec()
+
     const subject = `Hi ${cus.first_name}, Your Nourisha Meal Cart Misses You!
   
   `;
@@ -5395,6 +5304,8 @@ const body = `
                         border="0"
                       >
                         <tr>
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                          
                           <td
                             class="stack-column"
                             style="
@@ -5414,7 +5325,7 @@ const body = `
                               <tr>
                                 <td class="stack-column-center">
                                   <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
+                                    src="${ord.item.image_url}"
                                     alt="food"
                                     style="
                                       margin-bottom: 12px;
@@ -5434,7 +5345,7 @@ const body = `
                                       font-weight: 800;
                                     "
                                   >
-                                    £15.00
+                                    £${ord.item.price.amount}.00
                                   </p>
                                   <p
                                     style="
@@ -5443,123 +5354,15 @@ const body = `
                                       font-weight: 600;
                                     "
                                   >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
+                                    ${ord.item.name}
                                   </p>
                                 </td>
                               </tr>
                             </table>
                           </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column-center">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column-center">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
+
+                        `;
+                      }).join('')}
                         </tr>
                       </table>
                     </td>
@@ -5759,7 +5562,14 @@ const body = `
   
   export async function cartAbandonment4(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
+      const _order = await order.findById(payload.orderId).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec()
+
     const subject = `Almost There! Secure Your African and Asian Delights Today! 🌎
   `;
   const body = 
@@ -6070,6 +5880,8 @@ const body = `
                         border="0"
                       >
                         <tr>
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                          
                           <td
                             class="stack-column"
                             style="
@@ -6089,7 +5901,7 @@ const body = `
                               <tr>
                                 <td class="stack-column-center">
                                   <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
+                                    src="${ord.item.image_url}"
                                     alt="food"
                                     style="
                                       margin-bottom: 12px;
@@ -6109,7 +5921,7 @@ const body = `
                                       font-weight: 800;
                                     "
                                   >
-                                    £15.00
+                                    £${ord.item.price.amount}.00
                                   </p>
                                   <p
                                     style="
@@ -6118,123 +5930,15 @@ const body = `
                                       font-weight: 600;
                                     "
                                   >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
+                                    ${ord.item.name}
                                   </p>
                                 </td>
                               </tr>
                             </table>
                           </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column-center">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column-center">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
+
+                        `;
+                      }).join('')}
                         </tr>
                       </table>
                     </td>
@@ -6447,7 +6151,14 @@ const body = `
   
   export async function cartAbandonment5(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
+      const _order = await order.findById(payload.orderId).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec()
+
     const subject = `Your Time Is Precious- Let Us Handle Lunch & Dinner For You!
   
   `;
@@ -6764,6 +6475,8 @@ const body = `
                         border="0"
                       >
                         <tr>
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                          
                           <td
                             class="stack-column"
                             style="
@@ -6783,7 +6496,7 @@ const body = `
                               <tr>
                                 <td class="stack-column-center">
                                   <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
+                                    src="${ord.item.image_url}"
                                     alt="food"
                                     style="
                                       margin-bottom: 12px;
@@ -6803,7 +6516,7 @@ const body = `
                                       font-weight: 800;
                                     "
                                   >
-                                    £15.00
+                                    £${ord.item.price.amount}.00
                                   </p>
                                   <p
                                     style="
@@ -6812,123 +6525,15 @@ const body = `
                                       font-weight: 600;
                                     "
                                   >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
+                                    ${ord.item.name}
                                   </p>
                                 </td>
                               </tr>
                             </table>
                           </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column-center">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column-center">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
+
+                        `;
+                      }).join('')}
                         </tr>
                       </table>
                     </td>
@@ -7097,7 +6702,14 @@ const body = `
   
   export async function cartAbandonment6(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
+      const _order = await order.findById(payload.orderId).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+ 
+      ]).lean<Order>().exec()
+
     const subject = `Spice Up Your Food Game With Nourisha
   
   `;
@@ -7416,6 +7028,8 @@ const body = `
                         border="0"
                       >
                         <tr>
+                        ${_order?.orderExtras?.slice(0,3).map((ord) => {
+                          return `                          
                           <td
                             class="stack-column"
                             style="
@@ -7435,7 +7049,7 @@ const body = `
                               <tr>
                                 <td class="stack-column-center">
                                   <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
+                                    src="${ord.item.image_url}"
                                     alt="food"
                                     style="
                                       margin-bottom: 12px;
@@ -7455,7 +7069,7 @@ const body = `
                                       font-weight: 800;
                                     "
                                   >
-                                    £15.00
+                                    £${ord.item.price.amount}.00
                                   </p>
                                   <p
                                     style="
@@ -7464,123 +7078,15 @@ const body = `
                                       font-weight: 600;
                                     "
                                   >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
+                                    ${ord.item.name}
                                   </p>
                                 </td>
                               </tr>
                             </table>
                           </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td
-                            class="stack-column"
-                            style="
-                              background-color: white;
-                              padding: 10px;
-                              border-radius: 12px;
-                              margin-top: 10px;
-                            "
-                          >
-                            <table
-                              role="presentation"
-                              width="100%"
-                              cellspacing="0"
-                              cellpadding="0"
-                              border="0"
-                            >
-                              <tr>
-                                <td class="stack-column-center">
-                                  <img
-                                    src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/v1/email_template/nssanagzu5kahfrufm9g"
-                                    alt="food"
-                                    style="
-                                      margin-bottom: 12px;
-                                      display: block;
-                                      border-radius: 8px;
-                                    "
-                                  />
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="stack-column-center">
-                                  <p
-                                    style="
-                                      color: #030517;
-                                      margin-bottom: 0;
-                                      font-size: 24px;
-                                      font-weight: 800;
-                                    "
-                                  >
-                                    £15.00
-                                  </p>
-                                  <p
-                                    style="
-                                      margin-bottom: 0;
-                                      font-size: 18px;
-                                      font-weight: 600;
-                                    "
-                                  >
-                                    Jollof Rice, Peppered Beef, Fried Plantain
-                                    Side
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
+
+                        `;
+                      }).join('')}
                         </tr>
                       </table>
                     </td>
@@ -20246,7 +19752,7 @@ const body = `
     );
   };
   
-  export async function SpecilaEmail(email: string, payload: any) {
+  export async function SpecialEmail(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
   
     const subject = `Roll out the Red Carpet For Our Top Trail Blazer! You!`;

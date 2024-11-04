@@ -12,6 +12,7 @@ import { NourishaBus } from "../../libs";
 import LineupEventListener from "../../listeners/lineup.listener";
 import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
+import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "services/Marketing/bluePrint.service";
 // import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecilaEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
 
 export class MealLineupService {
@@ -213,60 +214,56 @@ export class MealLineupService {
     const now = new Date();
 
     const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-    console.log('Days Since', daysSinceReset)
     const lastLineupDate = _cusLineup!.createdAt;
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
-    console.log('Last Lineup', LastLineup)
 
     
     if(daysSinceReset <= 30){
       if (customerData!.lineupCount === 3) {
-        // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
-    
-        console.log('your next meal is on us')
+        await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
           
           customerData!.level ='Novice'
           await customerData?.save()
-          // await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+          await NoviceEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Novice'){
           customerData!.level ='OG'
           await customerData?.save()
-          // await OGEmail(customerData?.email!, {customer: customerData?._id})
+          await OGEmail(customerData?.email!, {customer: customerData?._id})
         }else
     
         if(customerData!.level === 'OG'){
           customerData!.level ='Upgraded'
           await customerData?.save()
-          // await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
+          await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
         }
         if(customerData!.level === 'Upgraded'){
           customerData!.level ='Rich'
           await customerData?.save()
-          // await RichEmail(customerData?.email!, {customer: customerData?._id})
+          await RichEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Rich'){
           customerData!.level ='Insider'
           await customerData?.save()
-          // await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+          await InsiderEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Insider'){
           customerData!.level ='Special'
           await customerData?.save()
-          // await SpecilaEmail(customerData?.email!, {customer: customerData?._id})
+          await SpecialEmail(customerData?.email!, {customer: customerData?._id})
         }
         if(customerData!.level === 'Special'){
           customerData!.level ='Hero'
           await customerData?.save()
-          // await HeroEmail(customerData?.email!, {customer: customerData?._id})
+          await HeroEmail(customerData?.email!, {customer: customerData?._id})
     
         }else
         if(customerData!.level === 'Hero'){
           customerData!.level ='Ambassador'
           await customerData?.save()
-          // await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+          await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
         }
         await customerData?.save()
     
@@ -286,8 +283,8 @@ export class MealLineupService {
       }
 
     } 
+
     if(daysSinceReset > 30){
-      console.log('Greater than 30', daysSinceReset)
       if(LastLineup <= 7 && customerData!.lineupCount === 4){
         customerData!.lineupCount = 0;
         customerData!.lastLineupReset = now;
@@ -491,56 +488,55 @@ export class MealLineupService {
     const now = new Date();
 
     const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-    console.log('Days Since', daysSinceReset)
     const lastLineupDate = _cusLineup!.createdAt;
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
-    console.log('Last Lineup', LastLineup)
 
     if(daysSinceReset <= 30){
-     if (customerData!.lineupCount === 3) {
-        // await loyaltyreward(customerData?.email!, {customer: customerData?._id})    
+      if (customerData!.lineupCount === 3) {
+        await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+    
         if(customerData!.level === 'Newbie' || customerData!.level === null){
           
           customerData!.level ='Novice'
           await customerData?.save()
-          // await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+          await NoviceEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Novice'){
           customerData!.level ='OG'
           await customerData?.save()
-          // await OGEmail(customerData?.email!, {customer: customerData?._id})
+          await OGEmail(customerData?.email!, {customer: customerData?._id})
         }else
     
         if(customerData!.level === 'OG'){
           customerData!.level ='Upgraded'
           await customerData?.save()
-          // await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
+          await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
         }
         if(customerData!.level === 'Upgraded'){
           customerData!.level ='Rich'
           await customerData?.save()
-          // await RichEmail(customerData?.email!, {customer: customerData?._id})
+          await RichEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Rich'){
           customerData!.level ='Insider'
           await customerData?.save()
-          // await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+          await InsiderEmail(customerData?.email!, {customer: customerData?._id})
         }else
         if(customerData!.level === 'Insider'){
           customerData!.level ='Special'
           await customerData?.save()
-          // await SpecilaEmail(customerData?.email!, {customer: customerData?._id})
+          await SpecialEmail(customerData?.email!, {customer: customerData?._id})
         }
         if(customerData!.level === 'Special'){
           customerData!.level ='Hero'
           await customerData?.save()
-          // await HeroEmail(customerData?.email!, {customer: customerData?._id})
+          await HeroEmail(customerData?.email!, {customer: customerData?._id})
     
         }else
         if(customerData!.level === 'Hero'){
           customerData!.level ='Ambassador'
           await customerData?.save()
-          // await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+          await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
         }
         await customerData?.save()
     
@@ -560,8 +556,8 @@ export class MealLineupService {
       }
 
     } 
+    
     if(daysSinceReset > 30){
-      console.log('Greater than 30', daysSinceReset)
       if(LastLineup <= 7 && customerData!.lineupCount === 4){
         customerData!.lineupCount = 0;
         customerData!.lastLineupReset = now;

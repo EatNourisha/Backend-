@@ -18,7 +18,7 @@ export class MealController {
   async updateMealPack(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, customer, params } = req;
-      const data = await service.updateMealPack(params.id, body, customer.roles);
+      const data = await service.updateMealPack(customer.sub, params.id, body, customer.roles);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);
