@@ -154,10 +154,14 @@ async getOpenOrdersHistory(
     populate: [
       { path: 'breakfast.mealId' },
       { path: 'breakfast.extraId' },
+      { path: 'breakfast.proteinId' },
       { path: 'lunch.mealId' },
       { path: 'lunch.extraId' },
+      { path: 'lunch.proteinId' },
       { path: 'dinner.mealId' },
-      { path: 'dinner.extraId' }
+      { path: 'dinner.extraId' },
+      { path: 'dinner.proteinId' }
+
     ]
   })) 
 
@@ -185,14 +189,18 @@ async getClosedOrdersHistory(
     populate: [
       { path: 'breakfast.mealId' },
       { path: 'breakfast.extraId' },
+      { path: 'breakfast.proteinId' },
       { path: 'lunch.mealId' },
       { path: 'lunch.extraId' },
+      { path: 'lunch.proteinId' },
       { path: 'dinner.mealId' },
-      { path: 'dinner.extraId' }
+      { path: 'dinner.extraId' },
+      { path: 'dinner.proteinId' }
+
     ]
   })) 
 
-  const _lineup = await lineup.find({customer: customer_id, delivery_date: { $lt: new Date() }})
+  const _lineup = await lineup.find({customer: customer_id})
   .populate(pops)
   .populate({path: 'plan'})
   .lean<MealLineup>()
@@ -201,45 +209,6 @@ async getClosedOrdersHistory(
 
   return {_orders, _lineup};
 }
-
-
-// async getOpenOrdersHistory(
-//   customer_id: string,
-//   roles: string[],
-// ){
-//   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-//   const _order = await Promise.all([
-//     order.find({customer: customer_id, delivery_date: { $gt: new Date() }}).populate( [
-//       {path: "customer"},
-//       {path: "orderExtras.item"},
-//       {path: "orderExtras.protein"},
-//       {path: "orderExtras.swallow"},
-
-//     ]).lean<Order>().sort({createdAt:-1}).exec(),
-
-//   ])
-
-//   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-//     path: day,
-//     populate: [
-//       { path: 'breakfast.mealId' },
-//       { path: 'breakfast.extraId' },
-//       { path: 'lunch.mealId' },
-//       { path: 'lunch.extraId' },
-//       { path: 'dinner.mealId' },
-//       { path: 'dinner.extraId' }
-//     ]
-//   })) 
-
-//   const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
-//   .populate(pops)
-//   .lean<MealLineup>()
-//   .exec();
-
-//   // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
-//   // const _orders = _order as Order[];
-//   return {_order, _lineup};
-// }
 
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
     validateFields(dto, ["status"]);
