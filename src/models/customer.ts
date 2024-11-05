@@ -173,25 +173,25 @@ export class retention {
 
 }
 
-export class Emails {
-  @prop()
-  welcome: welcome;
+// export class Emails {
+//   @prop()
+//   welcome: welcome;
 
-  @prop()
-  reengage: reengage;
+//   @prop()
+//   reengage: reengage;
 
-  @prop()
-  postsub: postsub;
+//   @prop()
+//   postsub: postsub;
 
-  @prop()
-  course: course;
+//   @prop()
+//   course: course;
 
-  @prop()
-  retention: retention;
+//   @prop()
+//   retention: retention;
 
-  @prop()
-  cart: cart;
-}
+//   @prop()
+//   cart: cart;
+// }
 
 export enum DeliveryDay {
   MONDAY = "monday",
@@ -340,7 +340,10 @@ export class Customer extends BaseEntity {
   activeLineup: boolean;
 
   @prop()
-  EMAILS: Emails;
+  WELCOMEMAILS: welcome;
+
+  @prop()
+  REENGAGEEMAILS: reengage;
 
 
 }
