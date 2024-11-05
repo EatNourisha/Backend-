@@ -254,7 +254,7 @@ cron.schedule('* */1 * * *', async () => {
 // Email Marketing Blueprint Automation
 //*********************************************************** */
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('* */5 * * *', async () => {
     console.log("######### BluePrint emails Job runs every 1 min");
     try {
         await AllWelcomeEmails()
