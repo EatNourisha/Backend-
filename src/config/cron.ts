@@ -258,7 +258,7 @@ cron.schedule('* */5 * * *', async () => {
     console.log("######### BluePrint emails Job runs every 5 min");
     try {
         await AllWelcomeEmails()
-        await AllCartEmails()
+        await AllCartEmails() 
         await AllReEngagementEmails()
         await AllCustomerRetentionEmails()
 
