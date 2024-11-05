@@ -4,7 +4,7 @@ import { MailchimpService } from "./mailchimp.service";
 import { SenderService } from "./sender.service";
 import customer, { Address } from "../../models/customer";
 import { lineup, order } from "../../models";
-import { customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6 } from "./bluePrint.service";
+import { cartAbandonment1, cartAbandonment10, cartAbandonment11, cartAbandonment2, cartAbandonment3, cartAbandonment4, cartAbandonment5, cartAbandonment6, cartAbandonment7, cartAbandonment8, cartAbandonment9, customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2, welcomeEmail3, welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -65,118 +65,118 @@ export class MarketingService {
 // Marketing Email Blueprint
 //****************************************************** */
 
-// export async function AllWelcomeEmails() {
+export async function AllWelcomeEmails() {
 
-//   try {
-//     const customers = await customer.find();
+  try {
+    const customers = await customer.find();
 
-// await Promise.all(customers.map(async (cus: any) => {    
-//     const _cus = await customer.findById(cus?._id);
+await Promise.all(customers.map(async (cus: any) => {    
+    const _cus = await customer.findById(cus?._id);
     
-//     const orderExists = await order.exists({ customer: cus?._id, status: "payment_received" });
-//     const lineupExists = await lineup.exists({ customer: cus?._id });
+    const orderExists = await order.exists({ customer: cus?._id, status: "payment_received" });
+    const lineupExists = await lineup.exists({ customer: cus?._id });
     
-//     let returning = false;
+    let returning = false;
     
-//     if (orderExists || lineupExists) {
-//       returning = true;
-//     }
+    if (orderExists || lineupExists) {
+      returning = true;
+    }
     
-//     if (returning === false) {
-//       if (_cus?.createdAt) {
-//             const createdAt = new Date(_cus.createdAt);
-//             const currentDate = new Date();
+    if (returning === false) {
+      if (_cus?.createdAt) {
+            const createdAt = new Date(_cus.createdAt);
+            const currentDate = new Date();
     
-//             const timeDifference = currentDate.getTime() - createdAt.getTime();
-//             const daysDifference = timeDifference / (1000 * 3600 * 24);
+            const timeDifference = currentDate.getTime() - createdAt.getTime();
+            const daysDifference = timeDifference / (1000 * 3600 * 24);
 
-//             const minutesDifference = timeDifference / (1000 * 60); 
+            const minutesDifference = timeDifference / (1000 * 60); 
     
-//             if (Math.floor(minutesDifference) === 300 ) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome2: false };
+            if (Math.floor(minutesDifference) === 300 ) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome2: false };
           
-//               if (_cus.WELCOMEMAILS.welcome2 === false) {
-//                   console.log('5 hours welcome email 2');
-//                   await welcomeEmail2(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome2 = true;
-//               }
-//             }
+              if (_cus.WELCOMEMAILS.welcome2 === false) {
+                  console.log('5 hours welcome email 2');
+                  await welcomeEmail2(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome2 = true;
+              }
+            }
 
-//             if (Math.floor(daysDifference) === 2) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome3: false };
+            if (Math.floor(daysDifference) === 2) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome3: false };
           
-//               if (_cus.WELCOMEMAILS.welcome3 === false) {
-//                   console.log('3 days welcome email 3');
-//                   await welcomeEmail3(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome3 = true;
-//               }
-//           }
+              if (_cus.WELCOMEMAILS.welcome3 === false) {
+                  console.log('3 days welcome email 3');
+                  await welcomeEmail3(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome3 = true;
+              }
+          }
           
            
-//             if (Math.floor(daysDifference) === 4 ) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome4: false };
+            if (Math.floor(daysDifference) === 4 ) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome4: false };
           
-//               if (_cus.WELCOMEMAILS.welcome4 === false) {
-//                   console.log('5 days welcome email 4');
-//                   await welcomeEmail4(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome4 = true;
-//               }
-//             }
-//             if (Math.floor(daysDifference) === 9) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome5: false };
+              if (_cus.WELCOMEMAILS.welcome4 === false) {
+                  console.log('5 days welcome email 4');
+                  await welcomeEmail4(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome4 = true;
+              }
+            }
+            if (Math.floor(daysDifference) === 9) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome5: false };
           
-//               if (_cus.WELCOMEMAILS.welcome5 === false) {
-//                   console.log('10 days welcome email 5');
-//                   await welcomeEmail5(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome5 = true;
-//               }
-//             }
-//             if (Math.floor(daysDifference) === 14) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome6: false };
+              if (_cus.WELCOMEMAILS.welcome5 === false) {
+                  console.log('10 days welcome email 5');
+                  await welcomeEmail5(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome5 = true;
+              }
+            }
+            if (Math.floor(daysDifference) === 14) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome6: false };
           
-//               if (_cus.WELCOMEMAILS.welcome6 === false) {
-//                   console.log('15 days welcome email 6');
-//                   await welcomeEmail6(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome6 = true;
-//               }
-//             }
-//             if (Math.floor(daysDifference) === 19 && _cus.WELCOMEMAILS.welcome7 === false) {
-//               console.log('20 day welcome email 7')
-//               await welcomeEmail7(_cus.email, {customer: _cus?._id}) 
-//               _cus.WELCOMEMAILS.welcome7 = true
-//               await _cus.save()
-//             }
-//             if (Math.floor(daysDifference) === 24) {
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
-//               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome8: false };
+              if (_cus.WELCOMEMAILS.welcome6 === false) {
+                  console.log('15 days welcome email 6');
+                  await welcomeEmail6(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome6 = true;
+              }
+            }
+            if (Math.floor(daysDifference) === 19 && _cus.WELCOMEMAILS.welcome7 === false) {
+              console.log('20 day welcome email 7')
+              await welcomeEmail7(_cus.email, {customer: _cus?._id}) 
+              _cus.WELCOMEMAILS.welcome7 = true
+              await _cus.save()
+            }
+            if (Math.floor(daysDifference) === 24) {
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || {};
+              _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome8: false };
           
-//               if (_cus.WELCOMEMAILS.welcome8 === false) {
-//                   console.log('25 days welcome email 8');
-//                   await welcomeEmail8(_cus.email, { customer: _cus?._id });
-//                   _cus.WELCOMEMAILS.welcome8 = true;
-//               }
-//             }
+              if (_cus.WELCOMEMAILS.welcome8 === false) {
+                  console.log('25 days welcome email 8');
+                  await welcomeEmail8(_cus.email, { customer: _cus?._id });
+                  _cus.WELCOMEMAILS.welcome8 = true;
+              }
+            }
 
-//             await _cus.save()
+            await _cus.save()
 
 
-//         }
+        }
 
     
-//     }
+    }
             
-// }));
+}));
 
-// } catch (error) {
-//     console.error('Error updating settings:', error);
-// }
+} catch (error) {
+    console.error('Error updating settings:', error);
+}
 
-// };
+};
 
 export async function AllCartEmails(){
 
@@ -205,8 +205,19 @@ await Promise.all(_orders.map(async (ord: any) => {
                 returning = true;
             }
             if (!returning) {
-                // console.log('Cart abandonment email 1 sent');
-                // await cartAbandonment1(_cus?.email!, {customer: _cus?._id})
+              if(_cus){
+                
+                _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                _cus.CARTEMAILS = _cus.CARTEMAILS || { cart1: false };
+                
+                if (_cus.CARTEMAILS.cart1 === false) {
+                  await cartAbandonment1(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                  _cus.CARTEMAILS.cart1 = true;
+                  
+                  // console.log('Cart abandonment email 1 sent');
+                  }
+
+                }
             }
         }
 
@@ -220,7 +231,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 // console.log('Cart abandonment email 2 sent');
-                // await cartAbandonment2(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart2: false };
+              
+                  if (_cus.CARTEMAILS.cart2 === false) {
+                      await cartAbandonment2(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart2 = true;
+
+                  }
+
+                }
 
             }
 
@@ -235,7 +257,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 3 runs here
-                // await cartAbandonment3(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart3: false };
+              
+                  if (_cus.CARTEMAILS.cart3 === false) {
+                      await cartAbandonment3(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart3 = true;
+
+                  }
+
+                }
               }
         }
         if (Math.floor(daysDifference) === 11) {
@@ -248,7 +281,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 4 runs here
-                // await cartAbandonment4(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart4: false };
+              
+                  if (_cus.CARTEMAILS.cart4 === false) {
+                      await cartAbandonment4(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart4 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -262,7 +306,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 5 runs here
-                // await cartAbandonment5(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart5: false };
+              
+                  if (_cus.CARTEMAILS.cart5 === false) {
+                      await cartAbandonment5(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart5 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -276,7 +331,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 6 runs here
-                // await cartAbandonment6(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart6: false };
+              
+                  if (_cus.CARTEMAILS.cart6 === false) {
+                      await cartAbandonment6(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart6 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -291,7 +357,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 7 runs here
-                // await cartAbandonment7(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart7: false };
+              
+                  if (_cus.CARTEMAILS.cart7 === false) {
+                      await cartAbandonment7(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart7 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -306,7 +383,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 8 runs here
-                // await cartAbandonment8(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart8: false };
+              
+                  if (_cus.CARTEMAILS.cart8 === false) {
+                      await cartAbandonment8(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart8 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -321,7 +409,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 9 runs here
-                // await cartAbandonment9(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart9: false };
+              
+                  if (_cus.CARTEMAILS.cart9 === false) {
+                      await cartAbandonment9(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart9 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -336,7 +435,18 @@ await Promise.all(_orders.map(async (ord: any) => {
             }
             if (returning === false) {
                 //  Cart Abdonment Email 10 runs here
-                // await cartAbandonment10(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart10: false };
+              
+                  if (_cus.CARTEMAILS.cart10 === false) {
+                      await cartAbandonment10(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart10 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -350,8 +460,19 @@ await Promise.all(_orders.map(async (ord: any) => {
                 returning = true;
             }
             if (returning === false) {
-                //  Cart Abdonment Email 6 runs here
-                // await cartAbandonment1(_cus?.email!, {customer: _cus?._id, orderId: _order._id})
+                //  Cart Abdonment Email 11 runs here
+                if(_cus){
+                                              
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || {};
+                  _cus.CARTEMAILS = _cus.CARTEMAILS || { cart11: false };
+              
+                  if (_cus.CARTEMAILS.cart11 === false) {
+                      await cartAbandonment11(_cus.email, { customer: _cus?._id, orderId: _order?._id });
+                      _cus.CARTEMAILS.cart11 = true;
+
+                  }
+
+                }
               }
 
         }
@@ -397,11 +518,23 @@ export async function AllPostSubEmails(){
                     returning = true;
                 }
                 if (returning === false) {
-                    // console.log('Post Subscription email 1 sent');
-                    await postsub1(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub1: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub1 === false) {
+                        await postsub1(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub1 = true;
+
+                    }
+
+                  }
+
                 }
 
                 }
+
             if (Math.floor(daysDifference) === 19) {
                 const lineupExists = await lineup.exists({ customer: _cus?._id, createdAt:  { $gte: _order.createdAt! } });
         
@@ -412,7 +545,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                     // console.log('Post Subscription email 2 sent');
-                    await postsub2(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub2: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub2 === false) {
+                        await postsub2(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub2 = true;
+
+                    }
+
+                  }
+
 
                 }
             }
@@ -426,7 +571,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 3 sent');
-                  await postsub3(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub3: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub3 === false) {
+                        await postsub3(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub3 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -440,7 +597,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 4 sent');
-                  await postsub4(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub4: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub4 === false) {
+                        await postsub4(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub4 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -454,7 +623,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 5 sent');
-                  await postsub5(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub5: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub5 === false) {
+                        await postsub5(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub5 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -469,7 +650,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 6 sent');
-                  await postsub6(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub6: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub6 === false) {
+                        await postsub6(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub6 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -484,7 +677,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 7 sent');
-                  await postsub7(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub7: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub7 === false) {
+                        await postsub7(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub7 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -499,7 +704,19 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 8 sent');
-                  await postsub8(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub8: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub8 === false) {
+                        await postsub8(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub8 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -514,11 +731,25 @@ export async function AllPostSubEmails(){
                 }
                 if (returning === false) {
                   // console.log('Post Subscription email 9 sent');
-                  await postsub9(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || {};
+                    _cus.POSTSUBEEMAILS = _cus.POSTSUBEEMAILS || { postsub9: false };
+                
+                    if (_cus.POSTSUBEEMAILS.postsub9 === false) {
+                        await postsub9(_cus.email, { customer: _cus?._id });
+                        _cus.POSTSUBEEMAILS.postsub9 = true;
+
+                    }
+
+                  }
+
 
                 }
 
             }
+
+            await _cus?.save()
 
         }
 
@@ -561,8 +792,19 @@ export async function AllReEngagementEmails(){
                     returning = true;
                 }
                 if (returning === false) {
-                  // console.log('Re-engagement email 1 sent');
-                  await Reengage1(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage1: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage1 === false) {
+                        // console.log('14 days welcome email 1');
+                        await Reengage1(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage1 = true;
+
+                    }
+
+                  }
                 }
 
                 }
@@ -576,7 +818,17 @@ export async function AllReEngagementEmails(){
                 }
                 if (returning === false) {
                   // console.log('Re-engagement email 2 sent');
-                  await Reengage2(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage2: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage2 === false) {
+                        await Reengage2(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage2 = true;
+
+                    }
+
+                  }
                 }
             }
             if (Math.floor(daysDifference) === 41) {
@@ -589,7 +841,18 @@ export async function AllReEngagementEmails(){
                 }
                 if (returning === false) {
                   // console.log('Re-engagement email 3 sent');
-                  await Reengage3(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage3: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage3 === false) {
+                        await Reengage3(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage3 = true;
+
+                    }
+
+                  }
                 }
 
             }
@@ -603,7 +866,18 @@ export async function AllReEngagementEmails(){
                 }
                 if (returning === false) {
                   // console.log('Re-engagement email 4 sent');
-                  await Reengage4(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage4: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage4 === false) {
+                        await Reengage4(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage4 = true;
+
+                    }
+
+                  }
                 }
 
             }
@@ -617,7 +891,19 @@ export async function AllReEngagementEmails(){
                 }
                 if (returning === false) {
                   // console.log('Re-engagement email 5 sent');
-                  await Reengage5(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage5: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage5 === false) {
+                        await Reengage5(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage5 = true;
+
+                    }
+
+                  }
+
                 }
 
             }
@@ -632,7 +918,18 @@ export async function AllReEngagementEmails(){
                 }
                 if (returning === false) {
                   // console.log('Re-engagement email 6 sent');
-                  await Reengage6(_cus?.email!, {customer: _cus?._id})
+                  if(_cus){
+                                              
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
+                    _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage6: false };
+                
+                    if (_cus.REENGAGEEMAILS.reengage6 === false) {
+                        await Reengage6(_cus.email, { customer: _cus?._id });
+                        _cus.REENGAGEEMAILS.reengage1 = true;
+
+                    }
+
+                  }
                 }
 
             }
@@ -651,76 +948,6 @@ export async function AllReEngagementEmails(){
     }
 
 }
-
-    // export async function AllReEngagementEmails() {
-    //   try {
-    //       const _orders = await order.find({ status: 'processing' }).sort({ createdAt: -1 });
-
-    //       await Promise.all(_orders.map(async (ord: any) => {
-    //           try {
-    //               const _cus = await customer.findById(ord?.customer);
-    //               if (!_cus) return;
-
-    //               const _order = await order.findOne({ customer: _cus._id }).sort({ createdAt: -1 });
-    //               if (!_order || _order.status !== 'processing' || !_order.createdAt) return;
-
-    //               const createdAt = new Date(_order.createdAt);
-    //               const currentDate = new Date();
-    //               const timeDifference = currentDate.getTime() - createdAt.getTime();
-    //               const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
-
-    //               const lineupExists = await lineup.exists({ customer: _cus._id, createdAt: { $gte: _order.createdAt } });
-    //               if (lineupExists) return;
-
-    //               switch (daysDifference) {
-    //                   case 13:
-    //                       console.log('Re-engagement email 1 sent');
-
-    //                       _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || {};
-    //                       _cus.REENGAGEEMAILS = _cus.REENGAGEEMAILS || { reengage1: false };
-                      
-    //                       if (_cus.REENGAGEEMAILS.reengage1 === false) {
-    //                           console.log('14 days welcome email 1');
-    //                           await welcomeEmail2(_cus.email, { customer: _cus?._id });
-    //                           _cus.REENGAGEEMAILS.reengage1 = true;
-    //                           await _cus?.save()
-
-    //                           console.log('Re- email 1 sent', _cus.REENGAGEEMAILS.reengage1);
-
-    //                       }
-    //                       // await Reengage1(_cus.email, { customer: _cus._id });
-    //                       break;
-    //                   case 27:
-    //                       console.log('Re-engagement email 2 sent');
-    //                       // await Reengage2(_cus.email, { customer: _cus._id });
-    //                       break;
-    //                   case 41:
-    //                       console.log('Re-engagement email 3 sent');
-    //                       // await Reengage3(_cus.email, { customer: _cus._id });
-    //                       break;
-    //                   case 55:
-    //                       console.log('Re-engagement email 4 sent');
-    //                       // await Reengage4(_cus.email, { customer: _cus._id });
-    //                       break;
-    //                   case 69:
-    //                       console.log('Re-engagement email 5 sent');
-    //                       // await Reengage5(_cus.email, { customer: _cus._id });
-    //                       break;
-    //                   case 83:
-    //                       console.log('Re-engagement email 6 sent');
-    //                       // await Reengage6(_cus.email, { customer: _cus._id });
-    //                       break;
-
-    //                     }
-    //                     await _cus?.save()
-    //           } catch (err) {
-    //               console.error("Error processing order:", ord._id, err);
-    //           }
-    //       }));
-    //   } catch (err) {
-    //       console.error("Error fetching orders:", err);
-    //   }
-    // }
 
 export async function AllCustomerRetentionEmails(){
     try {
@@ -785,25 +1012,45 @@ export async function AllEmailCourseEmails(){
             if (_cus?.createdAt) {
                 const createdAt = new Date(_cus.createdAt);
                 const currentDate = new Date();
-        
+
                 const monthsDifference = 
                 (currentDate.getFullYear() - createdAt.getFullYear()) * 12 +
                 (currentDate.getMonth() - createdAt.getMonth());
-            
-            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate()) {
-              await emailCourse1(_cus?.email!, {customer: _cus?._id})
+        
+            if (monthsDifference === 1 && currentDate.getDate() === createdAt.getDate() && 
+                currentDate.getHours() === createdAt.getHours() && 
+                currentDate.getMinutes() === createdAt.getMinutes()) {
+                
+                    // console.log('Sending customer retention email 2');
+                    await emailCourse1(_cus?.email!, { customer: _cus?._id });
             }
-            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate()) {
-              await emailCourse2(_cus?.email!, {customer: _cus?._id})
-                } 
-                if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate()) {
-                  await emailCourse3(_cus?.email!, {customer: _cus?._id})
-                }
-                if (monthsDifference === 4 && currentDate.getDate() === createdAt.getDate()) {
-                  await emailCourse4(_cus?.email!, {customer: _cus?._id})
-                }
-             }
-            
+
+            if (monthsDifference === 2 && currentDate.getDate() === createdAt.getDate() && 
+                currentDate.getHours() === createdAt.getHours() && 
+                currentDate.getMinutes() === createdAt.getMinutes()) {
+                
+                    // console.log('Sending customer retention email 3');
+                    await emailCourse2(_cus?.email!, {customer: _cus?._id})
+                  }
+
+            if (monthsDifference === 3 && currentDate.getDate() === createdAt.getDate() && 
+                currentDate.getHours() === createdAt.getHours() && 
+                currentDate.getMinutes() === createdAt.getMinutes()) {
+                
+                    // console.log('Sending customer retention email 4');
+                    await emailCourse3(_cus?.email!, {customer: _cus?._id})
+                  }
+
+        
+            if (monthsDifference === 4 && currentDate.getDate() === createdAt.getDate() && 
+                currentDate.getHours() === createdAt.getHours() && 
+                currentDate.getMinutes() === createdAt.getMinutes()) {
+                
+                    // console.log('Sending customer retention email 5');
+                    await emailCourse4(_cus?.email!, {customer: _cus?._id})
+                  }
+
+                }            
     }));
 
     } catch (error) {

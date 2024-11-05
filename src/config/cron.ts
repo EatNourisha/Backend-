@@ -1,4 +1,4 @@
-import {  sendGiftRecipient, sendGiftSent } from "../services";
+import {  AllCartEmails, AllCustomerRetentionEmails, AllReEngagementEmails, AllWelcomeEmails, sendGiftRecipient, sendGiftSent } from "../services";
 import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
@@ -254,21 +254,21 @@ cron.schedule('* */1 * * *', async () => {
 // Email Marketing Blueprint Automation
 //*********************************************************** */
 
-// cron.schedule('* * * * *', async () => {
-//     console.log("######### BluePrint emails Job runs every 1 min");
-//     try {
-//         await AllWelcomeEmails()
-//         await AllCartEmails()
-//         await AllReEngagementEmails()
-//         await AllCustomerRetentionEmails()
+cron.schedule('* * * * *', async () => {
+    console.log("######### BluePrint emails Job runs every 1 min");
+    try {
+        await AllWelcomeEmails()
+        await AllCartEmails()
+        await AllReEngagementEmails()
+        await AllCustomerRetentionEmails()
 
-//     } catch (error) {
-//         console.error('Error updating settings:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
 
 
 
