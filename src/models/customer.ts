@@ -141,6 +141,12 @@ export class cart {
 
   @prop({default:false})
   cart9: boolean;
+
+  @prop({default:false})
+  cart10: boolean;
+
+  @prop({default:false})
+  cart11: boolean;
 }
 
 export class course {
@@ -344,6 +350,12 @@ export class Customer extends BaseEntity {
 
   @prop()
   REENGAGEEMAILS: reengage;
+
+  @prop()
+  POSTSUBEEMAILS: postsub;
+
+  @prop()
+  CARTEMAILS: cart;
 
 
 }
