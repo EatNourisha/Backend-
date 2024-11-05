@@ -85,8 +85,8 @@ export class MealService {
           // product_id: product?.id ?? _meal?.product_id,
           // price_id: price?.id ?? _meal?.price_id,
           image_url: dto?.image_url,
-          lastEditedBy: _cus?._id,
-          lastEdited: `${_meal.lastEditedBy.first_name} ${_meal.lastEditedBy.last_name}`
+          lastEditedBy: _cus?._id
+          // lastEdited: `${_meal.lastEditedBy.first_name} ${_meal.lastEditedBy.last_name}`
           // image_url: !_meal?.image_url && dto?.images ? dto?.images[0] : _meal?.image_url,
         },
         { new: true }
