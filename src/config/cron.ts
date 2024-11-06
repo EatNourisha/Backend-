@@ -254,7 +254,7 @@ cron.schedule('* */1 * * *', async () => {
 // Email Marketing Blueprint Automation
 //*********************************************************** */
 
-cron.schedule('* */5 * * *', async () => {
+cron.schedule('*/5 * * * *', async () => {
     console.log("######### BluePrint emails Job runs every 5 min WELCOM");
     try {
         await AllWelcomeEmails()
@@ -268,7 +268,7 @@ cron.schedule('* */5 * * *', async () => {
 });
 
 
-cron.schedule('* */10 * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     console.log("######### BluePrint emails Job runs every 10 min - CART");
     try {
         await AllCartEmails()
@@ -294,7 +294,7 @@ cron.schedule('0 0 */1 * *', async () => {
     timezone: "Europe/London"
 });
 
-cron.schedule('0 0 */ * *', async () => {
+cron.schedule('0 0 */2 * *', async () => {
     console.log("######### BluePrint emails Job runs every 48 hours - RETENTION");
     try {
         await AllCustomerRetentionEmails()

@@ -97,7 +97,7 @@ await Promise.all(customers.map(async (cus: any) => {
               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome2: false };
           
               if (_cus.WELCOMEMAILS.welcome2 === false) {
-                  console.log('5 hours welcome email 2');
+                  // console.log('5 hours welcome email 2');
                   await welcomeEmail2(_cus.email, { customer: _cus?._id });
                   _cus.WELCOMEMAILS.welcome2 = true;
               }
@@ -130,7 +130,7 @@ await Promise.all(customers.map(async (cus: any) => {
               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome5: false };
           
               if (_cus.WELCOMEMAILS.welcome5 === false) {
-                  console.log('10 days welcome email 5');
+                  // console.log('10 days welcome email 5');
                   await welcomeEmail5(_cus.email, { customer: _cus?._id });
                   _cus.WELCOMEMAILS.welcome5 = true;
               }
@@ -140,13 +140,13 @@ await Promise.all(customers.map(async (cus: any) => {
               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome6: false };
           
               if (_cus.WELCOMEMAILS.welcome6 === false) {
-                  console.log('15 days welcome email 6');
+                  // console.log('15 days welcome email 6');
                   await welcomeEmail6(_cus.email, { customer: _cus?._id });
                   _cus.WELCOMEMAILS.welcome6 = true;
               }
             }
             if (Math.floor(daysDifference) === 19 && _cus.WELCOMEMAILS.welcome7 === false) {
-              console.log('20 day welcome email 7')
+              // console.log('20 day welcome email 7')
               await welcomeEmail7(_cus.email, {customer: _cus?._id}) 
               _cus.WELCOMEMAILS.welcome7 = true
               await _cus.save()
@@ -156,7 +156,7 @@ await Promise.all(customers.map(async (cus: any) => {
               _cus.WELCOMEMAILS = _cus.WELCOMEMAILS || { welcome8: false };
           
               if (_cus.WELCOMEMAILS.welcome8 === false) {
-                  console.log('25 days welcome email 8');
+                  // console.log('25 days welcome email 8');
                   await welcomeEmail8(_cus.email, { customer: _cus?._id });
                   _cus.WELCOMEMAILS.welcome8 = true;
               }
