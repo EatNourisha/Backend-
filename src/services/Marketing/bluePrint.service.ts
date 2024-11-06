@@ -292,7 +292,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                     <td class="stack-column" width="60%">
                       <h2>Our Menu - Diverse Tastes for Every Palatee</h2>
                       <p style="font-size: 24px">
-                        Our subscription options offer:
+                        Our meal plan options offer:
                       </p>
                       <ul
                         style="
@@ -3738,7 +3738,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                 <p>To celebrate, we're offering two special Discounts.</p>
                 <ol>
                   <li>Save 5% on your first order</li>
-                  <li>Loyalty Reward - 99% off every 5th subscription</li>
+                  <li>Loyalty Reward - 99% off every 5th meal plan</li>
                 </ol>
                 <p>
                   Nourisha brings you the best of African, Asian and European
@@ -12906,7 +12906,7 @@ const body = `
                         Click “Refer a friend” in the home section of the app to
                         generate your unique referral link. <br />
                         Share your link with your friends and family. <br />
-                        When they sign up for a Nourisha subscription using your
+                        When they sign up for a Nourisha meal plan using your
                         link, you get £10 credited to you!
                       </p>
 
@@ -17900,7 +17900,7 @@ const body = `
                                             rewards as you explore the vibrant
                                             flavours of Africa, Asia and Europe carefully crafted with natural
                                             ingredients by our chefs.
-                                            Every meal you order, every subscription you start, brings you closer to
+                                            Every meal you order, every meal plan you start, brings you closer to
                                             becoming a Nourisha legend.</p>
                                         <p>Stay tuned for more updates on how to climb the rewards ladder!</p>
                                         <p>To level up, browse our mouth watering menus and order intercontinental meals
