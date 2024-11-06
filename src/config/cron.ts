@@ -1,4 +1,4 @@
-import {  AllCartEmails, AllCustomerRetentionEmails, AllReEngagementEmails, AllWelcomeEmails, sendGiftRecipient, sendGiftSent } from "../services";
+import {   AllCartEmails, AllCustomerRetentionEmails, AllReEngagementEmails, AllWelcomeEmails, sendGiftRecipient, sendGiftSent } from "../services";
 import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
@@ -255,15 +255,52 @@ cron.schedule('* */1 * * *', async () => {
 //*********************************************************** */
 
 cron.schedule('* */5 * * *', async () => {
-    console.log("######### BluePrint emails Job runs every 5 min");
+    console.log("######### BluePrint emails Job runs every 5 min WELCOM");
     try {
         await AllWelcomeEmails()
+
+    } catch (error) {
+        console.error('Error updating settings - AllWelcomeEmails:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+
+cron.schedule('* */10 * * *', async () => {
+    console.log("######### BluePrint emails Job runs every 10 min - CART");
+    try {
         await AllCartEmails()
+    } catch (error) {
+        console.error('Error updating settings - AllCartEmails:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+
+cron.schedule('0 0 */1 * *', async () => {
+    console.log("######### BluePrint emails Job runs every 24 hours- RENGAGEMENT");
+    try {
         await AllReEngagementEmails()
+
+    } catch (error) {
+        console.error('Error updating settings - AllReEngagementEmails :', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('0 0 */ * *', async () => {
+    console.log("######### BluePrint emails Job runs every 48 hours - RETENTION");
+    try {
         await AllCustomerRetentionEmails()
 
     } catch (error) {
-        console.error('Error updating settings:', error);
+        console.error('Error updating settings - AllCustomerRetentionEmails:', error);
     }
 }, {
     scheduled: true,
