@@ -477,6 +477,9 @@ await Promise.all(_orders.map(async (ord: any) => {
 
         }
 
+        await _cus?.save()
+
+
     }
 
 
