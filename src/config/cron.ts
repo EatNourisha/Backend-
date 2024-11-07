@@ -13,7 +13,7 @@ cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
 
     try {
-        const _lineup = await lineup.find({
+        const _lineup = await lineup.find({ 
             status: 'active',
             sub_end_date: {
                 $lt: new Date()
