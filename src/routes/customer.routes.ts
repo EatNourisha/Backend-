@@ -21,6 +21,7 @@ router.get("/:id", authGuard, controller.getCustomerById); // ✅
 // GET
 router.get("/", authGuard, controller.getCustomers); // ✅
 router.get("/:id", authGuard, controller.getCustomerById); // ✅
+router.get("/ranks/rank", controller.getCustomersByRank); // ✅
 
 // POST
 // router.post("/", authGuard, controller.createCustomer); // ✅
