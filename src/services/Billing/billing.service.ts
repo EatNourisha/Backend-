@@ -209,14 +209,14 @@ export class BillingService {
 
     let procode: string | undefined = dto?.promo_code?.toLowerCase()
 
-    // if(procode === 'signupsave5'){
-    //   if(cus?.newUser === false){
-    //     throw createError('Not eligible to use this coupon')
-    //   }
-    // }
-    // if(cus?.newUser === true){ 
-    //   procode = 'signupsave5'
-    // }
+    if(procode === 'signupsave5'){
+      if(cus?.newUser === false){
+        throw createError('Not eligible to use this coupon')
+      }
+    }
+    if(cus?.newUser === true){ 
+      procode = 'signupsave5'
+    }
 
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
