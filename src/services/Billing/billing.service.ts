@@ -216,7 +216,9 @@ export class BillingService {
     }
     if(cus?.newUser === true){ 
       procode = 'signupsave5'
-    } 
+    } else if(!cus?.newUser){
+      procode = ''
+    }
 
     if(dto.promo_code?.toLowerCase() !== 'signupsave5'){
       procode = dto.promo_code?.toLowerCase()
