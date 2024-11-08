@@ -253,9 +253,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
    if (trans.status === 'successful' && trans.itemRefPath === 'Subscription') {
     if (cus) {
       cus.activeLineup = false;
+      cus.POSTSUBEEMAILS = cus.POSTSUBEEMAILS || {};
+      cus.POSTSUBEEMAILS = cus.POSTSUBEEMAILS || { postsub0: false };
+  
       await cus.save();
     }
   }
+
+
       
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
