@@ -46,6 +46,8 @@ import { add } from "date-fns";
 import { MarketingService } from "./Marketing/marketing.service";
 import mealLineup from "../models/mealLineup";
 import { Referral1 } from "./Marketing/bluePrint.service";
+import { PipelineStage } from "mongoose";
+
 // import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
 
@@ -746,48 +748,6 @@ async validateEmail(email) {
   }
 
   
-//  static  async findInactiveCustomers() {
-//       const sixMonthsAgo = subMonths(new Date(2023, 11, 1), 10); 
-//       const fromDate = new Date(2023, 11, 1); 
-//     const today = new Date();
-
-//   const monthsAgo = differenceInMonths(today, fromDate);
-//   console.log('month', monthsAgo)
-  
-//       const allCustomers = await customer.find({
-//           createdAt: { $lte: new Date() }
-//       }).lean().exec();
-  
-//       const inactiveCustomers: InactiveCustomer[] = [];
-      
-//       for (const customer of allCustomers) {
-
-//     const customerIdStr = customer._id.toString();
-//     const cartExists = await cart.exists({ customer: customer._id });
-//     const lineupExists = await mealLineup.exists({ customer: customer._id });
-//     const alreadyExists = await inactiveusers.exists({ customer: customerIdStr });
-
-//         if (!cartExists && !lineupExists && !alreadyExists) {
-//             inactiveCustomers.push({
-//               customer: customer._id,
-//               email: customer.email,
-//               firstname: customer.first_name,
-//               lastname: customer.last_name,
-//               // address: ` ${customer?.address.city}`,
-//               phoneNumber: customer?.phone,
-//               ref_code: customer?.ref_code,
-//               reg_date: customer.createdAt ?? sixMonthsAgo ,
-//             });
-//         }
-//       }
-  
-//       if (inactiveCustomers.length > 0) {
-//           await inactiveusers.insertMany(inactiveCustomers);
-//       }
-  
-//       return inactiveCustomers;
-//   }
-  
 static async findInactiveCustomers() {
 
   const allCustomers = await customer.find({
@@ -828,5 +788,41 @@ static async findInactiveCustomers() {
   return inactiveusers.find({}).lean().exec(); // Return the list of inactive users if needed
 }
 
+
+
+
+async getCustomersByRank(filter: IPaginationFilter): Promise<any[]> {
+  const rankOrder = ["Ambassador", "Hero", "Special", "Insider", "Rich", "Upgraded", "OG", "Novice"];
+
+  // Define the aggregation pipeline with explicit types for each stage
+  const aggregationPipeline: PipelineStage[] = [
+    
+    {
+      $addFields: {
+        rankIndex: {
+          $switch: {
+            branches: rankOrder.map((rank, index) => ({
+              case: { $eq: ["$level", rank] },
+              then: index,
+            })),
+            default: rankOrder.length, 
+          }
+        }
+      }
+    },
+    { $sort: { rankIndex: 1, createdAt: -1 } }, 
+    {
+      $project: {
+        rankIndex: 0 
+      }
+    },
+    { $skip: (Math.abs(parseInt(filter?.page!)) - 1) * Math.abs(parseInt(filter?.limit!)) }, // Skip documents based on page and limit
+    { $limit: Math.abs(parseInt(filter?.limit!)) }
+  ];
+
+  // Execute the aggregation pipeline
+  const customers = await customer.aggregate(aggregationPipeline).exec();
+  return customers;
+}
 
 }
