@@ -159,6 +159,17 @@ export class CustomerController {
     }
   }
 
+  async getCustomersByRank(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query } = req;
+      const result = await service.getCustomersByRank( query as any);
+      sendResponse(res, 200, result);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
+
   // Admin
   async getCustomers(req: Request, res: Response, next: NextFunction) {
     try {
