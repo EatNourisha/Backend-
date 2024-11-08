@@ -216,7 +216,10 @@ export class BillingService {
     }
     if(cus?.newUser === true){ 
       procode = 'signupsave5'
-    }
+    } else if(!cus?.newUser ){
+        procode = '' ?? null
+      }
+
 
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
