@@ -146,7 +146,7 @@ async getOpenOrdersHistory(
   roles: string[],
 ){
   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-  const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } })
+  const orders = await paginate("order", {customer: customer_id, status: 'processing'})
   ;
 
   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
@@ -169,6 +169,7 @@ async getOpenOrdersHistory(
   .sort({createdAt: -1})
   .populate(pops)
   .populate({path: 'plan'})
+  .sort({ createdAt: -1 })
   .lean<MealLineup>()
   .exec();
 
@@ -182,7 +183,7 @@ async getClosedOrdersHistory(
   roles: string[],
 ) {
   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-  const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
+  const orders = await paginate("order", {customer: customer_id, status:'payment_received' });
 
   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
     path: day,
@@ -203,6 +204,7 @@ async getClosedOrdersHistory(
   const _lineup = await lineup.find({customer: customer_id})
   .populate(pops)
   .populate({path: 'plan'})
+  .sort({ createdAt: -1 })
   .lean<MealLineup>()
   .exec();
   const _orders = orders.data as Order[];
