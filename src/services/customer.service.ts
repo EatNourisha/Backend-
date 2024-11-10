@@ -229,48 +229,6 @@ async getCountriesById(_id: string) {
     return _customer;
   }
 
-  // async getCustomers(
-  //   roles: string[],
-  //   filters?: IPaginationFilter & {
-  //     has_lineup?: boolean;
-  //     has_subscription?: boolean;
-  //     searchPhrase?: string;
-  //     nin_roles: string;
-  //     populate: string;
-  //   }
-  // ): Promise<PaginatedDocument<Customer[]>> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-
-  //   let queries: any = {};
-  //   // let options: QueryOptions<any> = {}
-  //   if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
-  //   if (filters?.has_lineup) Object.assign(queries, { lineup: { $exists: Boolean(filters?.has_lineup) } });
-  //   if (filters?.has_subscription) {
-  //     Object.assign(queries, { subscription: { $exists: Boolean(filters?.has_lineup) }, "subscription.status": { $eq: "active" } });
-  //     // Object.assign(options, {populate: [{path: 'subscription', populate: ['plan']}]})
-  //   }
-
-  //   // Roles not-in(nin) customers `roles` array field
-  //   if (!!filters?.nin_roles) {
-  //     const role_names = String(filters.nin_roles).split(",");
-  //     const roles = (await RoleService.getRoleBySlugs(role_names)).map((r) => r?._id);
-  //     Object.assign(queries, { roles: { $nin: roles } });
-  //   }
-
-  //   return paginate("customer", queries, filters, {
-  //     populate: [
-  //       { path: "subscription", populate: ["plan"] },
-  //       { path: "preference.allergies" },
-  //       { path: "roles" },
-  //       { path: "delivery_info" },
-  //     ],
-  //     // sort: { subscription_status: -1 },
-  //   });
-  // }
-
   async getCustomers(
     roles: string[],
     filters?: IPaginationFilter & {
@@ -285,86 +243,128 @@ async getCountriesById(_id: string) {
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
-  
-    const aggregationPipeline: PipelineStage[] = [];
-  
-    if (filters?.searchPhrase) {
-      aggregationPipeline.push({
-        $match: { $text: { $search: filters.searchPhrase } },
-      });
-    }
-  
-    if (filters?.has_lineup !== undefined) {
-      aggregationPipeline.push({
-        $match: { lineup: { $exists: filters.has_lineup } },
-      });
-    }
-  
+
+    let queries: any = {};
+    // let options: QueryOptions<any> = {}
+    if (!!filters?.searchPhrase) Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
+    if (filters?.has_lineup) Object.assign(queries, { lineup: { $exists: Boolean(filters?.has_lineup) } });
     if (filters?.has_subscription) {
-      aggregationPipeline.push({
-        $match: {
-          subscription: { $exists: true },
-          "subscription.status": "active",
-        },
-      });
+      Object.assign(queries, { subscription: { $exists: Boolean(filters?.has_lineup) }, "subscription.status": { $eq: "active" } });
+      // Object.assign(options, {populate: [{path: 'subscription', populate: ['plan']}]})
     }
-  
-    if (filters?.nin_roles) {
-      const roleNames = String(filters.nin_roles).split(",");
-      const roles = (await RoleService.getRoleBySlugs(roleNames)).map((r) => r?._id);
-      aggregationPipeline.push({
-        $match: { roles: { $nin: roles } },
-      });
+
+    // Roles not-in(nin) customers `roles` array field
+    if (!!filters?.nin_roles) {
+      const role_names = String(filters.nin_roles).split(",");
+      const roles = (await RoleService.getRoleBySlugs(role_names)).map((r) => r?._id);
+      Object.assign(queries, { roles: { $nin: roles } });
     }
-  
-    if (filters?.page && filters?.limit) {
-      aggregationPipeline.push(
-        { $skip: (Math.abs(parseInt(filters?.page!)) - 1) * Math.abs(parseInt(filters?.limit!)) },
-        { $limit: Math.abs(parseInt(filters?.limit!)) }
-      );
-    }
-  
-    if (filters?.populate) {
-      aggregationPipeline.push(
-        {
-          $lookup: {
-            from: "subscriptions",
-            localField: "subscription",
-            foreignField: "_id",
-            as: "subscription_details",
-          },
-        },
-        {
-          $lookup: {
-            from: "roles",
-            localField: "roles",
-            foreignField: "_id",
-            as: "roles_details",
-          },
-        },
-        {
-          $lookup: {
-            from: "preferences",
-            localField: "preference",
-            foreignField: "_id",
-            as: "preferences_details",
-          },
-        }
-      );
-    }
-  
-    if (aggregationPipeline.length === 0) {
-      aggregationPipeline.push({
-        $match: {},
-      });
-    }
-  
-    const customers = await customer.aggregate(aggregationPipeline).exec();
-  
-    return paginate("customer", {}, filters, {
-      data: customers,
+
+    return paginate("customer", queries, filters, {
+      populate: [
+        { path: "subscription", populate: ["plan"] },
+        { path: "preference.allergies" },
+        { path: "roles" },
+        { path: "delivery_info" },
+      ],
+      // sort: { subscription_status: -1 },
     });
   }
+
+  // async getCustomers(
+  //   roles: string[],
+  //   filters?: IPaginationFilter & {
+  //     has_lineup?: boolean;
+  //     has_subscription?: boolean;
+  //     searchPhrase?: string;
+  //     nin_roles: string;
+  //     populate: string;
+  //   }
+  // ): Promise<PaginatedDocument<Customer[]>> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
+  
+  //   const aggregationPipeline: PipelineStage[] = [];
+  
+  //   if (filters?.searchPhrase) {
+  //     aggregationPipeline.push({
+  //       $match: { $text: { $search: filters.searchPhrase } },
+  //     });
+  //   }
+  
+  //   if (filters?.has_lineup !== undefined) {
+  //     aggregationPipeline.push({
+  //       $match: { lineup: { $exists: filters.has_lineup } },
+  //     });
+  //   }
+  
+  //   if (filters?.has_subscription) {
+  //     aggregationPipeline.push({
+  //       $match: {
+  //         subscription: { $exists: true },
+  //         "subscription.status": "active",
+  //       },
+  //     });
+  //   }
+  
+  //   if (filters?.nin_roles) {
+  //     const roleNames = String(filters.nin_roles).split(",");
+  //     const roles = (await RoleService.getRoleBySlugs(roleNames)).map((r) => r?._id);
+  //     aggregationPipeline.push({
+  //       $match: { roles: { $nin: roles } },
+  //     });
+  //   }
+  
+  //   if (filters?.page && filters?.limit) {
+  //     aggregationPipeline.push(
+  //       { $skip: (Math.abs(parseInt(filters?.page!)) - 1) * Math.abs(parseInt(filters?.limit!)) },
+  //       { $limit: Math.abs(parseInt(filters?.limit!)) }
+  //     );
+  //   }
+  
+  //   if (filters?.populate) {
+  //     aggregationPipeline.push(
+  //       {
+  //         $lookup: {
+  //           from: "subscriptions",
+  //           localField: "subscription",
+  //           foreignField: "_id",
+  //           as: "subscription_details",
+  //         },
+  //       },
+  //       {
+  //         $lookup: {
+  //           from: "roles",
+  //           localField: "roles",
+  //           foreignField: "_id",
+  //           as: "roles_details",
+  //         },
+  //       },
+  //       {
+  //         $lookup: {
+  //           from: "preferences",
+  //           localField: "preference",
+  //           foreignField: "_id",
+  //           as: "preferences_details",
+  //         },
+  //       }
+  //     );
+  //   }
+  
+  //   if (aggregationPipeline.length === 0) {
+  //     aggregationPipeline.push({
+  //       $match: {},
+  //     });
+  //   }
+  
+  //   const customers = await customer.aggregate(aggregationPipeline).exec();
+  
+  //   return paginate("customer", {}, filters, {
+  //     data: customers,
+  //   });
+  // }
     
 
 
