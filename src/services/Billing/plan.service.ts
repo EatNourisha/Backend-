@@ -1,17 +1,14 @@
 import { Stripe } from "stripe";
 import config from "../../config";
 import { RoleService } from "../role.service";
-import { CreatePlanDto, IPaginationFilter } from "../../interfaces";
-// import { CreatePlanDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
+import { CreatePlanDto, IPaginationFilter, PaginatedDocument } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { Customer, customer, plan, Plan, Subscription } from "../../models";
-import { createError, createSlug, validateFields } from "../../utils";
-// import { createError, createSlug, paginate, validateFields } from "../../utils";
+import { createError, createSlug, paginate, validateFields } from "../../utils";
 import { SubscriptionInterval } from "../../models/plan";
 import { SubscriptionService } from "./subscription.service";
 import { add } from "date-fns";
 import { ScheduleQueue } from "../../queues";
-import { PipelineStage } from "mongoose";
 
 export class PlanService {
   private stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
@@ -93,110 +90,110 @@ export class PlanService {
     return _plan;
   }
 
-  // async getPlans(
-  //   // roles: string[],
-  //   filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string, interval?: string }
-  // ): Promise<PaginatedDocument<Plan[]>> {
-  //   const queries: any = {};
-  
-  //   if (filters?.searchPhrase) {
-  //     Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
-  //   }
-  
-  //   if (filters?.country) {
-  //     Object.assign(queries, { country: filters.country });
-  //   }
-  
-  //   if (filters?.continent) {
-  //     Object.assign(queries, { continent: filters.continent });
-  //   }
-  
-  //   if (filters?.interval) {
-  //     Object.assign(queries, { subscription_interval: filters.interval });
-  //   }
-  
-  //   const weekendQuery = filters?.weekend ? { weekend: filters.weekend } : {};
-  //   const fiveDayQuery = filters?.five_day ? { five_day: filters.five_day } : {};
-  
-  //   const fiveDayCount = await plan.countDocuments({ ...queries, ...fiveDayQuery });
-  
-  //   if (fiveDayCount === 0) {
-  //     Object.assign(queries, weekendQuery);
-  //   } else {
-  //     Object.assign(queries, fiveDayQuery, weekendQuery);
-  //   }
-  
-  //   return paginate("plan", queries, filters);
-  // }
-
   async getPlans(
-    filters?: IPaginationFilter & {
-      searchPhrase?: string;
-      weekend?: boolean;
-      five_day?: boolean;
-      country?: string;
-      continent?: string;
-      interval?: string;
-    }
-  ): Promise<any> {
-  
-    const aggregationPipeline: PipelineStage[] = [];
+    // roles: string[],
+    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string, interval?: string }
+  ): Promise<PaginatedDocument<Plan[]>> {
+    const queries: any = {};
   
     if (filters?.searchPhrase) {
-      aggregationPipeline.push({
-        $match: { $text: { $search: filters.searchPhrase } },
-      });
+      Object.assign(queries, { $text: { $search: filters?.searchPhrase } });
     }
   
     if (filters?.country) {
-      aggregationPipeline.push({
-        $match: { country: filters.country },
-      });
+      Object.assign(queries, { country: filters.country });
     }
   
     if (filters?.continent) {
-      aggregationPipeline.push({
-        $match: { continent: filters.continent },
-      });
+      Object.assign(queries, { continent: filters.continent });
     }
   
     if (filters?.interval) {
-      aggregationPipeline.push({
-        $match: { subscription_interval: filters.interval },
-      });
+      Object.assign(queries, { subscription_interval: filters.interval });
     }
   
-    if (filters?.five_day !== undefined) {
-      aggregationPipeline.push({
-        $match: { five_day: filters.five_day },
-      });
+    const weekendQuery = filters?.weekend ? { weekend: filters.weekend } : {};
+    const fiveDayQuery = filters?.five_day ? { five_day: filters.five_day } : {};
+  
+    const fiveDayCount = await plan.countDocuments({ ...queries, ...fiveDayQuery });
+  
+    if (fiveDayCount === 0) {
+      Object.assign(queries, weekendQuery);
+    } else {
+      Object.assign(queries, fiveDayQuery, weekendQuery);
     }
   
-    if (filters?.weekend !== undefined) {
-      aggregationPipeline.push({
-        $match: { weekend: filters.weekend },
-      });
-    }
-  
-    aggregationPipeline.push({
-      $sort: { createdAt: -1 },
-    });
-  
-  if (filters?.page && filters.limit) {
-    const skip = Math.abs((Math.max(parseInt(filters?.page!), 1) - 1) * parseInt(filters?.limit!)) || 0;
-    const limit = Math.abs(parseInt(filters?.limit!)) || 0;  
-    aggregationPipeline.push(
-      { $skip: skip },
-      { $limit: limit }
-    );
-
+    return paginate("plan", queries, filters);
   }
-  
-    const plans = await plan.aggregate(aggregationPipeline).exec();
-    const data = {totalCount: plans.length, data: plans};
 
-    return data
-  }
+  // async getPlans(
+  //   filters?: IPaginationFilter & {
+  //     searchPhrase?: string;
+  //     weekend?: boolean;
+  //     five_day?: boolean;
+  //     country?: string;
+  //     continent?: string;
+  //     interval?: string;
+  //   }
+  // ): Promise<any> {
+  
+  //   const aggregationPipeline: PipelineStage[] = [];
+  
+  //   if (filters?.searchPhrase) {
+  //     aggregationPipeline.push({
+  //       $match: { $text: { $search: filters.searchPhrase } },
+  //     });
+  //   }
+  
+  //   if (filters?.country) {
+  //     aggregationPipeline.push({
+  //       $match: { country: filters.country },
+  //     });
+  //   }
+  
+  //   if (filters?.continent) {
+  //     aggregationPipeline.push({
+  //       $match: { continent: filters.continent },
+  //     });
+  //   }
+  
+  //   if (filters?.interval) {
+  //     aggregationPipeline.push({
+  //       $match: { subscription_interval: filters.interval },
+  //     });
+  //   }
+  
+  //   if (filters?.five_day !== undefined) {
+  //     aggregationPipeline.push({
+  //       $match: { five_day: filters.five_day },
+  //     });
+  //   }
+  
+  //   if (filters?.weekend !== undefined) {
+  //     aggregationPipeline.push({
+  //       $match: { weekend: filters.weekend },
+  //     });
+  //   }
+  
+  //   aggregationPipeline.push({
+  //     $sort: { createdAt: -1 },
+  //   });
+  
+  // if (filters?.page && filters.limit) {
+  //   const skip = Math.abs((Math.max(parseInt(filters?.page!), 1) - 1) * parseInt(filters?.limit!)) || 0;
+  //   const limit = Math.abs(parseInt(filters?.limit!)) || 0;  
+  //   aggregationPipeline.push(
+  //     { $skip: skip },
+  //     { $limit: limit }
+  //   );
+
+  // }
+  
+  //   const plans = await plan.aggregate(aggregationPipeline).exec();
+  //   const data = {totalCount: plans.length, data: plans};
+
+  //   return data
+  // }
         
  
   async deletePlan(id: string, roles: string[]) {
