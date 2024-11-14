@@ -253,15 +253,26 @@ async getClosedOrdersHistory(
       throw createError('Coupon is only valid for a weekly plan subscription')
     }
 
-    if(coup === 'signupsave5'){
-      if(cus?.newUser === false){
-        throw createError('Not eligible to use this coupon')
-      }
-    }
+    // if(coup === 'signupsave5'){
+    //   if(cus?.newUser === false){
+    //     throw createError('Not eligible to use this coupon')
+    //   }
+    // }
   
-    if(cus?.newUser === true){
-      coup = 'signupsave5'
+    // if(cus?.newUser === true){
+    //   coup = 'signupsave5'
+    // }
+
+    if (coup === 'signupsave5' && cus?.newUser === false) {
+      throw createError('Not eligible to use this coupon');
     }
+    
+    if (cus?.newUser) {
+      coup = 'signupsave5';
+    } else {
+      coup = dto.coupon?.toLowerCase() === 'signupsave5' ? '' : dto.coupon?.toLowerCase();
+    }
+
   
     let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, coup!);
     const gift = await giftpurchase.findOne({ code: coup, status: 'active' }) 

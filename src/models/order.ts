@@ -9,7 +9,7 @@ import { MealExtras } from "./mealExtras";
 
 export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
-  PAID = "payment_received", // "processing payment"
+  PAID = "payment_received", // "Received payment"
   CANCELLED = "cancelled",
   CONFIRMING = "confirming", // "confirming payment"
   ACCEPTED = "accepted", // "order has been confirmed"

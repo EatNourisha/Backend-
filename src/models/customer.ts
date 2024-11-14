@@ -357,7 +357,8 @@ export class Customer extends BaseEntity {
   @prop()
   CARTEMAILS: cart;
 
-
+  @prop()
+  lastPasswordReset: string;
 }
 
 export default getModelForClass(Customer);
