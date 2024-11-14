@@ -6,6 +6,7 @@ const config = {
   // VERSION: process.env.VERSION as string,
   VERSION: "1.1.28",
   DB_URI: process.env.DATABASE_URL as string,
+  DB_URI_TEST: process.env.DATABASE_URL_TEST as string,
   // DB_URI: process.env.DATABASE_URL_PROD as string,
   JWT_SECRET: process.env.JWT_SECRET as string,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE as string,

@@ -177,3 +177,6 @@ app.use(handleError);
     console.log(`🚀 ${config.NAME} service::v${config.VERSION} listening on http://localhost:${config.PORT}`);
   });
 })(); // IIFE (Immediatly Invoked Function Express)
+
+
+// export default app;

@@ -4,13 +4,15 @@
   "type": "commonjs",
   "scripts": {
     "serve": "nodemon app.ts",
+    "test": "jest ",
+    "test:watch": "jest  --watchAll",
     "test:unit": "ENV_FILE=.env.test jest",
     "build": "rimraf dist && tsc && yarn copy-files",
     "copy-files": "copyfiles -u 1 src/**/*.{html,ejs} dist/src",
     "start": "node dist/app.js",
     "start:env": "cross-env NODE_ENV=production node dist/app.js",
     "container:deploy": "chmod +x ./deploy.sh && ./deploy.sh",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:error": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -32,16 +34,20 @@
     "@types/voucher-code-generator": "^1.1.1",
     "glob": "^11.0.0",
     "nodemon": "^2.0.20",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.6.3"
   },
   "dependencies": {
     "@bull-board/express": "^5.8.0",
+    "@faker-js/faker": "^9.2.0",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@mailchimp/mailchimp_transactional": "^1.0.50",
     "@sendgrid/mail": "^7.7.0",
     "@typegoose/typegoose": "^10.2.0",
     "@types/glob": "^8.1.0",
+    "@types/supertest": "^6.0.2",
     "axios": "^1.3.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
