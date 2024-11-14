@@ -478,10 +478,13 @@ async getClosedOrdersHistory(
       populate: [
         { path: 'breakfast.mealId' },
         { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
         { path: 'lunch.mealId' },
         { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
         { path: 'dinner.mealId' },
         { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
       ],
     }));
     
@@ -501,7 +504,8 @@ async getClosedOrdersHistory(
     const effectivePage = page ?? 1;
   
     const lineups = await lineup.find(filter)
-      .populate(pops)  
+      .populate(pops)
+      .populate('customer')
       .sort({ createdAt: -1 }) 
       .limit(effectiveLimit)  
       .skip((effectivePage - 1) * effectiveLimit)  
