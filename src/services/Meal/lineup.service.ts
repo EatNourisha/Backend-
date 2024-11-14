@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras, transaction, promoCode} from "../../models";
+import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras, transaction, promoCode, plan} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -69,6 +69,25 @@ export class MealLineupService {
         throw createError("Only monthly subscribers can create more than one lineup", 404);
       }
     }
+
+
+    const _plan = await plan.findById(subscriptionCheck?.plan)
+
+    if (_plan) {
+      const validSlugs = [
+        '7-days-weekly-plan',
+        'monthly-plan-wk',
+        'weekly-plan-wk',
+        'monthly-plan',
+        'monthly-meal-plan',
+        '7-days-weekly-plan'
+      ];
+      
+      if (validSlugs.includes(_plan.slug)) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+      }
+    }
+
 
   const mealSelectionCount: { [mealId: string]: number } = {};
     const mealIds = [
@@ -368,6 +387,23 @@ export class MealLineupService {
         else {
           deli_date = asianDels?.sun_tue;
         }
+      }
+    }
+
+    const _plan = await plan.findById(subscriptionCheck?.plan)
+
+    if (_plan) {
+      const validSlugs = [
+        '7-days-weekly-plan',
+        'monthly-plan-wk',
+        'weekly-plan-wk',
+        'monthly-plan',
+        'monthly-meal-plan',
+        '7-days-weekly-plan'
+      ];
+      
+      if (validSlugs.includes(_plan.slug)) {
+        validateFields(dto, ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
       }
     }
 

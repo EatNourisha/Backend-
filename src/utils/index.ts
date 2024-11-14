@@ -2,6 +2,7 @@ export { default as validateFields } from "./validateFields";
 export { default as setExpiration } from "./setExpiration";
 export { default as getUpdateOptions } from "./getUpdateOptions";
 export { default as createSlug } from "./createSlug";
+export { default as setUpTestDB } from "./setUpTestDB";
 
 export { sendError, createError, ErrorStatus, createStatusCodeError } from "./error";
 export { sendResponse } from "./response";

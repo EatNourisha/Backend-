@@ -142,28 +142,6 @@ cron.schedule('* */1 * * *', async () => {
     timezone: "Europe/London"
 });
 
-cron.schedule('* */1 * * *', async () => {
-    // console.log("#########777777 deactivate Job runs every 1 min");
-
-    try {
-        const _lineup = await lineup.find({
-            delivery_status: 'pending',
-            delivery_date: {
-                $lt: new Date()
-            }
-        });
-
-        await Promise.all(_lineup.map(async (line: any) => {
-            await line.updateOne({ delivery_status: 'delivered' });
-            
-        }));
-    } catch (error) {
-    }
-}, {
-    scheduled: true,
-    timezone: "Europe/London"
-});
-
 cron.schedule('0 0 * * 0', async () => {
     try {
         // console.log("#########777777 Job runs every week. sunday midnight");
