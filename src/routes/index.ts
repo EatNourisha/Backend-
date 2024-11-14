@@ -42,6 +42,7 @@ import bodyParser from "body-parser";
 import { GiftStatus } from "../models/giftPurchase";
 import {sendGiftBought, sendGiftRecipient, sendGiftSent}  from "../services/giftCardEmail.service";
 import axios from "axios";
+import { OrderStatus } from "../models/order";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 const routes = Router();
@@ -186,15 +187,17 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           reengage4: false, reengage5: false, reengage6: false
         }, cus.REENGAGEEMAILS || {});  
     
+        cus.newUser = false
         await cus.save();
-      }
-    }
-  
+      }  
 
-    if(cus){
-      cus.newUser = false
-      await cus?.save()
-    }
+      if(cus){
+        cus.newUser = false
+        await cus?.save()
+      }
+
+    }  
+  
 
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
     .then(response => {
@@ -258,6 +261,12 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
       }
     }
+    
+    const _ord = await order.findById(trans.item).exec()
+    if(_ord){
+      _ord.status = OrderStatus.PAID
+      await _ord.save()
+    }
 
     const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
     const lineupExists = await lineup.exists({ customer: cus?._id });
@@ -310,34 +319,16 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         reengage4: false, reengage5: false, reengage6: false
       }, cus.REENGAGEEMAILS || {});
 
-
-      // cus.POSTSUBEEMAILS = cus.POSTSUBEEMAILS || {};
-      // cus.POSTSUBEEMAILS = cus.POSTSUBEEMAILS || { 
-      //   postsub0: false, postsub1: false, postsub2: false, postsub3: false,
-      //   postsub4: false, postsub5: false, postsub6: false,
-      //   postsub7: false, postsub8: false, postsub9: false,
-      //    postsub10: false, postsub11: false,
-      //   postsub12: false, postsub13: false
-      // };
-  
-      
-      // cus.CARTEMAILS = cus.CARTEMAILS || {};
-      // cus.CARTEMAILS = cus.CARTEMAILS || { 
-      //   cart1: false, cart2: false, cart3: false,
-      //   cart4: false, cart5: false, cart6: false,
-      //   cart7: false, cart8: false, cart9: false,
-      //    cart10: false, cart11: false
-      // };
-
-      // cus.REENGAGEEMAILS = cus.REENGAGEEMAILS || {};
-      // cus.REENGAGEEMAILS = cus.REENGAGEEMAILS || { 
-      //   reengage1: false, reengage2: false, reengage3: false,
-      //   reengage4: false, reengage5: false, reengage6: false
-      // };
-
-  
+       cus.newUser = false  
       await cus.save();
     }
+
+    if(cus){
+      cus.newUser = false
+      await cus?.save()
+    }
+
+
   }
 
 

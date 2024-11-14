@@ -36,7 +36,8 @@ export class AuthVerificationService {
     const reason = AuthVerificationReason.ACCOUNT_RESET_VERIFICATION;
     const timeout = 60; // in minutes, should be 60 -> 1hr
 
-    const acc = await customer.findOne({ email }).lean<Customer>().exec();
+    const acc = await customer.findOne({ email }).exec();
+    // const acc = await customer.findOne({ email }).lean<Customer>().exec();
     if (!acc) throw createError("Customer not found", 404);
 
     const customer_id = acc?._id!;
@@ -61,6 +62,12 @@ export class AuthVerificationService {
     };
 
     // await NourishaBus.emit("customer:send_resetpassword_email_mobile", payload);
+    if (acc){
+      acc.lastPasswordReset = payload.code
+      await acc.save()
+
+    console.log(`Name: ${acc.first_name} ${acc.last_name}, Code: ${payload.code}`)
+    }
 
     await sendMobilResetEmail(payload.email, payload)
     // EmailQueue.add({type: "send_verification_email", ...payload})
