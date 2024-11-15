@@ -47,12 +47,8 @@ cron.schedule('* */1 * * *', async () => {
     try {
         const _lineup = await lineup.find({
             status: 'inactive',
-            // sub_end_date: {
-            //     $lt: new Date()
-            // }
-
             sub_end_date: {
-                $lt: new Date(new Date().setMonth(new Date().getMonth() - 1))
+                $lt: new Date(new Date().setMonth(new Date().getMonth() - 2))
             }
         });
 
