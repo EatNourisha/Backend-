@@ -807,7 +807,11 @@ export class MealLineupService {
     }));
     console.log("Silent", silent);
 
-    const _lineup = await lineup.findOne({ customer: customer_id }).populate(pops).lean<MealLineup>().exec();
+    const _lineup = await lineup.findOne({ customer: customer_id })
+    .populate(pops)
+    .populate('customer')
+    .sort({createdAt: -1})
+    .lean<MealLineup>().exec();
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup ?? {};
   }
