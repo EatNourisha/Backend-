@@ -275,6 +275,13 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             )
             .exec();
         }
+
+        if(cus){
+          cus.newUser = false;
+          await cus.save()
+
+          console.log('loggggggggggggg, this workeeeeeeeeed')
+        }
     
         if (trans?.status === "successful" && trans.itemRefPath === "Order") {
           if (cus) {
@@ -304,6 +311,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             await cus.save();
           }
         }
+
+        if(cus && cus?.newUser === true){
+          cus.newUser = false;
+          await cus.save()
+
+          console.log('loggggggggggggg2222222222, this workeeeeeeeeed')
+        }
+
     
         await axios
           .post("https://hooks.zapier.com/hooks/catch/3666010/2mesl25/")
@@ -440,6 +455,13 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 
   }
 
+
+  if(cus && cus?.newUser === true){
+    cus.newUser = false;
+    await cus.save()
+
+    console.log('loggggggggggggg2222222222------SUB, this workeeeeeeeeed')
+  }
 
       
     axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
