@@ -498,20 +498,21 @@ async getClosedOrdersHistory(
       },
     };
   
-    const totalCount = await lineup.countDocuments(filter);
-  
+    
     const effectiveLimit = limit ?? 10;
     const effectivePage = page ?? 1;
-  
+    
     const lineups = await lineup.find(filter)
-      .populate(pops)
-      .populate('customer')
-      .sort({ createdAt: -1 }) 
-      .limit(effectiveLimit)  
-      .skip((effectivePage - 1) * effectiveLimit)  
-      .lean<MealLineup[]>()
-      .exec();
-  
+    .populate(pops)
+    .populate('customer')
+    .sort({ createdAt: -1 }) 
+    .limit(effectiveLimit)  
+    .skip((effectivePage - 1) * effectiveLimit)  
+    .lean<MealLineup[]>()
+    .exec();
+    const totalCount = lineups.length;
+    // const totalCount = await lineup.countDocuments(filter);
+    
     if (!lineups.length && !silent) throw createError("No lineups found", 404);
   
     return { totalCount, lineups };
