@@ -491,7 +491,7 @@ async getClosedOrdersHistory(
     const filter: any = {
       status: { $in: ['active', 'inactive'] },
       createdAt: {
-        $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
         $lte: new Date(),  
 
         // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
