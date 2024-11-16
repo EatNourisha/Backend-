@@ -491,27 +491,28 @@ async getClosedOrdersHistory(
     const filter: any = {
       status: { $in: ['active', 'inactive'] },
       createdAt: {
-        $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
         $lte: new Date(),  
 
         // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
       },
     };
   
-    const totalCount = await lineup.countDocuments(filter);
-  
+    
     const effectiveLimit = limit ?? 10;
     const effectivePage = page ?? 1;
-  
+    
     const lineups = await lineup.find(filter)
-      .populate(pops)
-      .populate('customer')
-      .sort({ createdAt: -1 }) 
-      .limit(effectiveLimit)  
-      .skip((effectivePage - 1) * effectiveLimit)  
-      .lean<MealLineup[]>()
-      .exec();
-  
+    .populate(pops)
+    .populate('customer')
+    .sort({ createdAt: -1 }) 
+    .limit(effectiveLimit)  
+    .skip((effectivePage - 1) * effectiveLimit)  
+    .lean<MealLineup[]>()
+    .exec();
+    const totalCount = lineups.length;
+    // const totalCount = await lineup.countDocuments(filter);
+    
     if (!lineups.length && !silent) throw createError("No lineups found", 404);
   
     return { totalCount, lineups };
