@@ -233,7 +233,7 @@ export class MealLineupService {
     const now = new Date();
 
     const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-    const lastLineupDate = _cusLineup!.createdAt;
+    const lastLineupDate = _cusLineup?.createdAt ?? new Date();
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
     
@@ -524,7 +524,8 @@ export class MealLineupService {
     const now = new Date();
 
     const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-    const lastLineupDate = _cusLineup!.createdAt;
+    const lastLineupDate = _cusLineup?.createdAt ?? new Date();
+
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
     if(daysSinceReset <= 30){
