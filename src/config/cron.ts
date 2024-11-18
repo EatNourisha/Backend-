@@ -1,5 +1,5 @@
 import {  sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, } from "../models"; 
+import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, order, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
@@ -281,6 +281,34 @@ cron.schedule('* */1 * * *', async () => {
 //     timezone: "Europe/London"
 // });
 
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("#########777777 New User Job runs every 1 min");
+
+    try {
+        const cus = await customer.find({newUser: true}).exec();
+
+        await Promise.all(cus.map(async (c: any) => {
+        const orderExists = await order.exists({ customer: c._id, status: "payment_received"});
+        const lineupExists = await lineup.exists({ customer: c._id });
+
+            let returning = true;
+
+            if (orderExists || lineupExists) {
+            returning = false;
+            }
+
+            c.newUser = returning
+           await c.save()
+
+
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
 
 
 export default cron
