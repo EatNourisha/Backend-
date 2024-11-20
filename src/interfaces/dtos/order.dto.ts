@@ -15,4 +15,5 @@ export interface PlaceOrderDto {
   swallow?: boolean;
   extras?: string[];
   isReturningCustomer: boolean;
+  platform?: string;
 }

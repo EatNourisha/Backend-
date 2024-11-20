@@ -33,6 +33,9 @@ export class Plan extends BaseEntity {
   country: string;
 
   @prop()
+  region?: string;
+
+  @prop()
   delivery_fee: number;
 
   @prop()

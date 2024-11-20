@@ -94,6 +94,10 @@ export class MealLineup extends BaseEntity {
   @prop()
   coupon_applied?: string;
 
+  @prop()
+  platform?: string;
+
+
 }
 
 export default getModelForClass(MealLineup);

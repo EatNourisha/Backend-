@@ -326,7 +326,8 @@ export class MealLineupService {
       week: dto?.week || 1,
       plan: subscriptionCheck?.plan,
       isReturningCustomer: returning,
-      coupon_applied: promo?.code.toLocaleUpperCase()
+      coupon_applied: promo?.code.toLocaleUpperCase(),
+      platform: dto?.platform ?? 'mobile'
     });
 
     if(customerData){
@@ -618,7 +619,8 @@ export class MealLineupService {
       week: dto?.week || 1,
       plan: subscriptionCheck?.plan,
       isReturningCustomer: returning,
-      coupon_applied: promo?.code.toLocaleUpperCase()
+      coupon_applied: promo?.code.toLocaleUpperCase(),
+      platform: dto?.platform ?? 'web'
     });
     _lineup.delivery_date = deli_date ?? new Date();
    await _lineup.save()
