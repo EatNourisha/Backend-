@@ -35,7 +35,7 @@ export class AuthService {
         acc?.roles 
       );  
     }
-  }
+  }    
   await NourishaBus.emit("customer:logged_in", { owner: acc });
     return { payload, token };
   }
