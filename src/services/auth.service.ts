@@ -36,6 +36,9 @@ export class AuthService {
       );  
     }
   }    
+
+  acc.lastLoggedPlatform = data?.platform
+  await acc.save()
   await NourishaBus.emit("customer:logged_in", { owner: acc });
     return { payload, token };
   }

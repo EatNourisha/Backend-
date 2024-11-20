@@ -359,6 +359,12 @@ export class Customer extends BaseEntity {
 
   @prop()
   lastPasswordReset: string;
+
+  @prop()
+  platform?: string;
+
+  @prop()
+  lastLoggedPlatform?: string;
 }
 
 export default getModelForClass(Customer);

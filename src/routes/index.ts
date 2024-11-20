@@ -485,7 +485,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
     cus.newUser = false;
     await cus.save()
 
-    console.log('loggggggggggggg2222222222------SUB, this workeeeeeeeeed')
   }
 
       

@@ -92,7 +92,7 @@ export class PlanService {
 
   async getPlans(
     // roles: string[],
-    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string, interval?: string }
+    filters?: IPaginationFilter & { searchPhrase?: string, weekend?: boolean, five_day?: boolean, country?: string, continent?: string, interval?: string, region?: string }
   ): Promise<PaginatedDocument<Plan[]>> {
     const queries: any = {};
   
@@ -110,6 +110,10 @@ export class PlanService {
   
     if (filters?.interval) {
       Object.assign(queries, { subscription_interval: filters.interval });
+    }
+  
+    if (filters?.region) {
+      Object.assign(queries, { region: filters.region });
     }
   
     const weekendQuery = filters?.weekend ? { weekend: filters.weekend } : {};

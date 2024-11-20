@@ -70,14 +70,15 @@ export class Order extends BaseEntity {
   @prop({default:false})
   swallow?: boolean;
 
-  // @prop()
-  // extras?: Ref<MealExtras>[];
-
   @prop()
   isReturningCustomer: boolean;
 
   @prop({ type: () => Extras })
   orderExtras?: Extras[];
+
+  @prop()
+  platform?: string;
+
 
 }
 
