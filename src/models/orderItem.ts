@@ -18,6 +18,17 @@ export class Extras {
   swallow?: Ref<MealExtras>;
 }
 
+export class Extr {
+  @prop({ ref: () => "MealPack", _id: false })
+  item: Ref<MealPack>;
+
+  @prop({ ref: () => "MealExtras", _id: false })
+  proteins?: Ref<MealExtras>[];
+
+  @prop({ ref: () => "MealExtras", _id: false })
+  swallows?: Ref<MealExtras>[];
+}
+
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class OrderItem extends BaseEntity {
