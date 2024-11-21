@@ -35,7 +35,14 @@ export class AuthService {
         acc?.roles 
       );  
     }
-  }    
+  }
+  
+  const cus = await customer.findById(acc._id)
+  if(cus){
+    cus?.lastLoggedPlatform = data?.platform
+    await cus.save()
+  }
+  
   await NourishaBus.emit("customer:logged_in", { owner: acc });
     return { payload, token };
   }

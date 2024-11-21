@@ -24,6 +24,12 @@ export class CartItem extends BaseEntity {
   @prop({ ref: () => "MealExtras" })
   swallow?: Ref<MealExtras>;
 
+  @prop({ ref: () => "MealExtras" })
+  proteins?: Ref<MealExtras>[];
+  
+  @prop({ ref: () => "MealExtras" })
+  swallows?: Ref<MealExtras>[];
+    
   @prop({ min: 0 })
   quantity: number;
 

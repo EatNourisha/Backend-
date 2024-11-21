@@ -3,7 +3,7 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import BaseEntity from "./base";
 import { Address, Customer } from "./customer";
-import { Extras, OrderItem } from "./orderItem";
+import { Extr, Extras, OrderItem } from "./orderItem";
 import { PromoCode } from "./promocode";
 import { MealExtras } from "./mealExtras";
 
@@ -75,6 +75,9 @@ export class Order extends BaseEntity {
 
   @prop({ type: () => Extras })
   orderExtras?: Extras[];
+
+  @prop({ type: () => Extr })
+  MealAndExtras?: Extr[];
 
   @prop()
   platform?: string;

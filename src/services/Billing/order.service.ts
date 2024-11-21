@@ -103,6 +103,9 @@ export class OrderService {
         {path: "orderExtras.item"},
         {path: "orderExtras.protein"},
         {path: "orderExtras.swallow"},
+        {path: "MealAndExtras.item"},
+        {path: "MealAndExtras.proteins"},
+        {path: "MealAndExtras.swallows"},
  
       ]).lean<Order>().exec(),
       paginate<OrderItem[]>("orderItem", query, filters, { populate: "item"}),
@@ -253,16 +256,6 @@ async getClosedOrdersHistory(
       throw createError('Coupon is only valid for a weekly plan subscription')
     }
 
-    // if(coup === 'signupsave5'){
-    //   if(cus?.newUser === false){
-    //     throw createError('Not eligible to use this coupon')
-    //   }
-    // }
-  
-    // if(cus?.newUser === true){
-    //   coup = 'signupsave5'
-    // }
-
     if (coup === 'signupsave5' && cus?.newUser === false) {
       throw createError('Not eligible to use this coupon');
     }
@@ -314,6 +307,11 @@ async getClosedOrdersHistory(
   
   const _extras = _items.map(i => {
     return {item: i.item, swallow: i.swallow, protein: i.protein};  
+    // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};  
+
+  });
+  const _extra = _items.map(i => {
+    return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
   });
   
     const result = await OrderService.createOrder(customer_id, {
@@ -332,7 +330,8 @@ async getClosedOrdersHistory(
       coupon: coup,
       swallow: dto?.swallow,
       isReturningCustomer: returning,
-      orderExtras: _extras
+      orderExtras: _extras,
+      MealAndExtras: _extra
       });
 
     const { order: _order, items } = result;
