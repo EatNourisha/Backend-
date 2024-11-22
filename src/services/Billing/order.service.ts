@@ -498,7 +498,7 @@ async getClosedOrdersHistory(
     };
   
     
-    const effectiveLimit = limit ?? 10;
+    const effectiveLimit = limit ?? 100;
     const effectivePage = page ?? 1;
     
     const lineups = await lineup.find(filter)
@@ -517,6 +517,59 @@ async getClosedOrdersHistory(
     return { totalCount, lineups };
   }
 
+  // async getLineups(
+  //   roles: string[], 
+  //   silent = false, 
+  //   limit?: number, 
+  //   page?: number
+  // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
+  
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //     path: day,
+  //     populate: [
+  //       { path: 'breakfast.mealId' },
+  //       { path: 'breakfast.extraId' },
+  //       { path: 'breakfast.proteinId' },
+  //       { path: 'lunch.mealId' },
+  //       { path: 'lunch.extraId' },
+  //       { path: 'lunch.proteinId' },
+  //       { path: 'dinner.mealId' },
+  //       { path: 'dinner.extraId' },
+  //       { path: 'dinner.proteinId' },
+  //     ],
+  //   }));
+  
+  //   const filter: any = {
+  //     status: { $in: ['active', 'inactive'] },
+  //     createdAt: {
+  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+  //       $lte: new Date(),
+  //     },
+  //   };
+  
+  //   const effectiveLimit = limit ?? 50;
+  //   const effectivePage = page ?? 1;
+  
+  //   const totalCount = await lineup.countDocuments(filter);
+  
+  //   const lineups = await lineup.find(filter)
+  //     .populate(pops)
+  //     .populate('customer')
+  //     .sort({ createdAt: -1 })
+  //     .limit(effectiveLimit)
+  //     .skip((effectivePage - 1) * effectiveLimit)
+  //     .lean<MealLineup[]>()
+  //     .exec();
+  
+  //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
+  
+  //   return { totalCount, lineups };
+  // }
+  
   async getOrdr(
     customer_id: string,
     roles: string[],
