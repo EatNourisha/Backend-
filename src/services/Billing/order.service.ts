@@ -461,7 +461,7 @@ async getClosedOrdersHistory(
     new OrderEventListener();
   }
 
-  async getLineups(
+  async getLineups( 
     roles: string[], 
     silent = false, 
     limit?: number, 
