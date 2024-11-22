@@ -153,7 +153,7 @@ export class MealService {
     }
 
     //  // Ensure that only meal packs with available_quantity >= 1 are fetched
-    // Object.assign(queries, { available_quantity: { $gte: 1 } });
+    Object.assign(queries, { available_quantity: { $gte: 1 } });
 
   
     return await mealpaginate("mealPack", queries, filters);
