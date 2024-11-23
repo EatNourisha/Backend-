@@ -44,7 +44,7 @@ import { GiftStatus } from "../models/giftPurchase";
 import {sendGiftBought, sendGiftRecipient, sendGiftSent}  from "../services/giftCardEmail.service";
 import axios from "axios";
 import { OrderStatus } from "../models/order";
-const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
+const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" }); 
 
 const routes = Router();
 
