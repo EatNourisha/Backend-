@@ -461,62 +461,6 @@ async getClosedOrdersHistory(
     new OrderEventListener();
   }
 
-  async getLineups(
-    roles: string[], 
-    silent = false, 
-    limit?: number, 
-    page?: number
-  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-      PermissionScope.READ,
-      PermissionScope.ALL,
-    ]);
-    
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-      path: day,
-      populate: [
-        { path: 'breakfast.mealId' },
-        { path: 'breakfast.extraId' },
-        { path: 'breakfast.proteinId' },
-        { path: 'lunch.mealId' },
-        { path: 'lunch.extraId' },
-        { path: 'lunch.proteinId' },
-        { path: 'dinner.mealId' },
-        { path: 'dinner.extraId' },
-        { path: 'dinner.proteinId' },
-      ],
-    }));
-    
-    const filter: any = {
-      status: { $in: ['active', 'inactive'] },
-      createdAt: {
-        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-        $lte: new Date(),  
-
-        // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
-      },
-    };
-  
-    
-    const effectiveLimit = limit ?? 100;
-    const effectivePage = page ?? 1;
-    
-    const lineups = await lineup.find(filter)
-    .populate(pops)
-    .populate('customer')
-    .sort({ createdAt: -1 }) 
-    .limit(effectiveLimit)  
-    .skip((effectivePage - 1) * effectiveLimit)  
-    .lean<MealLineup[]>()
-    .exec();
-    const totalCount = lineups.length;
-    // const totalCount = await lineup.countDocuments(filter);
-    
-    if (!lineups.length && !silent) throw createError("No lineups found", 404);
-  
-    return { totalCount, lineups };
-  }
-
   // async getLineups(
   //   roles: string[], 
   //   silent = false, 
@@ -527,7 +471,7 @@ async getClosedOrdersHistory(
   //     PermissionScope.READ,
   //     PermissionScope.ALL,
   //   ]);
-  
+    
   //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
   //     path: day,
   //     populate: [
@@ -542,34 +486,103 @@ async getClosedOrdersHistory(
   //       { path: 'dinner.proteinId' },
   //     ],
   //   }));
-  
+    
   //   const filter: any = {
   //     status: { $in: ['active', 'inactive'] },
   //     createdAt: {
   //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-  //       $lte: new Date(),
+  //       $lte: new Date(),  
+
+  //       // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
   //     },
   //   };
   
-  //   const effectiveLimit = limit ?? 50;
+    
+  //   const effectiveLimit = limit ?? 100;
   //   const effectivePage = page ?? 1;
-  
-  //   const totalCount = await lineup.countDocuments(filter);
-  
+    
   //   const lineups = await lineup.find(filter)
-  //     .populate(pops)
-  //     .populate('customer')
-  //     .sort({ createdAt: -1 })
-  //     .limit(effectiveLimit)
-  //     .skip((effectivePage - 1) * effectiveLimit)
-  //     .lean<MealLineup[]>()
-  //     .exec();
-  
+  //   .populate(pops)
+  //   .populate('customer')
+  //   .sort({ createdAt: -1 }) 
+  //   .limit(effectiveLimit)  
+  //   .skip((effectivePage - 1) * effectiveLimit)  
+  //   .lean<MealLineup[]>()
+  //   .exec();
+  //   const totalCount = lineups.length;
+  //   // const totalCount = await lineup.countDocuments(filter);
+    
   //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
   
   //   return { totalCount, lineups };
-  // }
+  // } 
+
+  async getLineups(
+    roles: string[], 
+    silent = false, 
+    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string }
+  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
   
+
+    console.log('orderrrr', filters?.order)
+    console.log('dateeeeeeee', filters?.sortby)
+
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: 'breakfast.mealId' },
+        { path: 'breakfast.extraId' },
+        { path: 'breakfast.proteinId' },
+        { path: 'lunch.mealId' },
+        { path: 'lunch.extraId' },
+        { path: 'lunch.proteinId' },
+        { path: 'dinner.mealId' },
+        { path: 'dinner.extraId' },
+        { path: 'dinner.proteinId' },
+      ],
+    }));
+  
+    const filter: any = {
+      status: { $in: ['active', 'inactive'] },
+      createdAt: {
+        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+        $lte: new Date(),
+      },
+    };
+  
+    const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
+    const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
+
+  
+    const sortbyy = filters?.sortby === 'deliverydate' 
+      ? 'delivery_date' 
+      : 'createdAt';
+    const sortOrder = filters?.order === 'asc' ? 1 : -1;
+    const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
+  
+    const lineups = await lineup
+      .find(filter)
+      .populate(pops)
+      .populate('customer')
+      .sort(sort)
+      .limit(effectiveLimit)
+      .skip((effectivePage - 1) * effectiveLimit)
+      .lean<MealLineup[]>()
+      .exec();
+  
+    const totalCount = await lineup.countDocuments(filter);
+  
+    if (!lineups.length && !silent) {
+      throw createError("No lineups found", 404);
+    }
+  
+    return { totalCount, lineups };
+  }
+    
   async getOrdr(
     customer_id: string,
     roles: string[],
@@ -611,7 +624,7 @@ async getClosedOrdersHistory(
     async getOrdersAndLineups(
     customer_id: string,
     roles: string[],
-    filters: any 
+    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string } 
   ): Promise<any> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
@@ -620,7 +633,7 @@ async getClosedOrdersHistory(
     ]);
 
     const _orders = await this.getOrdr(customer_id, roles, filters)
-    const _lineups = await this.getLineups(roles, filters)
+    const _lineups = await this.getLineups(roles, false, filters)
 
     return { _orders, _lineups } ;
 

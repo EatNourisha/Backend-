@@ -5,6 +5,9 @@ import { SenderService } from "./sender.service";
 import customer, { Address } from "../../models/customer";
 import { lineup, order } from "../../models";
 import { cartAbandonment1, cartAbandonment10, cartAbandonment11, cartAbandonment2, cartAbandonment3, cartAbandonment4, cartAbandonment5, cartAbandonment6, cartAbandonment7, cartAbandonment8, cartAbandonment9, customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2, welcomeEmail3, welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
+// import { mailJetSendMail } from "../../config/mailjet";
+import sgMail from "@sendgrid/mail";
+
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -1059,5 +1062,108 @@ export async function AllEmailCourseEmails(){
     } catch (error) {
         console.error('Error updating settings:', error);
     }
+
+}
+
+export async function sendOrderAlert(email: string[], payload: any, ){
+const body =
+  `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Lineup Notification</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              background-color: #f9f9f9;
+              color: #333;
+              line-height: 1.6;
+              margin: 0;
+              padding: 20px;
+          }
+  
+          .email-container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: #ffffff;
+              padding: 20px;
+              border: 1px solid #ddd;
+              border-radius: 5px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          }
+  
+          .email-header {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 10px;
+          }
+  
+          .email-body {
+              font-size: 17px;
+              margin-bottom: 20px;
+          }
+  
+          .email-details {
+              background-color: #f1f1f1;
+              padding: 10px;
+              border-radius: 5px;
+              font-size: 15px;
+          }
+  
+          .email-details p {
+              margin: 5px 0;
+          }
+  
+          .email-footer {
+              font-size: 14px;
+              color: #777;
+              text-align: center;
+              margin-top: 20px;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="email-container">
+          <div class="email-header">
+              Dear Kitchen Team,
+          </div>
+  
+          <div class="email-body">
+              A new order has been added. Kindly check the dashboard for detailed information about the order.
+          </div>
+  
+          <div class="email-details">
+              <p><strong>Delivery Date:</strong> ${new Date(payload.deliveryDate).toDateString()}</p>
+          </div>
+  
+          <div class="email-footer">
+              Thank you for your attention. Please reach out if you need any assistance.
+          </div>
+      </div>
+  </body>
+  </html>
+         `
+  
+
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+    subject: payload.subject,
+    to: email,
+    html: body,
+  });
+
+
+  // await mailJetSendMail(
+  //   payload,
+  //   `${subject}`,
+  //   [`${email}`]
+  // );
+
 
 }

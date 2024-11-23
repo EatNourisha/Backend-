@@ -32,7 +32,7 @@ import { sendResponse } from "../utils";
 // import config from "../config";
 
 import config from "../config";
-import { BillingHooks } from "../services";
+import { BillingHooks, sendOrderAlert } from "../services";
 // import { authGuard } from "../middlewares";
 import { Customer, Transaction, customer, giftpurchase, transaction, promoCode, lineup, order, subscription } from "../models";
 // import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup, order, subscription } from "../models";
@@ -311,7 +311,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         // }
 
 
-      if (trans?.status === 'successful') {
       if (cus) {
         cus.newUser = false
         // Initialize or update POSTSUBEEMAILS with default values (all false)
@@ -336,7 +335,8 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           reengage1: false, reengage2: false, reengage3: false,
           reengage4: false, reengage5: false, reengage6: false
         }, cus.REENGAGEEMAILS || {});  
-      }}
+        await cus.save()
+      }
 
 
         if(cus && cus?.newUser === true){
@@ -344,6 +344,27 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           await cus.save()
         }
 
+        const emails = [
+          'zubytradecoin@gmail.com',
+          'shukazuby@gmail.com',
+          // 'codelifezu@gmail.com'
+    
+        ]
+
+        const _ord = await order.findOne({customer: cus?._id}).sort({createdAt: -1})
+    
+        const payload = {
+          deliveryDate: _ord?.delivery_date,
+          subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
+        }
+
+        if(_ord?.status === 'payment_received'){
+          await sendOrderAlert( emails, payload)
+          console.log('Kitchen Email Sent to Admins - Web Email', 
+            `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
+        }
+    
+    
     
         await axios
           .post("https://hooks.zapier.com/hooks/catch/3666010/2mesl25/")
