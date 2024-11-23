@@ -13,7 +13,8 @@ import LineupEventListener from "../../listeners/lineup.listener";
 import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
-// import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecilaEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
+import { sendOrderAlert } from "../../services/Marketing/marketing.service";
+// import { sendOrderAlert } from "../../services/Marketing/marketing.service";
 
 export class MealLineupService {
   async createLineup(customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
@@ -350,6 +351,22 @@ export class MealLineupService {
     // Emit event
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
 
+    const emails = [
+      'zubytradecoin@gmail.com',
+      'shukazuby@gmail.com',
+      // 'shukazuby@gmail.com',
+      // 'codelifezu@gmail.com'
+
+    ]
+
+    const payload = {
+      deliveryDate: _lineup.delivery_date,
+      subject: ` New Order: Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`,
+    }
+
+    await sendOrderAlert( emails, payload)
+
+    console.log('Kitchen Email Sent to Admins - Mobile Email', ` Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`)
     return _lineup;
   }
 
@@ -636,6 +653,21 @@ export class MealLineupService {
 
     // Emit event
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
+    const emails = [
+      'zubytradecoin@gmail.com',
+      'shukazuby@gmail.com',
+
+    ]
+
+    const payload = {
+      deliveryDate: _lineup.delivery_date,
+      subject: ` New Order: Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`,
+    }
+
+    await sendOrderAlert( emails, payload)
+
+    console.log('Kitchen Email Sent to Admins - Web Email', ` Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`)
+
 
     return _lineup;
   }
