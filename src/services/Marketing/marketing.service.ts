@@ -1066,6 +1066,7 @@ export async function AllEmailCourseEmails(){
 }
 
 export async function sendOrderAlert(email: string[], payload: any, ){
+  const cus = await customer.findById(payload.customer)
 const body =
   `
   <!DOCTYPE html>
@@ -1131,16 +1132,13 @@ const body =
           </div>
   
           <div class="email-body">
-              A new order has been added. Kindly check the dashboard for detailed information about the order.
+              ${cus?.first_name} ${cus?.last_name} just placed an order. Kindly check the dashboard for detailed information about the order. 
           </div>
   
           <div class="email-details">
               <p><strong>Delivery Date:</strong> ${new Date(payload.deliveryDate).toDateString()}</p>
           </div>
   
-          <div class="email-footer">
-              Thank you for your attention. Please reach out if you need any assistance.
-          </div>
       </div>
   </body>
   </html>

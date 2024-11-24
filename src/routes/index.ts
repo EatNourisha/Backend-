@@ -32,7 +32,7 @@ import { sendResponse } from "../utils";
 // import config from "../config";
 
 import config from "../config";
-import { BillingHooks, sendOrderAlert } from "../services";
+import { BillingHooks } from "../services";
 // import { authGuard } from "../middlewares";
 import { Customer, Transaction, customer, giftpurchase, transaction, promoCode, lineup, order, subscription } from "../models";
 // import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup, order, subscription } from "../models";
@@ -115,102 +115,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       await BillingHooks.paymentIntentCreated(event);
       break;
     }
-    // case "payment_intent.succeeded": {
-    //   const data = event.data.object as any;
-    //   const customerId = data?.customer;
-    //   const cus = await customer.findOne({ stripe_id: customerId });
-    //   const tx = await transaction
-    //     .findOneAndUpdate({ reference: data?.id, stripe_customer_id: data?.customer }, { status: TransactionStatus.SUCCESSFUL })
-    //     .lean<Transaction>()
-    //     .exec();
-
-    //   if (tx?.reason === "Gift-Card"|| "Custom-Gift") {
-    //   const gift = await giftpurchase
-    //       .findOneAndUpdate({ customer: cus?._id, reference: data?.id }, { status: GiftStatus.ACTIVE })
-    //       .lean<GiftPurchase>()
-    //       .exec();
-
-    //       if(gift){
-    //         await sendGiftBought(cus?.email!, gift )
-    //         if(gift?.scheduled === false && gift?.scheduled_Email === false){
-    //           await sendGiftRecipient(gift?.reciever_email!, gift)
-    //           await sendGiftSent(cus?.email!, gift)
-    //           await giftpurchase.findOneAndUpdate({_id: gift?._id}, {scheduled_Email: true}).lean<GiftPurchase>()
-    //           .exec()
-    //         }}
-
-    //   }
-
-    //   const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
-
-    //   if (trans?.applied_promo !== null) {
-    //     const promo = await promoCode.findById(trans?.applied_promo).exec();
-
-    //   if (promo) {
-    //   await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
-    //       // const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-    //       // await promoCode.updateOne({ _id: promo?._id }, { max_redemptions: updatedRedemptions }).exec();
-    //   }
-    //   }
-
-    //   const meta = data.metadata;
-
-    //   if(meta.couponCode !== null || ""){       
-    //     await giftpurchase.findOneAndUpdate({ code: meta.couponCode }, { status: GiftStatus.REDEEMED, redeemed_by: cus?._id })
-    //     .lean<GiftPurchase>()
-    //     .exec();
-    // }
-
-    // if (trans.status === 'successful' && trans.itemRefPath === 'Order') {
-    //   if (cus) {
-    //     cus.newUser = false
-    //     // Initialize or update POSTSUBEEMAILS with default values (all false)
-    //     cus.POSTSUBEEMAILS = Object.assign({
-    //       postsub0: false, postsub1: false, postsub2: false, postsub3: false,
-    //       postsub4: false, postsub5: false, postsub6: false,
-    //       postsub7: false, postsub8: false, postsub9: false,
-    //       postsub10: false, postsub11: false,
-    //       postsub12: false, postsub13: false
-    //     }, cus.POSTSUBEEMAILS || {});
-  
-    //     // Initialize or update CARTEMAILS with default values (all false)
-    //     cus.CARTEMAILS = Object.assign({
-    //       cart1: false, cart2: false, cart3: false,
-    //       cart4: false, cart5: false, cart6: false,
-    //       cart7: false, cart8: false, cart9: false,
-    //       cart10: false, cart11: false
-    //     }, cus.CARTEMAILS || {});
-  
-    //     // Initialize or update REENGAGEEMAILS with default values (all false)
-    //     cus.REENGAGEEMAILS = Object.assign({
-    //       reengage1: false, reengage2: false, reengage3: false,
-    //       reengage4: false, reengage5: false, reengage6: false
-    //     }, cus.REENGAGEEMAILS || {});  
-    
-    //     cus.newUser = false
-    //     await cus.save();
-    //   }  
-
-    //   if(cus){
-    //     cus.newUser = false
-    //     await cus?.save()
-    //   }
-
-    // }  
-  
-
-    // axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
-    // .then(response => {
-    //   console.log('ZAPIER EVENT', response.data);
-    // })
-    // .catch(error => {
-    //   console.log('There was an error making the request!', error);
-    // });
-
-    //   await BillingHooks.paymentIntentSucceeded(tx, event);
-    //   break;
-    // }
-
     case "payment_intent.succeeded": {
       try {
         const data = event.data.object as any;
@@ -281,36 +185,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           await cus.save()
         }
     
-        // if (trans?.status === "successful" && trans.itemRefPath === "Order") {
-        //   if (cus) {
-        //     cus.newUser = false;
-        //     cus.POSTSUBEEMAILS = {
-        //       ...Array(14).fill(false).reduce((acc, _, idx) => ({
-        //         ...acc,
-        //         [`postsub${idx}`]: false,
-        //       })),
-        //       ...cus.POSTSUBEEMAILS,
-        //     };
-        //     cus.CARTEMAILS = {
-        //       ...Array(11).fill(false).reduce((acc, _, idx) => ({
-        //         ...acc,
-        //         [`cart${idx + 1}`]: false,
-        //       })),
-        //       ...cus.CARTEMAILS,
-        //     };
-        //     cus.REENGAGEEMAILS = {
-        //       ...Array(6).fill(false).reduce((acc, _, idx) => ({
-        //         ...acc,
-        //         [`reengage${idx + 1}`]: false,
-        //       })),
-        //       ...cus.REENGAGEEMAILS,
-        //     };
-    
-        //     await cus.save();
-        //   }
-        // }
-
-
       if (cus) {
         cus.newUser = false
         // Initialize or update POSTSUBEEMAILS with default values (all false)
@@ -342,29 +216,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         if(cus && cus?.newUser === true){
           cus.newUser = false;
           await cus.save()
-        }
-
-        const emails = [
-          'zubytradecoin@gmail.com',
-          'shukazuby@gmail.com',
-          // 'codelifezu@gmail.com'
-    
-        ]
-
-        const _ord = await order.findOne({customer: cus?._id}).sort({createdAt: -1})
-    
-        const payload = {
-          deliveryDate: _ord?.delivery_date,
-          subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
-        }
-
-        if(_ord?.status === 'payment_received'){
-          await sendOrderAlert( emails, payload)
-          console.log('Kitchen Email Sent to Admins - Web Email', 
-            `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
-        }
-    
-    
+        }    
     
         await axios
           .post("https://hooks.zapier.com/hooks/catch/3666010/2mesl25/")
