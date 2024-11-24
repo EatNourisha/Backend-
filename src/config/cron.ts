@@ -128,8 +128,9 @@ cron.schedule('* */1 * * *', async () => {
         });
 
         await Promise.all(_lineup.map(async (line: any) => {
-            await line.updateOne({ delivery_status: 'delivered' });
-            
+            // await line.updateOne({ delivery_status: 'delivered' });
+            await line.updateOne({ $set: { delivery_status: 'delivered', status: 'inactive' } });
+
         }));
     } catch (error) {
     }
