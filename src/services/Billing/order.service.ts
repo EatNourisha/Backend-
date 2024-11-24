@@ -1,10 +1,10 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, MealLineup, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, lineup, order, orderItem, transaction } from "../../models";
+import { Cart, CartItem, Customer, MealLineup, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, lineup,  orderItem, transaction } from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
-import { OrderStatus } from "../../models/order";
+import order, { OrderStatus } from "../../models/order";
 import { TransactionReason, TransactionStatus } from "../../models/transaction";
 import Stripe from "stripe";
 import config from "../../config";
@@ -457,9 +457,9 @@ async getClosedOrdersHistory(
     await sendOrderPlacedEmail(payload.email, payload)
 
     const emails = [
-      // 'chukwuebukadickson0@gmail.com',
-      // 'h.ogar@eatnourisha.com',
-      // 'hello@eatnourisha.com',
+      'nourishahelen@gmail.com',
+      'Victorianourisha@gmail.com',
+      'nourishaorders@gmail.com',
       'shukazuby@gmail.com',
 
     ]
@@ -548,7 +548,7 @@ async getClosedOrdersHistory(
   async getLineups(
     roles: string[], 
     silent = false, 
-    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string }
+    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
   ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
@@ -618,11 +618,58 @@ async getClosedOrdersHistory(
   
     return { totalCount, lineups };
   }
+  // async getOrdr(
+  //   roles: string[], 
+  //   filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
+  // ): Promise<{ totalCount: number, data: Order[] }> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
+
+  
+  //   const filter: any = {
+  //     status:{ $in: ['payment_received'] },
+  //     // delivery_date: filters.delivery_date
+  //   };
+  
+  //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
+  //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
+
+  //   let sortbyy = 'createdAt';
+  //   let defaultOrder: 1 | -1 = -1; 
+
+  //   // if (filters?.sortby === 'deliverydate') {
+  //   //   sortbyy = 'delivery_date';
+  //   //   defaultOrder = 1; 
+  //   // }
+
+  //   const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
+  //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
+  
+  //   const data = await order
+  //     .find(filter)
+  //     .populate('customer')
+  //     .sort(sort)
+  //     .limit(effectiveLimit)
+  //     .skip((effectivePage - 1) * effectiveLimit)
+  //     .lean<Order[]>()
+  //     .exec();
+  
+  //   const totalCount = await lineup.countDocuments(filter);
+  
+  //   if (!order.length ) {
+  //     throw createError("No lineups found", 404);
+  //   }
+  
+  //   return { totalCount, data };
+  // }
+
     
   async getOrdr(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string}
+    filters: IPaginationFilter & {customer: string,order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date}
   ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
   
@@ -660,7 +707,7 @@ async getClosedOrdersHistory(
     async getOrdersAndLineups(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string, status: string } 
+    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string, status: string,  delivery_date: Date } 
   ): Promise<any> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
