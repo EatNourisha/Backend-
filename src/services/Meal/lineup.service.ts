@@ -352,9 +352,9 @@ export class MealLineupService {
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
 
     const emails = [
-      // 'chukwuebukadickson0@gmail.com',
-      // 'h.ogar@eatnourisha.com',
-      // 'hello@eatnourisha.com',
+      'nourishahelen@gmail.com',
+      'Victorianourisha@gmail.com',
+      'nourishaorders@gmail.com',
       'shukazuby@gmail.com',
 
     ]
@@ -656,9 +656,9 @@ export class MealLineupService {
     // Emit event
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
     const emails = [
-      // 'chukwuebukadickson0@gmail.com',
-      // 'h.ogar@eatnourisha.com',
-      // 'hello@eatnourisha.com',
+      'nourishahelen@gmail.com',
+      'Victorianourisha@gmail.com',
+      'nourishaorders@gmail.com',
       'shukazuby@gmail.com',
 
     ]
@@ -848,7 +848,7 @@ export class MealLineupService {
 
     const _lineup = await lineup.findOne({ customer: customer_id })
     .populate(pops)
-    .populate('customer')
+    .populate(['customer', 'createdBy', 'editedBy'])
     .sort({createdAt: -1})
     .lean<MealLineup>().exec();
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
@@ -921,7 +921,7 @@ export class MealLineupService {
 
     console.log("Silent", silent);
 
-    const _lineup = await lineup.findOne({ _id: lineupId }).populate(pops).populate('plan').sort({ createdAt: -1 }).lean<MealLineup>().exec();
+    const _lineup = await lineup.findOne({ _id: lineupId }).populate(pops).populate(['plan', 'createdBy', 'editedBy']).sort({ createdAt: -1 }).lean<MealLineup>().exec();
     if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup ?? {};
   }

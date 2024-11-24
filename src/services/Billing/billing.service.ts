@@ -422,6 +422,13 @@ export class BillingHooks {
       customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
     ]);
 
+    const tran = await transaction.findOne({customer: cus._id, reference: data.id })
+
+    if(tran && tran.status !== 'successful'){
+      await subscription.findOneAndUpdate({customer: cus?._id}, {status: tran.status})
+      
+    }
+
     // if (data?.status === "active" && !!cus?._id) {
     //   await Promise.all([
     //     !!_plan?._id && DiscountService.updateInfluencersReward(cus?._id!, _plan?._id!, promo),

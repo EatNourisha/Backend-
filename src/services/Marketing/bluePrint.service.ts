@@ -1,7 +1,7 @@
 import customer, { Customer } from "../../models/customer";
 import { mailJetSendMail } from "../../config/mailjet";
 import { Order, order } from "../../models";
-
+import sgMail from "@sendgrid/mail";
 
 export async function welcomeEmail1(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
@@ -495,11 +495,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 
     `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+  
   };
   
   export async function welcomeEmail2(email: string, payload: any) {
@@ -4412,11 +4423,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+ 
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment2(email: string, payload: any) {
@@ -21490,11 +21512,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function loyaltyreward(email: string, payload: any) {
