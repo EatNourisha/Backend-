@@ -97,6 +97,12 @@ export class MealLineup extends BaseEntity {
   @prop()
   platform?: string;
 
+  @prop({ ref: () => "Customer" })
+  createdBy: Ref<Customer>;
+
+  @prop({ ref: () => "Customer" })
+  editedBy: Ref<Customer>;
+
 
 }
 

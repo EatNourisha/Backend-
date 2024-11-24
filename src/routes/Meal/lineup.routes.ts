@@ -22,5 +22,7 @@ router.put("/swallow/:id", authGuard, subscriptionGuard, controller.updateSwallo
 
 // Admin
 router.get("/:id", authGuard, controller.getLineupById);
+router.post("/:id", authGuard, controller.adminCreateLineup);
+router.put("/:customerId/:id/", authGuard, controller.adminUpdateLineup);
 
 export default router;

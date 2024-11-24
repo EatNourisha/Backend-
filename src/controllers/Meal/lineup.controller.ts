@@ -155,4 +155,26 @@ export class MealLineupController {
     }
   }
 
+    async adminCreateLineup(req: Request, res: Response, next: NextFunction) {
+      try {
+        const { customer, params, query, body } = req;
+        console.log("getLineup", query);
+        const data = await service.adminCreateLineup(customer.sub, params.id, body, customer.roles);
+        sendResponse(res, 200, data);
+      } catch (error) {
+        sendError(error, next);
+      }
+    }
+
+    async adminUpdateLineup(req: Request, res: Response, next: NextFunction) {
+      try {
+        const { body, customer, params } = req;
+        const data = await service.adminUpdateLineup(customer.sub, params.customerId, params.id, body, customer.roles, Boolean(params?.dryRun));
+        sendResponse(res, 200, data);
+      } catch (error) {
+        sendError(error, next);
+      }
+    }
+  
+  
 }

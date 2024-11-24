@@ -14,6 +14,8 @@ import { when } from "../../utils/when";
 import OrderEventListener from "../../listeners/order.listener";
 import { MealService } from "../Meal/meal.service";
 import { sendOrderPlacedEmail } from "../../services/authEmail.service";
+import { sendOrderAlert } from "../../services/Marketing/marketing.service";
+import { NourishaBus } from "../../libs";
 // import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
@@ -451,8 +453,32 @@ async getClosedOrdersHistory(
       delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!
     }
 
-    // NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
     await sendOrderPlacedEmail(payload.email, payload)
+
+    const emails = [
+      // 'chukwuebukadickson0@gmail.com',
+      // 'h.ogar@eatnourisha.com',
+      // 'hello@eatnourisha.com',
+      'shukazuby@gmail.com',
+
+    ]
+
+    const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
+
+    const load = {
+      deliveryDate: _ord?.delivery_date,
+      subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
+      customer: cus?._id
+    }
+
+    if(_ord?.status === 'payment_received'){
+      await sendOrderAlert( emails, load)
+      console.log('Kitchen Email Sent to Admins', 
+        `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
+    }
+
+
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
@@ -517,20 +543,18 @@ async getClosedOrdersHistory(
   //   return { totalCount, lineups };
   // } 
 
+  
+  
   async getLineups(
     roles: string[], 
     silent = false, 
-    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string }
+    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string }
   ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
   
-
-    console.log('orderrrr', filters?.order)
-    console.log('dateeeeeeee', filters?.sortby)
-
     const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
       path: day,
       populate: [
@@ -547,7 +571,7 @@ async getClosedOrdersHistory(
     }));
   
     const filter: any = {
-      status: { $in: ['active', 'inactive'] },
+      status: filters.status ?? { $in: ['active', 'inactive'] },
       createdAt: {
         $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
         $lte: new Date(),
@@ -557,12 +581,24 @@ async getClosedOrdersHistory(
     const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
     const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
 
-  
-    const sortbyy = filters?.sortby === 'deliverydate' 
-      ? 'delivery_date' 
-      : 'createdAt';
-    const sortOrder = filters?.order === 'asc' ? 1 : -1;
+    let sortbyy = 'createdAt';
+    let defaultOrder: 1 | -1 = -1; 
+
+    if (filters?.sortby === 'deliverydate') {
+      sortbyy = 'delivery_date';
+      defaultOrder = 1; 
+    }
+
+    const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
     const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
+
+
+  
+    // const sortbyy = filters?.sortby === 'deliverydate' 
+    //   ? 'delivery_date' 
+    //   : 'createdAt';
+    // const sortOrder = filters?.order === 'asc' ? 1 : -1;
+    // const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
   
     const lineups = await lineup
       .find(filter)
@@ -624,7 +660,7 @@ async getClosedOrdersHistory(
     async getOrdersAndLineups(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string } 
+    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string, status: string } 
   ): Promise<any> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
