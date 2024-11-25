@@ -186,32 +186,32 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           await cus.save()
         }
     
-      if (cus) {
-        cus.newUser = false
-        // Initialize or update POSTSUBEEMAILS with default values (all false)
-        cus.POSTSUBEEMAILS = Object.assign({
-          postsub0: false, postsub1: false, postsub2: false, postsub3: false,
-          postsub4: false, postsub5: false, postsub6: false,
-          postsub7: false, postsub8: false, postsub9: false,
-          postsub10: false, postsub11: false,
-          postsub12: false, postsub13: false
-        }, cus.POSTSUBEEMAILS || {});
+      // if (cus) {
+      //   cus.newUser = false
+      //   // Initialize or update POSTSUBEEMAILS with default values (all false)
+      //   cus.POSTSUBEEMAILS = Object.assign({
+      //     postsub0: false, postsub1: false, postsub2: false, postsub3: false,
+      //     postsub4: false, postsub5: false, postsub6: false,
+      //     postsub7: false, postsub8: false, postsub9: false,
+      //     postsub10: false, postsub11: false,
+      //     postsub12: false, postsub13: false
+      //   }, cus.POSTSUBEEMAILS || {});
   
-        // Initialize or update CARTEMAILS with default values (all false)
-        cus.CARTEMAILS = Object.assign({
-          cart1: false, cart2: false, cart3: false,
-          cart4: false, cart5: false, cart6: false,
-          cart7: false, cart8: false, cart9: false,
-          cart10: false, cart11: false
-        }, cus.CARTEMAILS || {});
+      //   // Initialize or update CARTEMAILS with default values (all false)
+      //   cus.CARTEMAILS = Object.assign({
+      //     cart1: false, cart2: false, cart3: false,
+      //     cart4: false, cart5: false, cart6: false,
+      //     cart7: false, cart8: false, cart9: false,
+      //     cart10: false, cart11: false
+      //   }, cus.CARTEMAILS || {});
   
-        // Initialize or update REENGAGEEMAILS with default values (all false)
-        cus.REENGAGEEMAILS = Object.assign({
-          reengage1: false, reengage2: false, reengage3: false,
-          reengage4: false, reengage5: false, reengage6: false
-        }, cus.REENGAGEEMAILS || {});  
-        await cus.save()
-      }
+      //   // Initialize or update REENGAGEEMAILS with default values (all false)
+      //   cus.REENGAGEEMAILS = Object.assign({
+      //     reengage1: false, reengage2: false, reengage3: false,
+      //     reengage4: false, reengage5: false, reengage6: false
+      //   }, cus.REENGAGEEMAILS || {});  
+      //   await cus.save()
+      // }
 
 
         if(cus && cus?.newUser === true){
@@ -314,7 +314,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
    }
    }
 
-   if (trans.status === 'successful' && trans.itemRefPath === 'Subscription') {
+   if (trans.itemRefPath === 'Subscription') {
     if (cus) {
       cus.activeLineup = false;
 

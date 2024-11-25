@@ -442,7 +442,7 @@ async getClosedOrdersHistory(
       cartItem.deleteMany({ customer: _order?.customer, cart: _order?.cart_id }).exec(),
       MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
-    let cus = await customer.findById(_order?.customer).lean<Customer>().exec();
+    let cus = await customer.findById(_order?.customer).exec();
     if (!cus) throw createError("Customer does not exist", 404);
   
     const payload ={
@@ -472,12 +472,49 @@ async getClosedOrdersHistory(
       customer: cus?._id
     }
 
-    if(_ord?.status === 'payment_received'){
+    // if(_ord?.status === 'payment_received'){
       await sendOrderAlert( emails, load)
       console.log('Kitchen Email Sent to Admins', 
         `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
-    }
+    // }
 
+    if (cus) {
+      cus.newUser = false;
+  
+      // Helper function to initialize or update email properties
+      const initializeEmails = (defaults, existing) => ({
+        ...defaults,
+        ...(existing || {}),
+      });
+  
+      // Default values for each email type
+      const postSubDefaults = {
+        postsub0: false, postsub1: false, postsub2: false, postsub3: false,
+        postsub4: false, postsub5: false, postsub6: false,
+        postsub7: false, postsub8: false, postsub9: false,
+        postsub10: false, postsub11: false, postsub12: false, postsub13: false
+      };
+  
+      const cartEmailDefaults = {
+        cart1: false, cart2: false, cart3: false,
+        cart4: false, cart5: false, cart6: false,
+        cart7: false, cart8: false, cart9: false,
+        cart10: false, cart11: false
+      };
+  
+      const reEngageEmailDefaults = {
+        reengage1: false, reengage2: false, reengage3: false,
+        reengage4: false, reengage5: false, reengage6: false
+      };
+  
+      // Update properties
+      cus.POSTSUBEEMAILS = initializeEmails(postSubDefaults, cus.POSTSUBEEMAILS);
+      cus.CARTEMAILS = initializeEmails(cartEmailDefaults, cus.CARTEMAILS);
+      cus.REENGAGEEMAILS = initializeEmails(reEngageEmailDefaults, cus.REENGAGEEMAILS);
+  
+      // Save the customer object
+      await cus.save();
+    }
 
   }
 
