@@ -1329,9 +1329,9 @@ export class MealLineupService {
     // Emit event
     await NourishaBus.emit("lineup:created", { owner: customer_id, lineup: _lineup, dto });
     const emails = [
-      // 'chukwuebukadickson0@gmail.com',
-      // 'h.ogar@eatnourisha.com',
-      // 'hello@eatnourisha.com',
+      'nourishahelen@gmail.com',
+      'Victorianourisha@gmail.com',
+      'nourishaorders@gmail.com',
       'shukazuby@gmail.com',
 
     ]
@@ -1393,6 +1393,48 @@ export class MealLineupService {
 
   return _lineup;
 }
+
+
+async getNextDayDelivery (roles: string[]) {
+
+    await RoleService.requiresPermission(
+      [AvailableRole.SUPERADMIN],
+      roles,
+      AvailableResource.MEAL,
+      [PermissionScope.READ, PermissionScope.ALL]
+    );
+
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    const nextDayStart = new Date(nextDay.setHours(0, 0, 0, 0));
+    const nextDayEnd = new Date(nextDay.setHours(23, 59, 59, 999));
+    
+
+    const orderFilter = {status: 'payment_received', delivery_date: { $gte: nextDayStart, $lte: nextDayEnd } };
+    // const orderFilter = {status: 'payment_received', delivery_date: { $gte: nextDayStart, $lte: nextDayEnd } };
+    const lineupFilter = { status: 'active', delivery_date: { $gte: nextDayStart, $lte: nextDayEnd } };
+
+    const orders = await order
+      .find(orderFilter)
+      .populate('customer')
+      .lean()
+      .exec();
+
+    const lineups = await lineup
+      .find(lineupFilter)
+      .populate('customer')
+      .lean()
+      .exec();
+
+    if (!orders.length && !lineups.length) {
+      console.log( "No next-day deliveries found");
+    }
+
+    return {_orders:{totalcount: orders.length, data: orders},_lineups:{totalcount: lineups.length, lineup: lineups}, }
+
+};
+
    
   static mountEventListener() {
     new LineupEventListener();
