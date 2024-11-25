@@ -443,42 +443,7 @@ async getClosedOrdersHistory(
       MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
     let cus = await customer.findById(_order?.customer).exec();
-    if (!cus) throw createError("Customer does not exist", 404);
-  
-    const payload ={
-      name: cus?.first_name!,
-      email: cus?.email!,
-      order_ref_id: _order?.ref!,
-      delivery_date: _order?.delivery_date!,
-      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!
-    }
-
-    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
-    await sendOrderPlacedEmail(payload.email, payload)
-
-    const emails = [
-      'nourishahelen@gmail.com',
-      'Victorianourisha@gmail.com',
-      'nourishaorders@gmail.com',
-      'shukazuby@gmail.com',
-
-    ]
-
-    const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
-
-    const load = {
-      deliveryDate: _ord?.delivery_date,
-      subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
-      customer: cus?._id
-    }
-
-    // if(_ord?.status === 'payment_received'){
-      await sendOrderAlert( emails, load)
-      console.log('Kitchen Email Sent to Admins', 
-        `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
-    // }
-
-    if (cus) {
+    if (!cus) throw createError("Customer does not exist", 404);    if (cus) {
       cus.newUser = false;
   
       // Helper function to initialize or update email properties
@@ -515,6 +480,41 @@ async getClosedOrdersHistory(
       // Save the customer object
       await cus.save();
     }
+
+  
+    const payload ={
+      name: cus?.first_name!,
+      email: cus?.email!,
+      order_ref_id: _order?.ref!,
+      delivery_date: _order?.delivery_date!,
+      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!
+    }
+
+    NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
+    await sendOrderPlacedEmail(payload.email, payload)
+
+    const emails = [
+      'nourishahelen@gmail.com',
+      'Victorianourisha@gmail.com',
+      'nourishaorders@gmail.com',
+      'shukazuby@gmail.com',
+
+    ]
+
+    const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
+
+    const load = {
+      deliveryDate: _ord?.delivery_date,
+      subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
+      customer: cus?._id
+    }
+
+    // if(_ord?.status === 'payment_received'){
+      await sendOrderAlert( emails, load)
+      console.log('Kitchen Email Sent to Admins', 
+        `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
+    // }
+
 
   }
 
