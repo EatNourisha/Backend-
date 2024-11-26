@@ -974,11 +974,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
 `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail3(email: string, payload: any) {
@@ -1548,11 +1559,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
 `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail4(email: string, payload: any) {
@@ -1920,11 +1942,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
 `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail5(email: string, payload: any) {
@@ -2477,11 +2510,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail6(email: string, payload: any) {
@@ -2920,11 +2964,22 @@ export async function welcomeEmail1(email: string, payload: any) {
     `
     
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail7(email: string, payload: any) {
@@ -3491,11 +3546,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
     `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function welcomeEmail8(email: string, payload: any) {
@@ -3875,11 +3941,22 @@ export async function welcomeEmail1(email: string, payload: any) {
 </html>
     `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment1(email: string, payload: any) {
@@ -4998,11 +5075,21 @@ const body = `
   </body>
 </html>
 `  ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   
@@ -5575,11 +5662,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment4(email: string, payload: any) {
@@ -6164,11 +6261,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment5(email: string, payload: any) {
@@ -6715,11 +6822,20 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+     await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+   // );
   };
   
   export async function cartAbandonment6(email: string, payload: any) {
@@ -7264,11 +7380,20 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+     await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+   // );
   };
   
   export async function cartAbandonment7(email: string, payload: any) {
@@ -7741,11 +7866,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment8(email: string, payload: any) {
@@ -8250,11 +8385,21 @@ const body = `
 
 `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment9(email: string, payload: any) {
@@ -8725,11 +8870,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment10(email: string, payload: any) {
@@ -9206,11 +9361,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function cartAbandonment11(email: string, payload: any) {
@@ -9687,11 +9852,21 @@ const body = `
 </html>
   `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub1(email: string, payload: any) {
@@ -10208,11 +10383,21 @@ const body = `
 </html>
     `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub2(email: string, payload: any) {
@@ -10714,11 +10899,21 @@ const body = `
 
     `
   ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub3(email: string, payload: any) {
@@ -11192,11 +11387,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub4(email: string, payload: any) {
@@ -11699,11 +11904,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub5(email: string, payload: any) {
@@ -12134,11 +12349,21 @@ const body = `
     `
   
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub6(email: string, payload: any) {
@@ -12622,11 +12847,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub7(email: string, payload: any) {
@@ -13066,11 +13302,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub8(email: string, payload: any) {
@@ -13083,11 +13330,21 @@ const body = `
     ${cus.first_name}
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function postsub9(email: string, payload: any) {
@@ -13561,11 +13818,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   
@@ -14065,11 +14332,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function Reengage2(email: string, payload: any) {
@@ -14556,11 +14834,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function Reengage3(email: string, payload: any) {
@@ -14944,11 +15232,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function Reengage4(email: string, payload: any) {
@@ -15451,11 +15750,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function Reengage5(email: string, payload: any) {
@@ -15900,11 +16209,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function Reengage6(email: string, payload: any) {
@@ -16400,11 +16720,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
+  
   };
 
   export async function customerRetention1(email: string, payload: any) {
@@ -16784,11 +17115,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function customerRetention2(email: string, payload: any) {
@@ -17167,11 +17509,23 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
+  
   };
   
   export async function customerRetention3(email: string, payload: any) {
@@ -17567,11 +17921,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function NoviceEmail(email: string, payload: any) {
@@ -18009,11 +18374,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function OGEmail(email: string, payload: any) {
@@ -18450,11 +18826,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+  
   };
   
   export async function UpgradedEmail(email: string, payload: any) {
@@ -18890,14 +19277,26 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
-  export async function RichEmail(email: string, payload: any) {
+ 
+ export async function RichEmail(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
   
     const subject = `Few steps to an Ambassador!`;
@@ -19328,17 +19727,28 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+  
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function InsiderEmail(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Hey Foodie Adventurer! Earn Rewards with Every Bite!`;
+
+   const subject = `Hey Foodie Adventurer! Earn Rewards with Every Bite!`;
   
     const body = 
     `
@@ -19765,11 +20175,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function SpecialEmail(email: string, payload: any) {
@@ -20195,11 +20616,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+    await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   export async function HeroEmail(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
@@ -20637,11 +21069,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function AmbassadorEmail(email: string, payload: any) {
@@ -21076,11 +21519,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
     
   export async function Referral1(email: string, payload: any) {
@@ -21893,11 +22347,22 @@ const body = `
 
 </html>    `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function emailCourse1(email: string, payload: any) {
@@ -22850,11 +23315,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function emailCourse3(email: string, payload: any) {
@@ -23333,11 +23809,22 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
   export async function emailCourse4(email: string, payload: any) {
@@ -23766,10 +24253,21 @@ const body = `
 </html>
     `
     ;
-    await mailJetSendMail(
-      body,
-      `${subject}`,
-      [`${email}`]
-    );
+    // await mailJetSendMail(
+    //   body,
+    //   `${subject}`,
+    //   [`${email}`]
+    // );
+
+        await sgMail.send({
+      from: {
+        name: "Nourisha",
+        email: "hello@eatnourisha.com",
+      },
+      subject,
+      to: email,
+      html: body,
+    });
+
   };
   
