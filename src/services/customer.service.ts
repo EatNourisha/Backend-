@@ -47,6 +47,7 @@ import { MarketingService } from "./Marketing/marketing.service";
 import mealLineup from "../models/mealLineup";
 import { Referral1 } from "./Marketing/bluePrint.service";
 import { PipelineStage } from "mongoose";
+// import registerAddKlaviyo from "../klaviyo/addUser";
 
 // import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
@@ -177,6 +178,11 @@ async getCountriesById(_id: string) {
     acc = (await customer.findById(acc._id).lean().exec()) as Customer;
     if (!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
+
+  // const newCus =  await registerAddKlaviyo(acc?.email, acc?.phone, acc?.first_name, acc?.last_name)
+
+  // console.log('newwwww', newCus)
+
     return acc;
   }
  
@@ -271,103 +277,6 @@ async getCountriesById(_id: string) {
     });
   }
 
-  // async getCustomers(
-  //   roles: string[],
-  //   filters?: IPaginationFilter & {
-  //     has_lineup?: boolean;
-  //     has_subscription?: boolean;
-  //     searchPhrase?: string;
-  //     nin_roles: string;
-  //     populate: string;
-  //   }
-  // ): Promise<PaginatedDocument<Customer[]>> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-  
-  //   const aggregationPipeline: PipelineStage[] = [];
-  
-  //   if (filters?.searchPhrase) {
-  //     aggregationPipeline.push({
-  //       $match: { $text: { $search: filters.searchPhrase } },
-  //     });
-  //   }
-  
-  //   if (filters?.has_lineup !== undefined) {
-  //     aggregationPipeline.push({
-  //       $match: { lineup: { $exists: filters.has_lineup } },
-  //     });
-  //   }
-  
-  //   if (filters?.has_subscription) {
-  //     aggregationPipeline.push({
-  //       $match: {
-  //         subscription: { $exists: true },
-  //         "subscription.status": "active",
-  //       },
-  //     });
-  //   }
-  
-  //   if (filters?.nin_roles) {
-  //     const roleNames = String(filters.nin_roles).split(",");
-  //     const roles = (await RoleService.getRoleBySlugs(roleNames)).map((r) => r?._id);
-  //     aggregationPipeline.push({
-  //       $match: { roles: { $nin: roles } },
-  //     });
-  //   }
-  
-  //   if (filters?.page && filters?.limit) {
-  //     aggregationPipeline.push(
-  //       { $skip: (Math.abs(parseInt(filters?.page!)) - 1) * Math.abs(parseInt(filters?.limit!)) },
-  //       { $limit: Math.abs(parseInt(filters?.limit!)) }
-  //     );
-  //   }
-  
-  //   if (filters?.populate) {
-  //     aggregationPipeline.push(
-  //       {
-  //         $lookup: {
-  //           from: "subscriptions",
-  //           localField: "subscription",
-  //           foreignField: "_id",
-  //           as: "subscription_details",
-  //         },
-  //       },
-  //       {
-  //         $lookup: {
-  //           from: "roles",
-  //           localField: "roles",
-  //           foreignField: "_id",
-  //           as: "roles_details",
-  //         },
-  //       },
-  //       {
-  //         $lookup: {
-  //           from: "preferences",
-  //           localField: "preference",
-  //           foreignField: "_id",
-  //           as: "preferences_details",
-  //         },
-  //       }
-  //     );
-  //   }
-  
-  //   if (aggregationPipeline.length === 0) {
-  //     aggregationPipeline.push({
-  //       $match: {},
-  //     });
-  //   }
-  
-  //   const customers = await customer.aggregate(aggregationPipeline).exec();
-  
-  //   return paginate("customer", {}, filters, {
-  //     data: customers,
-  //   });
-  // }
-    
-
-
   async getCustomerById(customer_id: string, roles: string[]): Promise<Customer> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
       PermissionScope.READ,
@@ -431,11 +340,6 @@ async getCountriesById(_id: string) {
     if (!data?.stripe_id) {
       data = await this.attachStripeId(data?._id!, data?.email, join([data?.first_name, data?.last_name], " "));
     }
-    // if (!data?.delivery_info) {
-    //   const c = await this.attachDeliveryInfo(data?._id!);
-    //   if (!!c) data = c;
-    // }
-
     if (!data?.ref_code)
       data = await customer
         .findByIdAndUpdate(id, { ref_code: nanoid(5) }, { new: true })
@@ -573,16 +477,6 @@ async validateEmail(email) {
     return device_token;
   }
 
-  // async deleteCustomer(sub: string, id: string, roles: string[]) {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
-  //     PermissionScope.DELETE,
-  //     PermissionScope.ALL,
-  //   ]);
-  //   const data = await customer.findOneAndDelete({ _id: id }, { new: true }).lean<Customer>().exec();
-  //   if (!data) throw createError(`Not found`, 404);
-  //   await NourishaBus.emit("customer:deleted", { owner: data, modifier: sub });
-  //   return data;
-  // }
 
   async disableCustomer(sub: string, id: string, roles: string[]) {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.CUSTOMER, [
