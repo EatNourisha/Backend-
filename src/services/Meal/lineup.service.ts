@@ -238,8 +238,87 @@ export class MealLineupService {
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
     
+    // if(daysSinceReset <= 30){
+    //   if (customerData!.lineupCount === 3) {
+    //     await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+    
+    //     if(customerData!.level === 'Newbie' || customerData!.level === null){
+          
+    //       customerData!.level ='Novice'
+    //       await customerData?.save()
+    //       await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Novice'){
+    //       customerData!.level ='OG'
+    //       await customerData?.save()
+    //       await OGEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    
+    //     if(customerData!.level === 'OG'){
+    //       customerData!.level ='Upgraded'
+    //       await customerData?.save()
+    //       await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     if(customerData!.level === 'Upgraded'){
+    //       customerData!.level ='Rich'
+    //       await customerData?.save()
+    //       await RichEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Rich'){
+    //       customerData!.level ='Insider'
+    //       await customerData?.save()
+    //       await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Insider'){
+    //       customerData!.level ='Special'
+    //       await customerData?.save()
+    //       await SpecialEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     if(customerData!.level === 'Special'){
+    //       customerData!.level ='Hero'
+    //       await customerData?.save()
+    //       await HeroEmail(customerData?.email!, {customer: customerData?._id})
+    
+    //     }else
+    //     if(customerData!.level === 'Hero'){
+    //       customerData!.level ='Ambassador'
+    //       await customerData?.save()
+    //       await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     await customerData?.save()
+    
+    //   } 
+      
+    //   if(customerData!.lineupCount === 4){
+    //     customerData!.lineupCount = 0;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+  
+    // }  else if(customerData!.lineupCount <= 3){
+    //     customerData!.lineupCount +=1;
+    //     await customerData!.save();
+    //   }
+    //   else{
+    //     console.log('conditions skipped')
+    //   }
+
+    // } 
+
+    // if(daysSinceReset > 30){
+    //   if(LastLineup <= 7 && customerData!.lineupCount === 4){
+    //     customerData!.lineupCount = 0;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+    //   }else{
+    //     customerData!.lineupCount =1;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+
+    //   }
+    // }
+
     if(daysSinceReset <= 30){
-      if (customerData!.lineupCount === 3) {
+      if (customerData && customerData.lineupCount === 3) {
         await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
@@ -289,13 +368,13 @@ export class MealLineupService {
     
       } 
       
-      if(customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+      if(customerData && customerData!.lineupCount === 4){
+        customerData.lineupCount = 0;
+        customerData.lastLineupReset = now;
         await customerData!.save();
   
-    }  else if(customerData!.lineupCount <= 3){
-        customerData!.lineupCount +=1;
+    }  else if(customerData && customerData.lineupCount <= 3){
+        customerData.lineupCount +=1;
         await customerData!.save();
       }
       else{
@@ -303,19 +382,26 @@ export class MealLineupService {
       }
 
     } 
-
+    
     if(daysSinceReset > 30){
       if(LastLineup <= 7 && customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+          customerData.lineupCount = 0;
+          customerData.lastLineupReset = now;
+
+        }
         await customerData!.save();
       }else{
-        customerData!.lineupCount =1;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+
+        customerData.lineupCount =1;
+        customerData.lastLineupReset = now;
         await customerData!.save();
+        }
 
       }
     }
+
     const trans = await transaction.findOne({customer: customer_id, status: 'successful'}).sort({createdAt: -1})
 
     const promo = await promoCode.findById(trans?.applied_promo)
@@ -548,8 +634,87 @@ export class MealLineupService {
 
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
+    // if(daysSinceReset <= 30){
+    //   if (customerData!.lineupCount === 3) {
+    //     await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+    
+    //     if(customerData!.level === 'Newbie' || customerData!.level === null){
+          
+    //       customerData!.level ='Novice'
+    //       await customerData?.save()
+    //       await NoviceEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Novice'){
+    //       customerData!.level ='OG'
+    //       await customerData?.save()
+    //       await OGEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    
+    //     if(customerData!.level === 'OG'){
+    //       customerData!.level ='Upgraded'
+    //       await customerData?.save()
+    //       await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     if(customerData!.level === 'Upgraded'){
+    //       customerData!.level ='Rich'
+    //       await customerData?.save()
+    //       await RichEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Rich'){
+    //       customerData!.level ='Insider'
+    //       await customerData?.save()
+    //       await InsiderEmail(customerData?.email!, {customer: customerData?._id})
+    //     }else
+    //     if(customerData!.level === 'Insider'){
+    //       customerData!.level ='Special'
+    //       await customerData?.save()
+    //       await SpecialEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     if(customerData!.level === 'Special'){
+    //       customerData!.level ='Hero'
+    //       await customerData?.save()
+    //       await HeroEmail(customerData?.email!, {customer: customerData?._id})
+    
+    //     }else
+    //     if(customerData!.level === 'Hero'){
+    //       customerData!.level ='Ambassador'
+    //       await customerData?.save()
+    //       await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
+    //     }
+    //     await customerData?.save()
+    
+    //   } 
+      
+    //   if(customerData!.lineupCount === 4){
+    //     customerData!.lineupCount = 0;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+  
+    // }  else if(customerData!.lineupCount <= 3){
+    //     customerData!.lineupCount +=1;
+    //     await customerData!.save();
+    //   }
+    //   else{
+    //     console.log('conditions skipped')
+    //   }
+
+    // } 
+    
+    // if(daysSinceReset > 30){
+    //   if(LastLineup <= 7 && customerData!.lineupCount === 4){
+    //     customerData!.lineupCount = 0;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+    //   }else{
+    //     customerData!.lineupCount =1;
+    //     customerData!.lastLineupReset = now;
+    //     await customerData!.save();
+
+    //   }
+    // }
+
     if(daysSinceReset <= 30){
-      if (customerData!.lineupCount === 3) {
+      if (customerData && customerData.lineupCount === 3) {
         await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
@@ -599,13 +764,13 @@ export class MealLineupService {
     
       } 
       
-      if(customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+      if(customerData && customerData!.lineupCount === 4){
+        customerData.lineupCount = 0;
+        customerData.lastLineupReset = now;
         await customerData!.save();
   
-    }  else if(customerData!.lineupCount <= 3){
-        customerData!.lineupCount +=1;
+    }  else if(customerData && customerData.lineupCount <= 3){
+        customerData.lineupCount +=1;
         await customerData!.save();
       }
       else{
@@ -616,13 +781,19 @@ export class MealLineupService {
     
     if(daysSinceReset > 30){
       if(LastLineup <= 7 && customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+          customerData.lineupCount = 0;
+          customerData.lastLineupReset = now;
+
+        }
         await customerData!.save();
       }else{
-        customerData!.lineupCount =1;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+
+        customerData.lineupCount =1;
+        customerData.lastLineupReset = now;
         await customerData!.save();
+        }
 
       }
     }
@@ -1218,7 +1389,7 @@ export class MealLineupService {
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
     if(daysSinceReset <= 30){
-      if (customerData!.lineupCount === 3) {
+      if (customerData && customerData.lineupCount === 3) {
         await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
@@ -1268,13 +1439,13 @@ export class MealLineupService {
     
       } 
       
-      if(customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+      if(customerData && customerData!.lineupCount === 4){
+        customerData.lineupCount = 0;
+        customerData.lastLineupReset = now;
         await customerData!.save();
   
-    }  else if(customerData!.lineupCount <= 3){
-        customerData!.lineupCount +=1;
+    }  else if(customerData && customerData.lineupCount <= 3){
+        customerData.lineupCount +=1;
         await customerData!.save();
       }
       else{
@@ -1285,13 +1456,19 @@ export class MealLineupService {
     
     if(daysSinceReset > 30){
       if(LastLineup <= 7 && customerData!.lineupCount === 4){
-        customerData!.lineupCount = 0;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+          customerData.lineupCount = 0;
+          customerData.lastLineupReset = now;
+
+        }
         await customerData!.save();
       }else{
-        customerData!.lineupCount =1;
-        customerData!.lastLineupReset = now;
+        if (customerData){
+
+        customerData.lineupCount =1;
+        customerData.lastLineupReset = now;
         await customerData!.save();
+        }
 
       }
     }
