@@ -1,4 +1,6 @@
-import { mailJetSendMail } from "../config/mailjet";
+// import { mailJetSendMail } from "../config/mailjet";
+import sgMail from "@sendgrid/mail";
+
 
 export async function sendMobilResetEmail(email: string, payload: any) {
   const subject = `🥺Reset Password`;
@@ -1088,11 +1090,22 @@ export async function sendMobilResetEmail(email: string, payload: any) {
 </body>
 </html>
 `;
-  await mailJetSendMail(
-    body,
-    `${subject}`,
-    [`${email}`]
-  );
+  // await mailJetSendMail(
+  //   body,
+  //   `${subject}`,
+  //   [`${email}`]
+  // );
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+    subject: subject,
+    to: email,
+    html: body,
+  });
+
 };
 
 export async function sendWelcomeEmail(email: string, payload: any) {
@@ -2351,11 +2364,22 @@ export async function sendWelcomeEmail(email: string, payload: any) {
 
 </html>
 `;
-  await mailJetSendMail(
-    body,
-    `${subject}`,
-    [`${email}`]
-  );
+  // await mailJetSendMail(
+  //   body,
+  //   `${subject}`,
+  //   [`${email}`]
+  // );
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+    subject: subject,
+    to: email,
+    html: body,
+  });
+
 };
 
 export async function sendOrderPlacedEmail(email: string, payload: any) {
@@ -3513,9 +3537,20 @@ export async function sendOrderPlacedEmail(email: string, payload: any) {
   </body>
 </html>
 `;
-  await mailJetSendMail(
-    body,
-    `${subject}`,
-    [`${email}`]
-  );
+  // await mailJetSendMail(
+  //   body,
+  //   `${subject}`,
+  //   [`${email}`]
+  // );
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+    subject: subject,
+    to: email,
+    html: body,
+  });
+
 };

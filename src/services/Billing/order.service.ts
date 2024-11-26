@@ -759,4 +759,143 @@ async getClosedOrdersHistory(
 
   }
 
+  async adminPlaceOrder(adminId: string, customer_id: string, dto: PlaceOrderDto, roles: string[]) {
+    // validateFields(dto, ["cart_session_id", "delivery_date"]);
+    // if (!!dto?.delivery_address) validateFields(dto?.delivery_address, ["address_", "city", "country"]);
+
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.CREATE, PermissionScope.ALL]);
+
+    const _cart = await cart
+      .findOne({ customer: customer_id, session_id: dto?.cart_session_id })
+      .populate(["customer"])
+      .lean<Cart>()
+      .exec();
+    if (!_cart) throw createError("Cart checkout session not found", 404);
+
+    const cus = _cart?.customer as Customer;
+
+    let coup = dto?.coupon
+
+    if(coup?.toLowerCase() === 'loyaltyreward'){
+      throw createError('Coupon is only valid for a weekly plan subscription')
+    }
+
+    if (coup === 'signupsave5' && cus?.newUser === false) {
+      throw createError('Not eligible to use this coupon');
+    }
+    
+    if (cus?.newUser) {
+      coup = 'signupsave5';
+    } else {
+      coup = dto.coupon?.toLowerCase() === 'signupsave5' ? '' : dto.coupon?.toLowerCase();
+    }
+
+  
+    let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, coup!);
+    const gift = await giftpurchase.findOne({ code: coup, status: 'active' }) 
+
+    if (!amount_off || amount_off === 0){
+      if (gift && gift.amount !== undefined) {
+        amount_off += gift.amount || 0;
+      } }
+
+    dto.delivery_address = dto?.delivery_address ?? cus?.address;
+    dto.phone_number = dto?.phone_number ?? cus?.phone;
+
+    if(dto?.swallow === true && !dto?.extras){
+      validateFields(dto, ["extras"]);
+    }
+
+    if (!dto?.delivery_address?.address_) throw createError("delivery_address is required", 400);
+    if (!dto?.phone_number) throw createError("phone_number is required", 400);
+
+    // const cartExists = await cart.exists({ customer: customer_id });
+    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+    const lineupExists = await lineup.exists({ customer: customer_id });
+
+    let returning = false
+
+    if (orderExists || lineupExists) {
+      returning = true
+    }
+
+    const _items = await cartItem
+    .find({ 
+      customer: customer_id, 
+      cart: _cart?._id, 
+      session_id: _cart?.session_id, 
+      quantity: { $gt: 0 } 
+    })
+    .lean<CartItem[]>()
+    .exec();
+  
+  const _extras = _items.map(i => {
+    return {item: i.item, swallow: i.swallow, protein: i.protein};  
+    // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};  
+
+  });
+  const _extra = _items.map(i => {
+    return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
+  });
+
+  const admin = await customer.findById(adminId)
+  
+    const result = await OrderService.createOrder(customer_id, {
+      ref: dto.cart_session_id,
+      delivery_address: dto?.delivery_address ?? cus?.address,
+      delivery_fee: _cart?.deliveryFee,
+      subtotal: _cart?.subtotal,
+      total: _cart?.total,
+      phone_number: dto?.phone_number ?? cus?.phone,
+      cart_id: _cart?._id!,
+      delivery_date: dto?.delivery_date,
+      promo: when(!!promo, promo?._id, undefined),
+      actual_discounted_amount: amount_off ?? 0,
+      weekend_delivery: dto?.weekend_delivery,
+      delivery_period: dto?.delivery_period,
+      coupon: coup,
+      swallow: dto?.swallow,
+      isReturningCustomer: returning,
+      orderExtras: _extras,
+      MealAndExtras: _extra,
+      createdBy: admin?._id,
+      editedBy: admin?._id,
+      });
+
+    const { order: _order, items } = result;
+    await order
+    .findByIdAndUpdate(_order._id!, { items: items?.map((i) => i._id), status: 'payment_received' })
+    .lean<Order>()
+      .exec();
+
+      const emails = [
+        // 'nourishahelen@gmail.com',
+        // 'Victorianourisha@gmail.com',
+        // 'nourishaorders@gmail.com',
+        'shukazuby@gmail.com',
+  
+      ]
+  
+      const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
+  
+      const load = {
+        deliveryDate: _ord?.delivery_date,
+        subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
+        customer: cus?._id
+      }
+  
+        await sendOrderAlert( emails, load)
+        console.log('Kitchen Email Sent to Admins', 
+          `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
+  
+    // const payment_intent = await new BillingService().initializePayment(customer_id, {
+    //   order_id: _order?._id!,
+    //   card_token: dto?.card_token,
+    // });
+
+    return { order: _order, discount: amount_off };
+    // return _order;
+  }
+
+
 }

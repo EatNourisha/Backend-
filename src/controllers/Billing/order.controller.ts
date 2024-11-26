@@ -115,6 +115,15 @@ export class OrderController {
     }
   }
 
+  async adminPlaceOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { customer, body, params } = req;
+      const data = await service.adminPlaceOrder(customer.sub, params.id, body, customer.roles);
+      sendResponse(res, 201, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
 
 
 }
