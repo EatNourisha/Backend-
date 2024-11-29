@@ -7,6 +7,7 @@ import { lineup, order } from "../../models";
 import { cartAbandonment1, cartAbandonment10, cartAbandonment11, cartAbandonment2, cartAbandonment3, cartAbandonment4, cartAbandonment5, cartAbandonment6, cartAbandonment7, cartAbandonment8, cartAbandonment9, customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2, welcomeEmail3, welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
 // import { mailJetSendMail } from "../../config/mailjet";
 import sgMail from "@sendgrid/mail";
+import axios from "axios";
 
 
 enum ChannelType {
@@ -1165,3 +1166,77 @@ const body =
 
 
 }
+
+export async function sendEmailKlaviyo(
+  to: string,
+  subject: string,
+  htmlBody: string,
+  textBody: string
+) {
+  const API_KEY = process.env.KLAVIYO_API_KEY;
+
+  const data = {
+    data: {
+      type: "event",
+      attributes: {
+        profile: {
+          data: {
+            type: "profile",
+            attributes: {
+              email: to,
+            },
+          },
+        },
+        metric: {
+          data: {
+            type: "metric",
+            attributes: {
+              name: "Zuby Sent",
+            },
+          },
+        },
+        properties: {
+          subject,
+          htmlContent: htmlBody,
+          textContent: textBody,
+        },
+        time: new Date().toISOString(), 
+      },
+    },
+  };
+
+  try {
+    const response = await axios.post('https://a.klaviyo.com/api/events', data, {
+      method: 'POST',
+      headers: {
+        accept: 'application/vnd.api+json',
+        revision: '2024-10-15',
+        'content-type': 'application/vnd.api+json',
+        Authorization: `Klaviyo-API-Key ${API_KEY}`,      }, 
+    });
+    console.log('Email event logged successfully:', response.data);
+} catch (error) {
+  console.error('Failed to log email event:', error.response?.data || error || error.message);
+}
+}
+
+// (async () => {
+//   const recipientEmail =  'codelifezu@gmail.com';
+//   const emailSubject = 'Welcome to Our Platform!';
+//   const emailHtmlBody = '<h1>Hi there!</h1><p>Thank you for joining us. We’re excited to have you!</p>';
+//   const emailTextBody = 'Hi there! Thank you for joining us. We’re excited to have you!';
+
+//   try {
+//     await sendEmailKlaviyo(
+//       recipientEmail,
+//       emailSubject,
+//       emailHtmlBody,
+//       emailTextBody
+//     );
+//     console.log('Email sent successfully!');
+//   } catch (error) {
+//     console.error('Error sending email:', error.message); 
+//   }
+// })();
+
+ 
