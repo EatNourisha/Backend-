@@ -6,7 +6,7 @@ import customer, { Address } from "../../models/customer";
 import { lineup, order } from "../../models";
 import { cartAbandonment1, cartAbandonment10, cartAbandonment11, cartAbandonment2, cartAbandonment3, cartAbandonment4, cartAbandonment5, cartAbandonment6, cartAbandonment7, cartAbandonment8, cartAbandonment9, customerRetention1, customerRetention2, customerRetention3, emailCourse1, emailCourse2, emailCourse3, emailCourse4, postsub1, postsub2, postsub3, postsub4, postsub5, postsub6, postsub7, postsub8, postsub9, Reengage1, Reengage2, Reengage3, Reengage4, Reengage5, Reengage6, welcomeEmail2, welcomeEmail3, welcomeEmail4, welcomeEmail5, welcomeEmail6, welcomeEmail7, welcomeEmail8 } from "./bluePrint.service";
 // import { mailJetSendMail } from "../../config/mailjet";
-import sgMail from "@sendgrid/mail";
+// import sgMail from "@sendgrid/mail";
 import axios from "axios";
 
 
@@ -1145,17 +1145,40 @@ const body =
   </html>
          `
   
+         const url = 'https://api.brevo.com/v3/smtp/email';
+         const apiKey = process.env.BREVO_KEY;  
+         const load = {
+           sender: {
+             email: 'Kitchen@eatnourisha.com', 
+             name: 'Nourisha',
+           },
+           to: [
+             {
+               email: email,
+             },
+           ],
+           subject: payload.subject,
+           htmlContent: body, 
+         };
+       
+         const headers = {
+           'Content-Type': 'application/json',
+           'api-key': apiKey,
+         };
+         const response = await axios.post(url, load, { headers });
+         return response.data;
+       
+       
 
-
-  await sgMail.send({
-    from: {
-      name: "Nourisha",
-      email: "hello@eatnourisha.com",
-    },
-    subject: payload.subject,
-    to: email,
-    html: body,
-  });
+  // await sgMail.send({
+  //   from: {
+  //     name: "Nourisha",
+  //     email: "hello@eatnourisha.com",
+  //   },
+  //   subject: payload.subject,
+  //   to: email,
+  //   html: body,
+  // });
 
 
   // await mailJetSendMail(
@@ -1219,7 +1242,6 @@ export async function sendEmailKlaviyo(
   console.error('Failed to log email event:', error.response?.data || error || error.message);
 }
 }
-
 // (async () => {
 //   const recipientEmail =  'codelifezu@gmail.com';
 //   const emailSubject = 'Welcome to Our Platform!';
@@ -1238,5 +1260,54 @@ export async function sendEmailKlaviyo(
 //     console.error('Error sending email:', error.message); 
 //   }
 // })();
+
+
+
+export async function sendBrevoEmail( email: string) {
+  const url = 'https://api.brevo.com/v3/smtp/email';
+  const apiKey = process.env.BREVO_KEY;
+  const subject = 'Test Email from Brevo';
+  const body = '<h1>Hello!</h1><p>This is a test email.</p>';
+
+  const payload = {
+    sender: {
+      email: 'Kitchen@eatnourisha.com', 
+      name: 'Nourisha',
+    },
+    to: [
+      {
+        email: email,
+      },
+    ],
+    subject: subject,
+    htmlContent: body, 
+  };
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'api-key': apiKey,
+  };
+
+  try {
+    const response = await axios.post(url, payload, { headers });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending email:', error.response?.data || error);
+    throw error;
+  }
+}
+
+// Example usage
+// (async () => {
+//   try {
+//     const recipientEmail = 'shukazuby@gmail.com';
+
+//     const result = await sendBrevoEmail(recipientEmail);
+//     console.log('Email sent successfully:', result);
+//   } catch (error) {
+//     console.error('Failed to send email:', error);
+//   }
+// })();
+
 
  
