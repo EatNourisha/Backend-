@@ -501,7 +501,7 @@ async getClosedOrdersHistory(
 
     ]
 
-    const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
+    const _ord = await order.findOne({customer: cus?._id, status: 'payment_received'}).sort({createdAt: -1})
 
     const load = {
       deliveryDate: _ord?.delivery_date,
