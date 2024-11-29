@@ -152,10 +152,12 @@ export class MealLineupService {
 
     if (_mealPack && _mealPack.available_quantity !== undefined) {
       if (selectedQuantity > _mealPack.available_quantity) {
-        throw createError(
-          `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
-          400
-        );
+        // throw createError(
+        //   `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+        //   400
+        // );
+      
+        console.log(`${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`)
       }
 
       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);

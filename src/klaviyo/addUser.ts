@@ -63,7 +63,7 @@ async function registerAddKlaviyo(email: string, phone: string, first_name: stri
 //     if (!response.ok) {
 //       const errorDetails = await response.json();
 //       throw new Error(
-//         `Request failed with status ${response.status}: ${errorDetails.detail || errorDetails.message}`
+//         `Request failed with status ${response.status}: ${errorDetails}`
 //       );
 //     }
 
@@ -73,5 +73,26 @@ async function registerAddKlaviyo(email: string, phone: string, first_name: stri
 //     console.error("Error adding user to Klaviyo list:", error);
 //   }
 // }
+
+// (async () => {
+//   const recipientEmail =  'codelifezu@gmail.com';
+//   // const emailSubject = 'Welcome to Our Platform!';
+//   // const emailHtmlBody = '<h1>Hi there!</h1><p>Thank you for joining us. We’re excited to have you!</p>';
+//   // const emailTextBody = 'Hi there! Thank you for joining us. We’re excited to have you!';
+
+//   try {
+//     await registerAddKlaviyo(
+//       recipientEmail,
+//       "090000",
+//       'Zuby',
+//       'shuka',
+//     );
+//     console.log('Email sent successfully!');
+//   } catch (error) {
+//     console.error('Error sending email:', error.message); 
+//   }
+// })();
+
+
 
   export default registerAddKlaviyo;
