@@ -41,6 +41,7 @@ export const auditLogs = async (req: Request, _: Response, next: NextFunction) =
     ip_address: req.ip,
   };
 
+  if (data.route !== 'v1/healthcheck') {
   try {
     const logs = await auditService.createLog({
       status: data.status,
@@ -54,8 +55,9 @@ export const auditLogs = async (req: Request, _: Response, next: NextFunction) =
   } catch (err) {
     console.error('Error logging data:', err);
   }
+}
+next();
 
-  next();
 };
 
 
