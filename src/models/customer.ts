@@ -75,6 +75,9 @@ export class reengage {
 }
 export class postsub {
   @prop({default:false})
+  postsub0: boolean;
+
+  @prop({default:false})
   postsub1: boolean;
 
   @prop({default:false})
@@ -365,6 +368,10 @@ export class Customer extends BaseEntity {
 
   @prop()
   lastLoggedPlatform?: string;
+
+  @prop()
+  emailUpdated?: boolean;
+
 }
 
 export default getModelForClass(Customer);

@@ -223,66 +223,6 @@ cron.schedule('* */1 * * *', async () => {
     timezone: "Europe/London"
 });
 
-//*********************************************************** */
-// Email Marketing Blueprint Automation
-// Email Marketing Blueprint Automation
-// Email Marketing Blueprint Automation
-//*********************************************************** */
-
-// cron.schedule('*/5 * * * *', async () => {
-//     console.log("######### BluePrint emails Job runs every 5 min WELCOM");
-//     try {
-//         await AllWelcomeEmails()
-
-//     } catch (error) {
-//         console.error('Error updating settings - AllWelcomeEmails:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
-
-
-// cron.schedule('*/10 * * * *', async () => {
-//     console.log("######### BluePrint emails Job runs every 10 min - CART");
-//     try {
-//         await AllCartEmails()
-//     } catch (error) {
-//         console.error('Error updating settings - AllCartEmails:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
-
-
-// cron.schedule('0 0 */1 * *', async () => {
-//     console.log("######### BluePrint emails Job runs every 24 hours- RENGAGEMENT");
-//     try {
-//         await AllReEngagementEmails()
-
-//     } catch (error) {
-//         console.error('Error updating settings - AllReEngagementEmails :', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
-
-// cron.schedule('0 0 */2 * *', async () => {
-//     console.log("######### BluePrint emails Job runs every 48 hours - RETENTION");
-//     try {
-//         await AllCustomerRetentionEmails()
-
-//     } catch (error) {
-//         console.error('Error updating settings - AllCustomerRetentionEmails:', error);
-//     }
-// }, {
-//     scheduled: true,
-//     timezone: "Europe/London"
-// });
-
-
 cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 New User Job runs every 1 min");
 
@@ -298,7 +238,6 @@ cron.schedule('* */1 * * *', async () => {
             if (orderExists || lineupExists) {
             returning = false;
             }
-
             c.newUser = returning
            await c.save()
 
@@ -312,4 +251,228 @@ cron.schedule('* */1 * * *', async () => {
 });
 
 
+
+type CartEmails = {
+  cart1: boolean;
+  cart2: boolean;
+  cart3: boolean;
+  cart4: boolean;
+  cart5: boolean;
+  cart6: boolean;
+  cart7: boolean;
+  cart8: boolean;
+  cart9: boolean;
+  cart10: boolean;
+  cart11: boolean;
+};
+
+type PostEmails = {
+  postsub0: boolean;
+  postsub1: boolean;
+  postsub2: boolean;
+  postsub3: boolean;
+  postsub4: boolean;
+  postsub5: boolean;
+  postsub6: boolean;
+  postsub7: boolean;
+  postsub8: boolean;
+  postsub9: boolean;
+  postsub10: boolean;
+  postsub11: boolean;
+  postsub12: boolean;
+  postsub13: boolean;
+};
+
+type ReengageEmails = {
+  reengage1: boolean;
+  reengage2: boolean;
+  reengage3: boolean;
+  reengage4: boolean;
+  reengage5: boolean;
+  reengage6: boolean;
+};
+
+const initializeEmails = <T extends Record<string, boolean>>(keys: T): T => {
+  const initialized: Record<string, boolean> = {};
+  Object.keys(keys).forEach((key) => {
+    initialized[key] = false;
+  });
+  return initialized as T;
+};
+
+cron.schedule(
+  "* */1 * * *", 
+  async () => {
+    console.log("Order Job...");
+
+    try {
+        const orders = await order.find({}).sort({ createdAt: -1 });
+
+      await Promise.all(
+        orders.map(async (orde: any) => {
+          try {
+            const lastOrder = await order
+              .find({ customer: orde.customer })
+              .sort({ createdAt: -1 })
+              .limit(1);
+
+            if (
+              lastOrder.length > 0 &&
+              lastOrder[0].status === "payment_received"
+            ) {
+              const customerData = await customer.findById(orde.customer);
+
+              if (customerData && customerData.emailUpdated === undefined) {
+                customerData.emailUpdated = false; 
+                await customerData.save();
+              }
+              
+              if (customerData && customerData?.emailUpdated === false) {
+                customerData.POSTSUBEEMAILS = initializeEmails<PostEmails>({
+                  postsub0: false,
+                  postsub1: false,
+                  postsub2: false,
+                  postsub3: false,
+                  postsub4: false,
+                  postsub5: false,
+                  postsub6: false,
+                  postsub7: false,
+                  postsub8: false,
+                  postsub9: false,
+                  postsub10: false,
+                  postsub11: false,
+                  postsub12: false,
+                  postsub13: false,
+                });
+
+                customerData.CARTEMAILS = initializeEmails<CartEmails>({
+                  cart1: false,
+                  cart2: false,
+                  cart3: false,
+                  cart4: false,
+                  cart5: false,
+                  cart6: false,
+                  cart7: false,
+                  cart8: false,
+                  cart9: false,
+                  cart10: false,
+                  cart11: false,
+                });
+
+                customerData.REENGAGEEMAILS = initializeEmails<ReengageEmails>({
+                  reengage1: false,
+                  reengage2: false,
+                  reengage3: false,
+                  reengage4: false,
+                  reengage5: false,
+                  reengage6: false,
+                });
+
+                customerData.emailUpdated = true; 
+                await customerData.save();
+              }
+            }
+          } catch (err) {
+            console.error(`Error processing order ID ${orde._id}:`, err.message);
+          }
+        })
+      );
+    } catch (error) {
+      console.error("Error in New User Job:", error.message);
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "Europe/London",
+  }
+);
+
+
+cron.schedule(
+    "* */1 * * *", 
+    async () => {
+      console.log("Lineup Job...");
+  
+      try {
+          const lineups = await lineup.find({}).sort({ createdAt: -1 });
+  
+        await Promise.all(
+          lineups.map(async (line: any) => {
+            try {
+              const lastLineup = await lineup
+                .find({ customer: line.customer })
+                .sort({ createdAt: -1 })
+                .limit(1);
+  
+              if (
+                lastLineup.length > 0 &&
+                lastLineup[0].status === "active"
+              ) {
+                const customerData = await customer.findById(line.customer);
+  
+                if (customerData && customerData.emailUpdated === undefined) {
+                  customerData.emailUpdated = false; 
+                  await customerData.save();
+                }
+                
+                if (customerData && customerData?.emailUpdated === false) {
+                  customerData.POSTSUBEEMAILS = initializeEmails<PostEmails>({
+                    postsub0: false,
+                    postsub1: false,
+                    postsub2: false,
+                    postsub3: false,
+                    postsub4: false,
+                    postsub5: false,
+                    postsub6: false,
+                    postsub7: false,
+                    postsub8: false,
+                    postsub9: false,
+                    postsub10: false,
+                    postsub11: false,
+                    postsub12: false,
+                    postsub13: false,
+                  });
+  
+                  customerData.CARTEMAILS = initializeEmails<CartEmails>({
+                    cart1: false,
+                    cart2: false,
+                    cart3: false,
+                    cart4: false,
+                    cart5: false,
+                    cart6: false,
+                    cart7: false,
+                    cart8: false,
+                    cart9: false,
+                    cart10: false,
+                    cart11: false,
+                  });
+  
+                  customerData.REENGAGEEMAILS = initializeEmails<ReengageEmails>({
+                    reengage1: false,
+                    reengage2: false,
+                    reengage3: false,
+                    reengage4: false,
+                    reengage5: false,
+                    reengage6: false,
+                  });
+  
+                  customerData.emailUpdated = true; 
+                  await customerData.save();
+                }
+              }
+            } catch (err) {
+              console.error(`Error processing order ID ${line._id}:`, err.message);
+            }
+          })
+        );
+      } catch (error) {
+        console.error("Error in New User Job:", error.message);
+      }
+    },
+    {
+      scheduled: true,
+      timezone: "Europe/London",
+    }
+  );
+  
 export default cron
