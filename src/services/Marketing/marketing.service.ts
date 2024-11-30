@@ -1145,8 +1145,6 @@ const body =
   </html>
          `
   
-
-
   await sgMail.send({
     from: {
       name: "Nourisha",
@@ -1219,7 +1217,6 @@ export async function sendEmailKlaviyo(
   console.error('Failed to log email event:', error.response?.data || error || error.message);
 }
 }
-
 // (async () => {
 //   const recipientEmail =  'codelifezu@gmail.com';
 //   const emailSubject = 'Welcome to Our Platform!';
@@ -1238,5 +1235,54 @@ export async function sendEmailKlaviyo(
 //     console.error('Error sending email:', error.message); 
 //   }
 // })();
+
+
+
+export async function sendBrevoEmail( email: string) {
+  const url = 'https://api.brevo.com/v3/smtp/email';
+  const apiKey = process.env.BREVO_KEY;
+  const subject = 'Test Email from Brevo';
+  const body = '<h1>Hello!</h1><p>This is a test email.</p>';
+
+  const payload = {
+    sender: {
+      email: 'Kitchen@eatnourisha.com', 
+      name: 'Nourisha',
+    },
+    to: [
+      {
+        email: email,
+      },
+    ],
+    subject: subject,
+    htmlContent: body, 
+  };
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'api-key': apiKey,
+  };
+
+  try {
+    const response = await axios.post(url, payload, { headers });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending email:', error.response?.data || error);
+    throw error;
+  }
+}
+
+// Example usage
+// (async () => {
+//   try {
+//     const recipientEmail = 'shukazuby@gmail.com';
+
+//     const result = await sendBrevoEmail(recipientEmail);
+//     console.log('Email sent successfully:', result);
+//   } catch (error) {
+//     console.error('Failed to send email:', error);
+//   }
+// })();
+
 
  

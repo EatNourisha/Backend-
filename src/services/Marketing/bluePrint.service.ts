@@ -1,7 +1,8 @@
 import customer, { Customer } from "../../models/customer";
 import { mailJetSendMail } from "../../config/mailjet";
 import { Order, order } from "../../models";
-import sgMail from "@sendgrid/mail";
+// import sgMail from "@sendgrid/mail";
+import axios from "axios";
 
 export async function welcomeEmail1(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
@@ -501,15 +502,40 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
+
+  
+
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
   
   };
   
@@ -980,15 +1006,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -1565,15 +1614,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -1948,15 +2020,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -2516,15 +2611,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -2970,15 +3088,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
     
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -3552,15 +3693,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -3947,15 +4111,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -4506,15 +4693,38 @@ export async function welcomeEmail1(email: string, payload: any) {
     //   [`${email}`]
     // );
  
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -5080,15 +5290,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -5667,15 +5900,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -6266,15 +6522,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -6826,16 +7105,39 @@ const body = `
     //   body,
     //   `${subject}`,
     //   [`${email}`]
-     await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //  await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
-   // );
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
+    // );
   };
   
   export async function cartAbandonment6(email: string, payload: any) {
@@ -7384,16 +7686,39 @@ const body = `
     //   body,
     //   `${subject}`,
     //   [`${email}`]
-     await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //  await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
-   // );
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
+    // );
   };
   
   export async function cartAbandonment7(email: string, payload: any) {
@@ -7871,15 +8196,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -8390,15 +8738,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -8875,15 +9246,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -9366,15 +9760,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -9857,15 +10274,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -10388,15 +10828,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -10904,15 +11367,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -11392,15 +11878,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -11909,15 +12418,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -12354,15 +12886,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -12853,15 +13408,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -13308,15 +13886,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -13335,15 +13936,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -13823,15 +14447,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -14338,15 +14985,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -14839,15 +15509,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -15238,15 +15931,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -15755,15 +16471,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -16215,15 +16954,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -16725,15 +17487,38 @@ const body = `
     //   `${subject}`,
     //   [`${email}`]
     // );
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   
   };
@@ -17121,15 +17906,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -17515,15 +18323,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   
   };
@@ -17927,15 +18758,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -18380,15 +19234,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -18832,16 +19709,39 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
   
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
+
   };
   
   export async function UpgradedEmail(email: string, payload: any) {
@@ -19283,15 +20183,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -19733,15 +20656,38 @@ const body = `
     //   [`${email}`]
     // );
   
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -20181,15 +21127,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -20622,15 +21591,38 @@ const body = `
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   export async function HeroEmail(email: string, payload: any) {
@@ -21075,15 +22067,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -21525,15 +22540,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
     
@@ -21972,15 +23010,38 @@ const body = `
     //   [`${email}`]
     // );
 
-    await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    // await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -22353,15 +23414,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -23321,15 +24405,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -23815,15 +24922,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   
@@ -24259,15 +25389,38 @@ const body = `
     //   [`${email}`]
     // );
 
-        await sgMail.send({
-      from: {
-        name: "Nourisha",
-        email: "hello@eatnourisha.com",
+    //     await sgMail.send({
+    //   from: {
+    //     name: "Nourisha",
+    //     email: "hello@eatnourisha.com",
+    //   },
+    //   subject,
+    //   to: email,
+    //   html: body,
+    // });
+
+        const url = 'https://api.brevo.com/v3/smtp/email';
+    const apiKey = process.env.BREVO_KEY;  
+    const load = {
+      sender: {
+        email: 'Kitchen@eatnourisha.com', 
+        name: 'Nourisha',
       },
-      subject,
-      to: email,
-      html: body,
-    });
+      to: [
+        {
+          email: email,
+        },
+      ],
+      subject: subject,
+      htmlContent: body, 
+    };
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    };
+    const response = await axios.post(url, load, { headers });
+    return response.data;
 
   };
   

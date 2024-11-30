@@ -421,6 +421,7 @@ export class MealLineupService {
 
     if(customerData){
       customerData.activeLineup = true
+      customerData.emailUpdated = false
       await customerData.save()
     }
     _lineup.delivery_date = deli_date ?? new Date();
@@ -814,6 +815,13 @@ export class MealLineupService {
       coupon_applied: promo?.code.toLocaleUpperCase(),
       platform: dto?.platform ?? 'web'
     });
+
+    if(customerData){
+      customerData.activeLineup = true
+      customerData.emailUpdated = false
+      await customerData.save()
+    }
+
     _lineup.delivery_date = deli_date ?? new Date();
    await _lineup.save()
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, 
