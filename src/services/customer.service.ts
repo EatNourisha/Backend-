@@ -182,7 +182,10 @@ async getCountriesById(_id: string) {
     let num = acc.phone;
     if(num.startsWith('+')){
       num = acc.phone; 
-    }else{
+    }else if(num.startsWith('44')){
+      num = `+${acc.phone}`; 
+    }
+    else{
       num = `+44${acc.phone}`
     }
 
