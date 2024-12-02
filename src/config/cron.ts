@@ -1,11 +1,11 @@
 import {  sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer, subscription, adminSettings, order, } from "../models"; 
+import { lineup, giftpurchase, customer, Customer, subscription, order, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
 import {CustomerService} from "../services/customer.service"
 // import moment from 'moment';
-import { addDays } from 'date-fns';
+// import { addDays } from 'date-fns';
 
 
 
@@ -200,30 +200,6 @@ cron.schedule('*/30 * * * *', async () => {
 
 
 cron.schedule('* */1 * * *', async () => {
-    // console.log("######### Asian delivery Job runs every 1 min");
-    try {
-        const setting = await adminSettings.findOne();
-        if (setting) {
-            const currentDate = new Date();
-            let wedSatDate = setting.wed_sat;
-
-            if (wedSatDate! <= currentDate) {
-                setting.wed_sat = addDays(wedSatDate!, 7);;
-                let nextUpperTuesday = addDays(wedSatDate!, 14); 
-                setting.sun_tue = nextUpperTuesday;
-            }
-
-            await setting.save();
-        }
-    } catch (error) {
-        console.error('Error updating settings:', error);
-    }
-}, {
-    scheduled: true,
-    timezone: "Europe/London"
-});
-
-cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 New User Job runs every 1 min");
 
     try {
@@ -250,6 +226,29 @@ cron.schedule('* */1 * * *', async () => {
     timezone: "Europe/London"
 });
 
+// cron.schedule('* */1 * * *', async () => {
+//     // console.log("######### Asian delivery Job runs every 1 min");
+//     try {
+//         const setting = await adminSettings.findOne();
+//         if (setting) {
+//             const currentDate = new Date();
+//             let wedSatDate = setting.wed_sat;
+
+//             if (wedSatDate! <= currentDate) {
+//                 setting.wed_sat = addDays(wedSatDate!, 7);;
+//                 let nextUpperTuesday = addDays(wedSatDate!, 14); 
+//                 setting.sun_tue = nextUpperTuesday;
+//             }
+
+//             await setting.save();
+//         }
+//     } catch (error) {
+//         console.error('Error updating settings:', error);
+//     }
+// }, {
+//     scheduled: true,
+//     timezone: "Europe/London"
+// });
 
 
 type CartEmails = {

@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import {
   Card,
   Customer,
-  Order,
+  // Order,
   Plan,
   PromoCode,
   Subscription,
@@ -98,7 +98,7 @@ export class BillingService {
     const cus = await customer.findById(customer_id).lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
 
-    const _order = await order.findById(dto?.order_id).lean<Order>().exec();
+    const _order = await order.findById(dto?.order_id).exec();
     if (!_order) throw createError("Order does not exist", 404);
 
     if (_order?.total < 1) throw createError("Order must have a price greater than zero", 409);
@@ -183,6 +183,13 @@ export class BillingService {
         applied_promo: promo?._id
       });
     }
+
+    if(_order && _order.weekend_delivery === true){
+      _order.delivery_fee =  _order.delivery_fee + 8
+      _order.total =  _order.total + 8
+      await _order.save()
+      }
+
 
     // console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
