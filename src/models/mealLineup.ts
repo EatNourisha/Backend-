@@ -22,6 +22,12 @@ class ExtraDetail {
 
   @prop({ ref: () => MealExtras, _id: false })
   proteinId?: Ref<MealExtras>;
+
+  @prop({ ref: () => MealExtras, _id: false })
+  swallowIds?: Ref<MealExtras>[];
+
+  @prop({ ref: () => MealExtras, _id: false })
+  proteinIds?: Ref<MealExtras>[];
 }
 export class DayMeals {
   @prop({_id: false})
