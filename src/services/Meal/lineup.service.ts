@@ -213,13 +213,11 @@ export class MealLineupService {
     //   }
     // }
 
-    const cusLineup = await lineup.findOne({ customer: customer_id, week: dto?.week || 1, status: "active" });
-
-    if (cusLineup) throw createError("Customer lineup for this week already exists", 404);
-
-    // const cartExists = await cart.exists({ customer: customer_id });
     const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
     const lineupExists = await lineup.exists({ customer: customer_id });
+
+    // const cusLineup = await lineup.findOne({ customer: customer_id, week: dto?.week || 1, status: "active" });
+    // if (cusLineup) throw createError("Customer lineup for this week already exists", 404);
 
     let returning = false;
 

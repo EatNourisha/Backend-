@@ -47,7 +47,7 @@ import { MarketingService } from "./Marketing/marketing.service";
 import mealLineup from "../models/mealLineup";
 import { Referral1 } from "./Marketing/bluePrint.service";
 import { PipelineStage } from "mongoose";
-// import registerAddKlaviyo from "../klaviyo/addUser";
+import registerAddKlaviyo from "../klaviyo/addUser";
 
 // import  registerAddKlaviyo  from '../klaviyo/addUser'
 // import { when } from "../utils/when";
@@ -179,9 +179,19 @@ async getCountriesById(_id: string) {
     if (!!acc && !!input?.ref_code) await NourishaBus.emit("customer:referred", { invitee: acc?._id!, inviter_refCode: input?.ref_code });
     await NourishaBus.emit("customer:created", { owner: acc });
 
-  // const newCus =  await registerAddKlaviyo(acc?.email, acc?.phone, acc?.first_name, acc?.last_name)
+    let num = acc.phone;
+    if(num.startsWith('+')){
+      num = acc.phone; 
+    }else{
+      num = `+44${acc.phone}`
+    }
 
-  // console.log('newwwww', newCus)
+    
+    
+
+  const newCus =  await registerAddKlaviyo( acc?.first_name, acc?.last_name, acc?.email, num,)
+
+  console.log('newwwww', newCus)
 
     return acc;
   }
