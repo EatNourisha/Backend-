@@ -898,4 +898,158 @@ async getClosedOrdersHistory(
   }
 
 
+  // async getLineups(
+  //   roles: string[], 
+  //   silent = false, 
+  //   filters: IPaginationFilter & { 
+  //     order: 'asc' | 'desc', 
+  //     sortby: string, 
+  //     status?: string, 
+  //     delivery_date?: { start?: Date; end?: Date } 
+  //   }
+  // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
+  
+  //   // Populate meals and related fields for all days of the week
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //     path: day,
+  //     populate: [
+  //       { path: 'breakfast.mealId' },
+  //       { path: 'breakfast.extraId' },
+  //       { path: 'breakfast.proteinId' },
+  //       { path: 'lunch.mealId' },
+  //       { path: 'lunch.extraId' },
+  //       { path: 'lunch.proteinId' },
+  //       { path: 'dinner.mealId' },
+  //       { path: 'dinner.extraId' },
+  //       { path: 'dinner.proteinId' },
+  //     ],
+  //   }));
+  
+  //   // Base filter criteria
+  //   const filter: any = {
+  //     status: filters.status ?? { $in: ['active', 'inactive'] },
+  //     createdAt: {
+  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+  //       $lte: new Date(),
+  //     },
+  //   };
+  
+  //   // Add delivery_date filter if provided
+  //   if (filters?.delivery_date) {
+  //     filter.delivery_date = {};
+  //     if (filters.delivery_date.start) {
+  //       filter.delivery_date.$gte = filters.delivery_date.start;
+  //     }
+  //     if (filters.delivery_date.end) {
+  //       filter.delivery_date.$lte = filters.delivery_date.end;
+  //     }
+  //   }
+  
+  //   // Calculate effective pagination
+  //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
+  //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
+  
+  //   // Determine sorting logic
+  //   const sortbyy = filters?.sortby === 'deliverydate' ? 'delivery_date' : 'createdAt';
+  //   const defaultOrder: 1 | -1 = sortbyy === 'delivery_date' ? 1 : -1;
+  //   const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
+  //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
+  
+  //   // Fetch the lineups based on filters
+  //   const lineups = await lineup
+  //     .find(filter)
+  //     .populate(pops)
+  //     .populate('customer')
+  //     .sort(sort)
+  //     .limit(effectiveLimit)
+  //     .skip((effectivePage - 1) * effectiveLimit)
+  //     .lean<MealLineup[]>()
+  //     .exec();
+  
+  //   // Total document count
+  //   const totalCount = await lineup.countDocuments(filter);
+  
+  //   // Handle no results
+  //   if (!lineups.length && !silent) {
+  //     throw createError("No lineups found", 404);
+  //   }
+  
+  //   return { totalCount, lineups };
+  // }
+  
+  
+  // async getOrdr(
+  //   customer_id: string,
+  //   roles: string[],
+  //   filters: IPaginationFilter & { 
+  //     customer?: string, 
+  //     order?: 'asc' | 'desc', 
+  //     sortby?: string, 
+  //     status?: string, 
+  //     delivery_date?: { start?: Date; end?: Date }
+  //   }
+  // ): Promise<PaginatedDocument<Order[]>> {
+  //   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
+  
+  //   // Explicitly define query with optional fields
+  //   const query: {
+  //     status?: string;
+  //     customer?: string;
+  //     delivery_date?: { $gte?: Date; $lte?: Date };
+  //   } = {};
+  
+  //   // Apply status filter
+  //   query.status = 'payment_received';
+  
+  //   const populate = [
+  //     {
+  //       path: "items",
+  //       populate: {
+  //         path: "item",
+  //         model: "MealPack",
+  //       },
+  //     },
+  //     {
+  //       path: "customer", 
+  //       model: "Customer", 
+  //     }
+  //   ];
+  
+  //   const is_admin = await RoleService.isAdmin(roles);
+  
+  //   // Filter by customer if not admin or specific customer is provided
+  //   if (!is_admin) {
+  //     query.customer = customer_id;
+  //   } else if (filters?.customer) {
+  //     query.customer = filters.customer;
+  //   }
+  
+  //   // Filter by delivery date if provided
+  //   if (filters?.delivery_date) {
+  //     query.delivery_date = {};
+  //     if (filters.delivery_date.start) {
+  //       query.delivery_date.$gte = filters.delivery_date.start;
+  //     }
+  //     if (filters.delivery_date.end) {
+  //       query.delivery_date.$lte = filters.delivery_date.end;
+  //     }
+  //   }
+  
+  //   // Dynamic sorting
+  //   const sort: { [key: string]: 1 | -1 } = {};
+  //   if (filters?.sortby) {
+  //     sort[filters.sortby] = filters?.order === 'asc' ? 1 : -1;
+  //   } else {
+  //     sort.createdAt = -1; // Default sorting
+  //   }
+  
+  //   return await paginate("order", query, filters, { populate, sort });
+  // }
+
+
+
 }
