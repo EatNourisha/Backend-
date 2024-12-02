@@ -1,5 +1,5 @@
 import {  sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer, subscription, order, } from "../models"; 
+import { lineup, giftpurchase, customer, Customer, subscription, order, mealPack, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
@@ -473,5 +473,20 @@ cron.schedule(
       timezone: "Europe/London",
     }
   );
+
+  cron.schedule('* */1 * * *', async () => {
+    try {
+        const _meal = await mealPack.find({available_quantity: 0, is_available: true});
+
+        await Promise.all(_meal.map(async (m: any) => {
+            await m.updateOne({ is_available: 'false' });            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
   
 export default cron

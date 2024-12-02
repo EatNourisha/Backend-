@@ -152,16 +152,21 @@ export class MealLineupService {
 
     if (_mealPack && _mealPack.available_quantity !== undefined) {
       if (selectedQuantity > _mealPack.available_quantity) {
+        console.log(`${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`)
         // throw createError(
         //   `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
         //   400
         // );
       
-        console.log(`${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`)
       }
 
       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
       await _mealPack.save();
+    }
+
+    if(_mealPack?.available_quantity === 0){
+      _mealPack.is_available = false
+      await _mealPack.save()
     }
   }
 
@@ -567,6 +572,26 @@ export class MealLineupService {
     ].filter((proteinId) => proteinId != null );
 
 
+  // for (const mealId of mealIds) {
+  //   mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
+  // }
+  // for (const mealId of Object.keys(mealSelectionCount)) {
+  //   const _mealPack = await mealPack.findById(mealId).exec();
+  //   const selectedQuantity = mealSelectionCount[mealId];
+
+  //   if (_mealPack && _mealPack.available_quantity !== undefined) {
+  //     if (selectedQuantity > _mealPack.available_quantity) {
+  //       throw createError(
+  //         `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+  //         400
+  //       );
+  //     }
+
+  //     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
+  //     await _mealPack.save();
+  //   }
+  // }
+
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
   }
@@ -576,14 +601,21 @@ export class MealLineupService {
 
     if (_mealPack && _mealPack.available_quantity !== undefined) {
       if (selectedQuantity > _mealPack.available_quantity) {
-        throw createError(
-          `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
-          400
-        );
+        console.log(`${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`)
+        // throw createError(
+        //   `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+        //   400
+        // );
+      
       }
 
       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
       await _mealPack.save();
+    }
+
+    if(_mealPack?.available_quantity === 0){
+      _mealPack.is_available = false
+      await _mealPack.save()
     }
   }
 
@@ -1328,6 +1360,26 @@ export class MealLineupService {
     ].filter((proteinId) => proteinId != null );
 
 
+  // for (const mealId of mealIds) {
+  //   mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
+  // }
+  // for (const mealId of Object.keys(mealSelectionCount)) {
+  //   const _mealPack = await mealPack.findById(mealId).exec();
+  //   const selectedQuantity = mealSelectionCount[mealId];
+
+  //   if (_mealPack && _mealPack.available_quantity !== undefined) {
+  //     if (selectedQuantity > _mealPack.available_quantity) {
+  //       throw createError(
+  //         `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+  //         400
+  //       );
+  //     }
+
+  //     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
+  //     await _mealPack.save();
+  //   }
+  // }
+
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
   }
@@ -1337,14 +1389,21 @@ export class MealLineupService {
 
     if (_mealPack && _mealPack.available_quantity !== undefined) {
       if (selectedQuantity > _mealPack.available_quantity) {
-        throw createError(
-          `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
-          400
-        );
+        console.log(`${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`)
+        // throw createError(
+        //   `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
+        //   400
+        // );
+      
       }
 
       _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
       await _mealPack.save();
+    }
+
+    if(_mealPack?.available_quantity === 0){
+      _mealPack.is_available = false
+      await _mealPack.save()
     }
   }
 
