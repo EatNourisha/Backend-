@@ -16,6 +16,7 @@ import { MealService } from "../Meal/meal.service";
 import { sendOrderPlacedEmail } from "../../services/authEmail.service";
 import { sendOrderAlert } from "../../services/Marketing/marketing.service";
 import { NourishaBus } from "../../libs";
+import { ExtraDetailDto } from "models/cartItem";
 // import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
@@ -316,6 +317,38 @@ async getClosedOrdersHistory(
     return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
   });
   
+    
+  // const _extrass = _items.map(i => {
+  //   return {
+  //     item: i.item,
+  //     swallowId: i.swallowss?.map(swallow => ({
+  //       swallowId: swallow.swallowId,
+  //       quantity: swallow.quantity,
+  //     })),
+  //     proteinId: i.proteinss?.map(protein => ({
+  //       proteinId: protein.proteinId,
+  //       quantity: protein.quantity,
+  //     })),
+  //   };
+  // });
+    
+  const _extrass: ExtraDetailDto[] = _items.flatMap(i => {
+    const swallows = i.swallowss?.map(swallow => ({
+      item: i.item,
+      swallowId: swallow.swallowId, 
+      quantity: swallow.quantity,
+    })) ?? [];
+  
+    const proteins = i.proteinss?.map(protein => ({
+      item: i.item,
+      proteinId: protein.proteinId, 
+      quantity: protein.quantity,
+    })) ?? [];
+  
+    return [...swallows, ...proteins];
+  });
+    
+    
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
@@ -333,7 +366,8 @@ async getClosedOrdersHistory(
       swallow: dto?.swallow,
       isReturningCustomer: returning,
       orderExtras: _extras,
-      MealAndExtras: _extra
+      MealAndExtras: _extra,
+      MealAndExtrass: _extrass
       });
 
     const { order: _order, items } = result;
@@ -443,44 +477,6 @@ async getClosedOrdersHistory(
       MealService.decreaseAvailableMealpackQuantities(order_item_dto),
     ]);
     let cus = await customer.findById(_order?.customer).exec();
-    // if (!cus) throw createError("Customer does not exist", 404);    if (cus) {
-    //   cus.newUser = false;
-  
-    //   // Helper function to initialize or update email properties
-    //   const initializeEmails = (defaults, existing) => ({
-    //     ...defaults,
-    //     ...(existing || {}),
-    //   });
-  
-    //   // Default values for each email type
-    //   const postSubDefaults = {
-    //     postsub0: false, postsub1: false, postsub2: false, postsub3: false,
-    //     postsub4: false, postsub5: false, postsub6: false,
-    //     postsub7: false, postsub8: false, postsub9: false,
-    //     postsub10: false, postsub11: false, postsub12: false, postsub13: false
-    //   };
-  
-    //   const cartEmailDefaults = {
-    //     cart1: false, cart2: false, cart3: false,
-    //     cart4: false, cart5: false, cart6: false,
-    //     cart7: false, cart8: false, cart9: false,
-    //     cart10: false, cart11: false
-    //   };
-  
-    //   const reEngageEmailDefaults = {
-    //     reengage1: false, reengage2: false, reengage3: false,
-    //     reengage4: false, reengage5: false, reengage6: false
-    //   };
-  
-    //   // Update properties
-    //   cus.POSTSUBEEMAILS = initializeEmails(postSubDefaults, cus.POSTSUBEEMAILS);
-    //   cus.CARTEMAILS = initializeEmails(cartEmailDefaults, cus.CARTEMAILS);
-    //   cus.REENGAGEEMAILS = initializeEmails(reEngageEmailDefaults, cus.REENGAGEEMAILS);
-  
-    //   // Save the customer object
-    //   await cus.save();
-    // }
-
   
     const payload ={
       name: cus?.first_name!,
@@ -523,64 +519,6 @@ async getClosedOrdersHistory(
   static mountEventListener() {
     new OrderEventListener();
   }
-
-  // async getLineups(
-  //   roles: string[], 
-  //   silent = false, 
-  //   limit?: number, 
-  //   page?: number
-  // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-    
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-  //     path: day,
-  //     populate: [
-  //       { path: 'breakfast.mealId' },
-  //       { path: 'breakfast.extraId' },
-  //       { path: 'breakfast.proteinId' },
-  //       { path: 'lunch.mealId' },
-  //       { path: 'lunch.extraId' },
-  //       { path: 'lunch.proteinId' },
-  //       { path: 'dinner.mealId' },
-  //       { path: 'dinner.extraId' },
-  //       { path: 'dinner.proteinId' },
-  //     ],
-  //   }));
-    
-  //   const filter: any = {
-  //     status: { $in: ['active', 'inactive'] },
-  //     createdAt: {
-  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-  //       $lte: new Date(),  
-
-  //       // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
-  //     },
-  //   };
-  
-    
-  //   const effectiveLimit = limit ?? 100;
-  //   const effectivePage = page ?? 1;
-    
-  //   const lineups = await lineup.find(filter)
-  //   .populate(pops)
-  //   .populate('customer')
-  //   .sort({ createdAt: -1 }) 
-  //   .limit(effectiveLimit)  
-  //   .skip((effectivePage - 1) * effectiveLimit)  
-  //   .lean<MealLineup[]>()
-  //   .exec();
-  //   const totalCount = lineups.length;
-  //   // const totalCount = await lineup.countDocuments(filter);
-    
-  //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
-  
-  //   return { totalCount, lineups };
-  // } 
-
-  
   
   async getLineups(
     roles: string[], 
@@ -628,14 +566,6 @@ async getClosedOrdersHistory(
 
     const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
     const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-
-
-  
-    // const sortbyy = filters?.sortby === 'deliverydate' 
-    //   ? 'delivery_date' 
-    //   : 'createdAt';
-    // const sortOrder = filters?.order === 'asc' ? 1 : -1;
-    // const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
   
     const lineups = await lineup
       .find(filter)

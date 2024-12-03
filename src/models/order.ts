@@ -6,6 +6,7 @@ import { Address, Customer } from "./customer";
 import { Extr, Extras, OrderItem } from "./orderItem";
 import { PromoCode } from "./promocode";
 import { MealExtras } from "./mealExtras";
+import { ExtraDetailDto } from "./cartItem";
 
 export enum OrderStatus {
   PROCESSING = "processing", // "processing payment"
@@ -75,6 +76,9 @@ export class Order extends BaseEntity {
 
   @prop({ type: () => Extras })
   orderExtras?: Extras[];
+
+  @prop({ type: () => ExtraDetailDto })
+  MealAndExtrass?: ExtraDetailDto[];
 
   @prop({ type: () => Extr })
   MealAndExtras?: Extr[];
