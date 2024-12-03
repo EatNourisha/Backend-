@@ -252,6 +252,7 @@ cron.schedule('* */1 * * *', async () => {
 
 
 type CartEmails = {
+  cart0: boolean;
   cart1: boolean;
   cart2: boolean;
   cart3: boolean;
@@ -345,6 +346,7 @@ cron.schedule(
                 });
 
                 customerData.CARTEMAILS = initializeEmails<CartEmails>({
+                  cart0: false,
                   cart1: false,
                   cart2: false,
                   cart3: false,
@@ -433,6 +435,7 @@ cron.schedule(
                   });
   
                   customerData.CARTEMAILS = initializeEmails<CartEmails>({
+                    cart0: false,
                     cart1: false,
                     cart2: false,
                     cart3: false,

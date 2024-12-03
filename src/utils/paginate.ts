@@ -51,7 +51,9 @@ export  async function mealpaginate<T>(
       .find(query, null, options)
       .lean()
       // .sort({ createdAt: -1 })
-      .sort({ name: 1 })
+      // .sort({ name: 1 })
+
+      .sort({ available_quantity: -1, name: 1 })
       .limit(Math.abs(parseInt(filters?.limit!)))
       .skip(skip)
       .exec(),

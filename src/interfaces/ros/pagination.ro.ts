@@ -5,6 +5,7 @@ export interface IPaginationFilter {
 }
 
 export interface PaginatedDocument<T> {
+  docs?: T[];
   totalCount: number;
   data: T;
 }

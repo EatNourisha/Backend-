@@ -10,6 +10,11 @@ import { nanoid } from "nanoid";
 import { add } from "lodash";
 import { startOfMonth } from 'date-fns';
 
+interface ExtraDto {
+  proteinId?: string,
+  swallowId?: string,
+  quantity: number;
+}
 
 interface CartItemDto {
   itemId: string;
@@ -18,6 +23,9 @@ interface CartItemDto {
   swallowId?: string,
   proteinIds?: string[],
   swallowIds?: string[],
+  proteinIdss?: ExtraDto[],
+  swallowIdss?: ExtraDto[],
+
 }
 
 interface CartRo {
