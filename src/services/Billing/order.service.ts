@@ -1,7 +1,23 @@
 import { RoleService } from "../role.service";
 import { CreateOrderDto, IPaginationFilter, PaginatedDocument, PlaceOrderDto } from "../../interfaces";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
-import { Cart, CartItem, Customer, MealLineup, Order, OrderItem, Transaction, cart, cartItem, customer, earnings, giftpurchase, lineup,  orderItem, transaction } from "../../models";
+import {
+  Cart,
+  CartItem,
+  Customer,
+  MealLineup,
+  Order,
+  OrderItem,
+  Transaction,
+  cart,
+  cartItem,
+  customer,
+  earnings,
+  giftpurchase,
+  lineup,
+  orderItem,
+  transaction,
+} from "../../models";
 import { createError, paginate, validateFields } from "../../utils";
 import { BillingService } from "./billing.service";
 import order, { OrderStatus } from "../../models/order";
@@ -89,7 +105,6 @@ export class OrderService {
   ////////********************************* */
   ////////********************************* */
 
-
   async getOrderById(order_id: string, customer_id: string, roles: string[], filters: IPaginationFilter) {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
 
@@ -100,122 +115,109 @@ export class OrderService {
     else if (is_admin) populate_order.push("customer");
 
     const [_order, items] = await Promise.all([
-      order.findById(order_id).populate( [
-        {path: "customer"},
-        {path: "orderExtras.item"},
-        {path: "orderExtras.protein"},
-        {path: "orderExtras.swallow"},
-        {path: "MealAndExtras.item"},
-        {path: "MealAndExtras.proteins"},
-        {path: "MealAndExtras.swallows"},
- 
-      ]).lean<Order>().exec(),
-      paginate<OrderItem[]>("orderItem", query, filters, { populate: "item"}),
+      order
+        .findById(order_id)
+        .populate([
+          { path: "customer" },
+          { path: "orderExtras.item" },
+          { path: "orderExtras.protein" },
+          { path: "orderExtras.swallow" },
+          { path: "MealAndExtras.item" },
+          { path: "MealAndExtras.proteins" },
+          { path: "MealAndExtras.swallows" },
+        ])
+        .lean<Order>()
+        .exec(),
+      paginate<OrderItem[]>("orderItem", query, filters, { populate: "item" }),
     ]);
 
     return { order: _order, items };
   }
 
-async getOpenOrders(
-    customer_id: string,
-    roles: string[],
-): Promise<Order[]> {
-
+  async getOpenOrders(customer_id: string, roles: string[]): Promise<Order[]> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
 
-    const orders = await paginate("order", {customer: customer_id, delivery_date: { $gt: new Date() } });
+    const orders = await paginate("order", { customer: customer_id, delivery_date: { $gt: new Date() } });
 
     const typedOrdersData = orders.data as Order[];
 
     // const orderData ={Data: typedOrdersData, totalCount: typedOrdersData.length}
     return typedOrdersData;
-}
+  }
 
-async getClosedOrders(
-    customer_id: string,
-    roles: string[],
-): Promise<Order[]> {
-
+  async getClosedOrders(customer_id: string, roles: string[]): Promise<Order[]> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
 
-    const orders = await paginate("order", {customer: customer_id, status:'payment_received', delivery_date: { $lt: new Date() } });
+    const orders = await paginate("order", { customer: customer_id, status: "payment_received", delivery_date: { $lt: new Date() } });
 
     const typedOrdersData = orders.data as Order[];
 
     // const orderData ={Data: typedOrdersData, totalCount: typedOrdersData.length}
     return typedOrdersData;
-}
+  }
 
-async getOpenOrdersHistory(
-  customer_id: string,
-  roles: string[],
-){
-  await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-  const orders = await paginate("order", {customer: customer_id, status: 'processing'})
-  ;
+  async getOpenOrdersHistory(customer_id: string, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+    const orders = await paginate("order", { customer: customer_id, status: "processing" });
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: "breakfast.mealId" },
+        { path: "breakfast.extraId" },
+        { path: "breakfast.proteinId" },
+        { path: "lunch.mealId" },
+        { path: "lunch.extraId" },
+        { path: "lunch.proteinId" },
+        { path: "dinner.mealId" },
+        { path: "dinner.extraId" },
+        { path: "dinner.proteinId" },
+      ],
+    }));
 
-  const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-    path: day,
-    populate: [
-      { path: 'breakfast.mealId' },
-      { path: 'breakfast.extraId' },
-      { path: 'breakfast.proteinId' },
-      { path: 'lunch.mealId' },
-      { path: 'lunch.extraId' },
-      { path: 'lunch.proteinId' },
-      { path: 'dinner.mealId' },
-      { path: 'dinner.extraId' },
-      { path: 'dinner.proteinId' }
+    const _lineup = await lineup
+      .find({ customer: customer_id, delivery_date: { $gt: new Date() } })
+      .sort({ createdAt: -1 })
+      .populate(pops)
+      .populate({ path: "plan" })
+      .sort({ createdAt: -1 })
+      .lean<MealLineup>()
+      .exec();
 
-    ]
-  })) 
+    // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
+    const _orders = orders.data as Order[];
+    return { _orders, _lineup };
+  }
 
-  const _lineup = await lineup.find({customer: customer_id, delivery_date: { $gt: new Date() }})
-  .sort({createdAt: -1})
-  .populate(pops)
-  .populate({path: 'plan'})
-  .sort({ createdAt: -1 })
-  .lean<MealLineup>()
-  .exec();
+  async getClosedOrdersHistory(customer_id: string, roles: string[]) {
+    await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
+    const orders = await paginate("order", { customer: customer_id, status: "payment_received" });
 
-  // const lineup = await paginate("MealLineup", {customer: customer_id, delivery_date: { $lt: new Date() } });
-  const _orders = orders.data as Order[];
-  return {_orders, _lineup};
-}
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: "breakfast.mealId" },
+        { path: "breakfast.extraId" },
+        { path: "breakfast.proteinId" },
+        { path: "lunch.mealId" },
+        { path: "lunch.extraId" },
+        { path: "lunch.proteinId" },
+        { path: "dinner.mealId" },
+        { path: "dinner.extraId" },
+        { path: "dinner.proteinId" },
+      ],
+    }));
 
-async getClosedOrdersHistory(
-  customer_id: string,
-  roles: string[],
-) {
-  await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ]);
-  const orders = await paginate("order", {customer: customer_id, status:'payment_received' });
+    const _lineup = await lineup
+      .find({ customer: customer_id })
+      .populate(pops)
+      .populate({ path: "plan" })
+      .sort({ createdAt: -1 })
+      .lean<MealLineup>()
+      .exec();
+    const _orders = orders.data as Order[];
 
-  const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-    path: day,
-    populate: [
-      { path: 'breakfast.mealId' },
-      { path: 'breakfast.extraId' },
-      { path: 'breakfast.proteinId' },
-      { path: 'lunch.mealId' },
-      { path: 'lunch.extraId' },
-      { path: 'lunch.proteinId' },
-      { path: 'dinner.mealId' },
-      { path: 'dinner.extraId' },
-      { path: 'dinner.proteinId' }
-
-    ]
-  })) 
-
-  const _lineup = await lineup.find({customer: customer_id})
-  .populate(pops)
-  .populate({path: 'plan'})
-  .sort({ createdAt: -1 })
-  .lean<MealLineup>()
-  .exec();
-  const _orders = orders.data as Order[];
-
-  return {_orders, _lineup};
-}
+    return { _orders, _lineup };
+  }
 
   async updateOrderStatus(order_id: string, customer_id: string, dto: { status: OrderStatus }, roles: string[]) {
     validateFields(dto, ["status"]);
@@ -252,35 +254,35 @@ async getClosedOrdersHistory(
 
     const cus = _cart?.customer as Customer;
 
-    let coup = dto?.coupon
+    let coup = dto?.coupon;
 
-    if(coup?.toLowerCase() === 'loyaltyreward'){
-      throw createError('Coupon is only valid for a weekly plan subscription')
+    if (coup?.toLowerCase() === "loyaltyreward") {
+      throw createError("Coupon is only valid for a weekly plan subscription");
     }
 
-    if (coup === 'signupsave5' && cus?.newUser === false) {
-      throw createError('Not eligible to use this coupon');
+    if (coup === "signupsave5" && cus?.newUser === false) {
+      throw createError("Not eligible to use this coupon");
     }
-    
+
     if (cus?.newUser) {
-      coup = 'signupsave5';
+      coup = "signupsave5";
     } else {
-      coup = dto.coupon?.toLowerCase() === 'signupsave5' ? '' : dto.coupon?.toLowerCase();
+      coup = dto.coupon?.toLowerCase() === "signupsave5" ? "" : dto.coupon?.toLowerCase();
     }
 
-  
     let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, coup!);
-    const gift = await giftpurchase.findOne({ code: coup, status: 'active' }) 
+    const gift = await giftpurchase.findOne({ code: coup, status: "active" });
 
-    if (!amount_off || amount_off === 0){
+    if (!amount_off || amount_off === 0) {
       if (gift && gift.amount !== undefined) {
         amount_off += gift.amount || 0;
-      } }
+      }
+    }
 
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
 
-    if(dto?.swallow === true && !dto?.extras){
+    if (dto?.swallow === true && !dto?.extras) {
       validateFields(dto, ["extras"]);
     }
 
@@ -288,34 +290,33 @@ async getClosedOrdersHistory(
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
     // const cartExists = await cart.exists({ customer: customer_id });
-    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+    const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
     const lineupExists = await lineup.exists({ customer: customer_id });
 
-    let returning = false
+    let returning = false;
 
     if (orderExists || lineupExists) {
-      returning = true
+      returning = true;
     }
 
     const _items = await cartItem
-    .find({ 
-      customer: customer_id, 
-      cart: _cart?._id, 
-      session_id: _cart?.session_id, 
-      quantity: { $gt: 0 } 
-    })
-    .lean<CartItem[]>()
-    .exec();
-  
-  const _extras = _items.map(i => {
-    return {item: i.item, swallow: i.swallow, protein: i.protein};  
-    // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};  
+      .find({
+        customer: customer_id,
+        cart: _cart?._id,
+        session_id: _cart?.session_id,
+        quantity: { $gt: 0 },
+      })
+      .lean<CartItem[]>()
+      .exec();
 
-  });
-  const _extra = _items.map(i => {
-    return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
-  });
-  
+    const _extras = _items.map((i) => {
+      return { item: i.item, swallow: i.swallow, protein: i.protein };
+      // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};
+    });
+    const _extra = _items.map((i) => {
+      return { item: i.item, swallows: i.swallows, proteins: i.proteins };
+    });
+
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
@@ -333,8 +334,8 @@ async getClosedOrdersHistory(
       swallow: dto?.swallow,
       isReturningCustomer: returning,
       orderExtras: _extras,
-      MealAndExtras: _extra
-      });
+      MealAndExtras: _extra,
+    });
 
     const { order: _order, items } = result;
     await order
@@ -382,7 +383,7 @@ async getClosedOrdersHistory(
                 item: item.item,
                 protein: item?.protein,
                 swallow: item?.swallow,
-              }
+              },
             })),
             { session: txSession }
           ),
@@ -416,17 +417,17 @@ async getClosedOrdersHistory(
     if (!!_order?.promo && !!_order?.actual_discounted_amount && _order?.actual_discounted_amount > 0)
       await DiscountService.createDiscount(_order?.customer!, _order?.promo!, "order");
 
-    const cusBalance = await earnings.findOne({ customer: _order?.customer});
+    const cusBalance = await earnings.findOne({ customer: _order?.customer });
 
     if (cusBalance) {
       const remainingBalance = cusBalance.balance - _order.total;
 
       if (remainingBalance >= 0) {
-        cusBalance.balance = remainingBalance; 
+        cusBalance.balance = remainingBalance;
       } else {
         cusBalance.balance = 0;
       }
-      await cusBalance.save(); 
+      await cusBalance.save();
     }
 
     const order_item_dto = _order_items.map((item) => ({ meal_id: item?.item!, quantity: item?.quantity }));
@@ -445,13 +446,13 @@ async getClosedOrdersHistory(
     let cus = await customer.findById(_order?.customer).exec();
     // if (!cus) throw createError("Customer does not exist", 404);    if (cus) {
     //   cus.newUser = false;
-  
+
     //   // Helper function to initialize or update email properties
     //   const initializeEmails = (defaults, existing) => ({
     //     ...defaults,
     //     ...(existing || {}),
     //   });
-  
+
     //   // Default values for each email type
     //   const postSubDefaults = {
     //     postsub0: false, postsub1: false, postsub2: false, postsub3: false,
@@ -459,63 +460,53 @@ async getClosedOrdersHistory(
     //     postsub7: false, postsub8: false, postsub9: false,
     //     postsub10: false, postsub11: false, postsub12: false, postsub13: false
     //   };
-  
+
     //   const cartEmailDefaults = {
     //     cart1: false, cart2: false, cart3: false,
     //     cart4: false, cart5: false, cart6: false,
     //     cart7: false, cart8: false, cart9: false,
     //     cart10: false, cart11: false
     //   };
-  
+
     //   const reEngageEmailDefaults = {
     //     reengage1: false, reengage2: false, reengage3: false,
     //     reengage4: false, reengage5: false, reengage6: false
     //   };
-  
+
     //   // Update properties
     //   cus.POSTSUBEEMAILS = initializeEmails(postSubDefaults, cus.POSTSUBEEMAILS);
     //   cus.CARTEMAILS = initializeEmails(cartEmailDefaults, cus.CARTEMAILS);
     //   cus.REENGAGEEMAILS = initializeEmails(reEngageEmailDefaults, cus.REENGAGEEMAILS);
-  
+
     //   // Save the customer object
     //   await cus.save();
     // }
 
-  
-    const payload ={
+    const payload = {
       name: cus?.first_name!,
       email: cus?.email!,
       order_ref_id: _order?.ref!,
       delivery_date: _order?.delivery_date!,
-      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!
-    }
+      delivery_address: `${_order?.delivery_address?.address_}, ${_order?.delivery_address?.city}`!,
+    };
 
     NourishaBus.emit("order:placed", { owner: _order?.customer as Customer, order: _order });
-    await sendOrderPlacedEmail(payload.email, payload)
+    await sendOrderPlacedEmail(payload.email, payload);
 
-    const emails = [
-      'nourishahelen@gmail.com',
-      'Victorianourisha@gmail.com',
-      'nourishaorders@gmail.com',
-      'shukazuby@gmail.com',
+    const emails = ["nourishahelen@gmail.com", "Victorianourisha@gmail.com", "nourishaorders@gmail.com", "shukazuby@gmail.com"];
 
-    ]
-
-    const _ord = await order.findOne({customer: cus?._id, status: 'payment_received'}).sort({createdAt: -1})
+    const _ord = await order.findOne({ customer: cus?._id, status: "payment_received" }).sort({ createdAt: -1 });
 
     const load = {
       deliveryDate: _ord?.delivery_date,
       subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
-      customer: cus?._id
-    }
+      customer: cus?._id,
+    };
 
     // if(_ord?.status === 'payment_received'){
-      await sendOrderAlert( emails, load)
-      console.log('Kitchen Email Sent to Admins', 
-        `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
+    await sendOrderAlert(emails, load);
+    console.log("Kitchen Email Sent to Admins", `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`);
     // }
-
-
   }
 
   // Typescript will compile this anyways, we don't need to invoke the mountEventListener.
@@ -525,16 +516,16 @@ async getClosedOrdersHistory(
   }
 
   // async getLineups(
-  //   roles: string[], 
-  //   silent = false, 
-  //   limit?: number, 
+  //   roles: string[],
+  //   silent = false,
+  //   limit?: number,
   //   page?: number
   // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
   //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
   //     PermissionScope.READ,
   //     PermissionScope.ALL,
   //   ]);
-    
+
   //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
   //     path: day,
   //     populate: [
@@ -549,114 +540,120 @@ async getClosedOrdersHistory(
   //       { path: 'dinner.proteinId' },
   //     ],
   //   }));
-    
+
   //   const filter: any = {
   //     status: { $in: ['active', 'inactive'] },
   //     createdAt: {
   //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-  //       $lte: new Date(),  
+  //       $lte: new Date(),
 
   //       // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
   //     },
   //   };
-  
-    
+
   //   const effectiveLimit = limit ?? 100;
   //   const effectivePage = page ?? 1;
-    
+
   //   const lineups = await lineup.find(filter)
   //   .populate(pops)
   //   .populate('customer')
-  //   .sort({ createdAt: -1 }) 
-  //   .limit(effectiveLimit)  
-  //   .skip((effectivePage - 1) * effectiveLimit)  
+  //   .sort({ createdAt: -1 })
+  //   .limit(effectiveLimit)
+  //   .skip((effectivePage - 1) * effectiveLimit)
   //   .lean<MealLineup[]>()
   //   .exec();
   //   const totalCount = lineups.length;
   //   // const totalCount = await lineup.countDocuments(filter);
-    
-  //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
-  
-  //   return { totalCount, lineups };
-  // } 
 
-  
-  
+  //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
+
+  //   return { totalCount, lineups };
+  // }
+
   async getLineups(
-    roles: string[], 
-    silent = false, 
-    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
-  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+    roles: string[],
+    // silent = false,
+    filters: IPaginationFilter & {
+      order: "asc" | "desc";
+      sortby: string;
+      status: string;
+      delivery_date?: Date | { $gte?: Date; $lte?: Date };
+    }
+  ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
-  
+
     const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
       path: day,
       populate: [
-        { path: 'breakfast.mealId' },
-        { path: 'breakfast.extraId' },
-        { path: 'breakfast.proteinId' },
-        { path: 'lunch.mealId' },
-        { path: 'lunch.extraId' },
-        { path: 'lunch.proteinId' },
-        { path: 'dinner.mealId' },
-        { path: 'dinner.extraId' },
-        { path: 'dinner.proteinId' },
+        { path: "breakfast.mealId" },
+        { path: "breakfast.extraId" },
+        { path: "breakfast.proteinId" },
+        { path: "lunch.mealId" },
+        { path: "lunch.extraId" },
+        { path: "lunch.proteinId" },
+        { path: "dinner.mealId" },
+        { path: "dinner.extraId" },
+        { path: "dinner.proteinId" },
       ],
     }));
-  
+
     const filter: any = {
-      status: filters.status ?? { $in: ['active', 'inactive'] },
+      status: filters.status ?? { $in: ["active", "inactive"] },
       createdAt: {
         $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
         $lte: new Date(),
       },
     };
-  
+
+    // Add delivery date filter if provided
+    if (filters.delivery_date) {
+      if (typeof filters.delivery_date === "string") {
+        // If a string is provided, convert it to a date
+        filter.delivery_date = {
+          $gte: new Date(filters.delivery_date),
+          $lt: new Date(new Date(filters.delivery_date).setDate(new Date(filters.delivery_date).getDate() + 1)),
+        };
+      } else if (typeof filters.delivery_date === "object") {
+        // If an object with date range is provided, use it directly
+        filter.delivery_date = filters.delivery_date;
+      }
+    }
+
     const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
     const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
 
-    let sortbyy = 'createdAt';
-    let defaultOrder: 1 | -1 = -1; 
+    // Determine sorting
+    let sortbyy = "createdAt";
+    let defaultOrder: 1 | -1 = -1;
 
-    if (filters?.sortby === 'deliverydate') {
-      sortbyy = 'delivery_date';
-      defaultOrder = 1; 
+    // Explicitly handle delivery date sorting
+    if (filters?.sortby === "delivery_date") {
+      sortbyy = "delivery_date";
+      defaultOrder = filters?.order === "desc" ? -1 : 1;
     }
 
-    const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
+    const sortOrder: 1 | -1 = filters?.order === "asc" ? 1 : filters?.order === "desc" ? -1 : defaultOrder;
     const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
 
-
-  
-    // const sortbyy = filters?.sortby === 'deliverydate' 
-    //   ? 'delivery_date' 
-    //   : 'createdAt';
-    // const sortOrder = filters?.order === 'asc' ? 1 : -1;
-    // const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-  
     const lineups = await lineup
       .find(filter)
       .populate(pops)
-      .populate('customer')
+      .populate("customer")
       .sort(sort)
       .limit(effectiveLimit)
       .skip((effectivePage - 1) * effectiveLimit)
       .lean<MealLineup[]>()
       .exec();
-  
+
     const totalCount = await lineup.countDocuments(filter);
-  
-    if (!lineups.length && !silent) {
-      throw createError("No lineups found", 404);
-    }
-  
+
     return { totalCount, lineups };
   }
   // async getOrdr(
-  //   roles: string[], 
+  //   roles: string[],
   //   filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
   // ): Promise<{ totalCount: number, data: Order[] }> {
   //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
@@ -664,26 +661,25 @@ async getClosedOrdersHistory(
   //     PermissionScope.ALL,
   //   ]);
 
-  
   //   const filter: any = {
   //     status:{ $in: ['payment_received'] },
   //     // delivery_date: filters.delivery_date
   //   };
-  
+
   //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
   //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
 
   //   let sortbyy = 'createdAt';
-  //   let defaultOrder: 1 | -1 = -1; 
+  //   let defaultOrder: 1 | -1 = -1;
 
   //   // if (filters?.sortby === 'deliverydate') {
   //   //   sortbyy = 'delivery_date';
-  //   //   defaultOrder = 1; 
+  //   //   defaultOrder = 1;
   //   // }
 
   //   const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
   //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-  
+
   //   const data = await order
   //     .find(filter)
   //     .populate('customer')
@@ -692,26 +688,25 @@ async getClosedOrdersHistory(
   //     .skip((effectivePage - 1) * effectiveLimit)
   //     .lean<Order[]>()
   //     .exec();
-  
+
   //   const totalCount = await lineup.countDocuments(filter);
-  
+
   //   if (!order.length ) {
   //     throw createError("No lineups found", 404);
   //   }
-  
+
   //   return { totalCount, data };
   // }
 
-    
   async getOrdr(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string,order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date}
+    filters: IPaginationFilter & { customer: string; order: "asc" | "desc"; sortby: string; status: string; delivery_date: Date }
   ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-  
+
     const query = {
-      status: 'payment_received',
+      status: "payment_received",
     };
 
     const populate = [
@@ -723,13 +718,13 @@ async getClosedOrdersHistory(
         },
       },
       {
-        path: "customer", 
-        model: "Customer", 
-      }
-  ];
-  
+        path: "customer",
+        model: "Customer",
+      },
+    ];
+
     const is_admin = await RoleService.isAdmin(roles);
-    
+
     if (!is_admin) {
       Object.assign(query, { customer: customer_id });
     }
@@ -737,14 +732,14 @@ async getClosedOrdersHistory(
       Object.assign(query, { customer: filters.customer });
       // populate.push({ path: "customer" });
     }
-  
+
     return await paginate("order", query, filters, { populate, sort: { createdAt: -1 } });
   }
-  
-    async getOrdersAndLineups(
+
+  async getOrdersAndLineups(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string, status: string,  delivery_date: Date } 
+    filters: IPaginationFilter & { customer: string; order: "asc" | "desc"; sortby: string; status: string; delivery_date: Date }
   ): Promise<any> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
@@ -752,11 +747,10 @@ async getClosedOrdersHistory(
       PermissionScope.ALL,
     ]);
 
-    const _orders = await this.getOrdr(customer_id, roles, filters)
-    const _lineups = await this.getLineups(roles, false, filters)
+    const _orders = await this.getOrdr(customer_id, roles, filters);
+    const _lineups = await this.getLineups(roles, filters);
 
-    return { _orders, _lineups } ;
-
+    return { _orders, _lineups };
   }
 
   async adminPlaceOrder(adminId: string, customer_id: string, dto: PlaceOrderDto, roles: string[]) {
@@ -774,35 +768,35 @@ async getClosedOrdersHistory(
 
     const cus = _cart?.customer as Customer;
 
-    let coup = dto?.coupon
+    let coup = dto?.coupon;
 
-    if(coup?.toLowerCase() === 'loyaltyreward'){
-      throw createError('Coupon is only valid for a weekly plan subscription')
+    if (coup?.toLowerCase() === "loyaltyreward") {
+      throw createError("Coupon is only valid for a weekly plan subscription");
     }
 
-    if (coup === 'signupsave5' && cus?.newUser === false) {
-      throw createError('Not eligible to use this coupon');
+    if (coup === "signupsave5" && cus?.newUser === false) {
+      throw createError("Not eligible to use this coupon");
     }
-    
+
     if (cus?.newUser) {
-      coup = 'signupsave5';
+      coup = "signupsave5";
     } else {
-      coup = dto.coupon?.toLowerCase() === 'signupsave5' ? '' : dto.coupon?.toLowerCase();
+      coup = dto.coupon?.toLowerCase() === "signupsave5" ? "" : dto.coupon?.toLowerCase();
     }
 
-  
     let { amount_off, promo } = await DiscountService.checkPromoForCustomer(cus?._id!, _cart?.total, coup!);
-    const gift = await giftpurchase.findOne({ code: coup, status: 'active' }) 
+    const gift = await giftpurchase.findOne({ code: coup, status: "active" });
 
-    if (!amount_off || amount_off === 0){
+    if (!amount_off || amount_off === 0) {
       if (gift && gift.amount !== undefined) {
         amount_off += gift.amount || 0;
-      } }
+      }
+    }
 
     dto.delivery_address = dto?.delivery_address ?? cus?.address;
     dto.phone_number = dto?.phone_number ?? cus?.phone;
 
-    if(dto?.swallow === true && !dto?.extras){
+    if (dto?.swallow === true && !dto?.extras) {
       validateFields(dto, ["extras"]);
     }
 
@@ -810,36 +804,35 @@ async getClosedOrdersHistory(
     if (!dto?.phone_number) throw createError("phone_number is required", 400);
 
     // const cartExists = await cart.exists({ customer: customer_id });
-    const orderExists = await order.exists({ customer: customer_id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+    const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
     const lineupExists = await lineup.exists({ customer: customer_id });
 
-    let returning = false
+    let returning = false;
 
     if (orderExists || lineupExists) {
-      returning = true
+      returning = true;
     }
 
     const _items = await cartItem
-    .find({ 
-      customer: customer_id, 
-      cart: _cart?._id, 
-      session_id: _cart?.session_id, 
-      quantity: { $gt: 0 } 
-    })
-    .lean<CartItem[]>()
-    .exec();
-  
-  const _extras = _items.map(i => {
-    return {item: i.item, swallow: i.swallow, protein: i.protein};  
-    // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};  
+      .find({
+        customer: customer_id,
+        cart: _cart?._id,
+        session_id: _cart?.session_id,
+        quantity: { $gt: 0 },
+      })
+      .lean<CartItem[]>()
+      .exec();
 
-  });
-  const _extra = _items.map(i => {
-    return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
-  });
+    const _extras = _items.map((i) => {
+      return { item: i.item, swallow: i.swallow, protein: i.protein };
+      // return {item: i.item, swallow: i.swallows?.[0], protein: i.proteins?.[0]};
+    });
+    const _extra = _items.map((i) => {
+      return { item: i.item, swallows: i.swallows, proteins: i.proteins };
+    });
 
-  const admin = await customer.findById(adminId)
-  
+    const admin = await customer.findById(adminId);
+
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,
@@ -860,34 +853,32 @@ async getClosedOrdersHistory(
       MealAndExtras: _extra,
       createdBy: admin?._id,
       editedBy: admin?._id,
-      });
+    });
 
     const { order: _order, items } = result;
     await order
-    .findByIdAndUpdate(_order._id!, { items: items?.map((i) => i._id), status: 'payment_received' })
-    .lean<Order>()
+      .findByIdAndUpdate(_order._id!, { items: items?.map((i) => i._id), status: "payment_received" })
+      .lean<Order>()
       .exec();
 
-      const emails = [
-        // 'nourishahelen@gmail.com',
-        // 'Victorianourisha@gmail.com',
-        // 'nourishaorders@gmail.com',
-        'shukazuby@gmail.com',
-  
-      ]
-  
-      const _ord = await order.findById({customer: cus?._id}).sort({createdAt: -1})
-  
-      const load = {
-        deliveryDate: _ord?.delivery_date,
-        subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
-        customer: cus?._id
-      }
-  
-        await sendOrderAlert( emails, load)
-        console.log('Kitchen Email Sent to Admins', 
-          `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`)
-  
+    const emails = [
+      // 'nourishahelen@gmail.com',
+      // 'Victorianourisha@gmail.com',
+      // 'nourishaorders@gmail.com',
+      "shukazuby@gmail.com",
+    ];
+
+    const _ord = await order.findById({ customer: cus?._id }).sort({ createdAt: -1 });
+
+    const load = {
+      deliveryDate: _ord?.delivery_date,
+      subject: ` New Order: Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`,
+      customer: cus?._id,
+    };
+
+    await sendOrderAlert(emails, load);
+    console.log("Kitchen Email Sent to Admins", `Single/Bulk Order has been Added by ${cus?.first_name} ${cus?.last_name}`);
+
     // const payment_intent = await new BillingService().initializePayment(customer_id, {
     //   order_id: _order?._id!,
     //   card_token: dto?.card_token,
@@ -897,47 +888,46 @@ async getClosedOrdersHistory(
     // return _order;
   }
 
-
   // async getLineups(
-  //   roles: string[], 
-  //   silent = false, 
-  //   filters: IPaginationFilter & { 
-  //     order: 'asc' | 'desc', 
-  //     sortby: string, 
-  //     status?: string, 
-  //     delivery_date?: { start?: Date; end?: Date } 
+  //   roles: string[],
+  //   silent = false,
+  //   filters: IPaginationFilter & {
+  //     order: "asc" | "desc";
+  //     sortby: string;
+  //     status?: string;
+  //     delivery_date?: { start?: Date; end?: Date };
   //   }
-  // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+  // ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
   //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
   //     PermissionScope.READ,
   //     PermissionScope.ALL,
   //   ]);
-  
+
   //   // Populate meals and related fields for all days of the week
   //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
   //     path: day,
   //     populate: [
-  //       { path: 'breakfast.mealId' },
-  //       { path: 'breakfast.extraId' },
-  //       { path: 'breakfast.proteinId' },
-  //       { path: 'lunch.mealId' },
-  //       { path: 'lunch.extraId' },
-  //       { path: 'lunch.proteinId' },
-  //       { path: 'dinner.mealId' },
-  //       { path: 'dinner.extraId' },
-  //       { path: 'dinner.proteinId' },
+  //       { path: "breakfast.mealId" },
+  //       { path: "breakfast.extraId" },
+  //       { path: "breakfast.proteinId" },
+  //       { path: "lunch.mealId" },
+  //       { path: "lunch.extraId" },
+  //       { path: "lunch.proteinId" },
+  //       { path: "dinner.mealId" },
+  //       { path: "dinner.extraId" },
+  //       { path: "dinner.proteinId" },
   //     ],
   //   }));
-  
+
   //   // Base filter criteria
   //   const filter: any = {
-  //     status: filters.status ?? { $in: ['active', 'inactive'] },
+  //     status: filters.status ?? { $in: ["active", "inactive"] },
   //     createdAt: {
   //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
   //       $lte: new Date(),
   //     },
   //   };
-  
+
   //   // Add delivery_date filter if provided
   //   if (filters?.delivery_date) {
   //     filter.delivery_date = {};
@@ -948,63 +938,62 @@ async getClosedOrdersHistory(
   //       filter.delivery_date.$lte = filters.delivery_date.end;
   //     }
   //   }
-  
+
   //   // Calculate effective pagination
   //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
   //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
-  
+
   //   // Determine sorting logic
-  //   const sortbyy = filters?.sortby === 'deliverydate' ? 'delivery_date' : 'createdAt';
-  //   const defaultOrder: 1 | -1 = sortbyy === 'delivery_date' ? 1 : -1;
-  //   const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
+  //   const sortbyy = filters?.sortby === "deliverydate" ? "delivery_date" : "createdAt";
+  //   const defaultOrder: 1 | -1 = sortbyy === "delivery_date" ? 1 : -1;
+  //   const sortOrder: 1 | -1 = filters?.order === "asc" ? 1 : filters?.order === "desc" ? -1 : defaultOrder;
   //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-  
+
   //   // Fetch the lineups based on filters
   //   const lineups = await lineup
   //     .find(filter)
   //     .populate(pops)
-  //     .populate('customer')
+  //     .populate("customer")
   //     .sort(sort)
   //     .limit(effectiveLimit)
   //     .skip((effectivePage - 1) * effectiveLimit)
   //     .lean<MealLineup[]>()
   //     .exec();
-  
+
   //   // Total document count
   //   const totalCount = await lineup.countDocuments(filter);
-  
+
   //   // Handle no results
   //   if (!lineups.length && !silent) {
   //     throw createError("No lineups found", 404);
   //   }
-  
+
   //   return { totalCount, lineups };
   // }
-  
-  
+
   // async getOrdr(
   //   customer_id: string,
   //   roles: string[],
-  //   filters: IPaginationFilter & { 
-  //     customer?: string, 
-  //     order?: 'asc' | 'desc', 
-  //     sortby?: string, 
-  //     status?: string, 
-  //     delivery_date?: { start?: Date; end?: Date }
+  //   filters: IPaginationFilter & {
+  //     customer?: string;
+  //     order?: "asc" | "desc";
+  //     sortby?: string;
+  //     status?: string;
+  //     delivery_date?: { start?: Date; end?: Date };
   //   }
   // ): Promise<PaginatedDocument<Order[]>> {
   //   await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-  
+
   //   // Explicitly define query with optional fields
   //   const query: {
   //     status?: string;
   //     customer?: string;
   //     delivery_date?: { $gte?: Date; $lte?: Date };
   //   } = {};
-  
+
   //   // Apply status filter
-  //   query.status = 'payment_received';
-  
+  //   query.status = "payment_received";
+
   //   const populate = [
   //     {
   //       path: "items",
@@ -1014,20 +1003,20 @@ async getClosedOrdersHistory(
   //       },
   //     },
   //     {
-  //       path: "customer", 
-  //       model: "Customer", 
-  //     }
+  //       path: "customer",
+  //       model: "Customer",
+  //     },
   //   ];
-  
+
   //   const is_admin = await RoleService.isAdmin(roles);
-  
+
   //   // Filter by customer if not admin or specific customer is provided
   //   if (!is_admin) {
   //     query.customer = customer_id;
   //   } else if (filters?.customer) {
   //     query.customer = filters.customer;
   //   }
-  
+
   //   // Filter by delivery date if provided
   //   if (filters?.delivery_date) {
   //     query.delivery_date = {};
@@ -1038,18 +1027,15 @@ async getClosedOrdersHistory(
   //       query.delivery_date.$lte = filters.delivery_date.end;
   //     }
   //   }
-  
+
   //   // Dynamic sorting
   //   const sort: { [key: string]: 1 | -1 } = {};
   //   if (filters?.sortby) {
-  //     sort[filters.sortby] = filters?.order === 'asc' ? 1 : -1;
+  //     sort[filters.sortby] = filters?.order === "asc" ? 1 : -1;
   //   } else {
   //     sort.createdAt = -1; // Default sorting
   //   }
-  
+
   //   return await paginate("order", query, filters, { populate, sort });
   // }
-
-
-
 }
