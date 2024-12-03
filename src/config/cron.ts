@@ -488,5 +488,21 @@ cron.schedule(
     timezone: "Europe/London"
 });
 
+  cron.schedule('* */1 * * *', async () => {
+    try {
+        const _meal = await mealPack.find({is_available: false});
+
+        await Promise.all(_meal.map(async (m: any) => {
+          if(m.available_quantity >= 1){
+            await m.updateOne({ is_available: 'true' });            
+          }
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
   
 export default cron
