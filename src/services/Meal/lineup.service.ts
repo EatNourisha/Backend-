@@ -14,6 +14,7 @@ import { DeliveryService } from "./delivery.service";
 import { MealService } from "./meal.service";
 import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "../../services/Marketing/bluePrint.service";
 import { sendOrderAlert } from "../../services/Marketing/marketing.service";
+import csTeam from "../../models/csTeam";
 // import { sendOrderAlert } from "../../services/Marketing/marketing.service";
 
 export class MealLineupService {
@@ -1304,6 +1305,14 @@ export class MealLineupService {
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
+    const admin = await customer.findById(adminId)
+    const cs = await csTeam.findOne({team_member: admin?._id})
+    if(!cs){
+        throw createError(
+          ` You can't create this lineup. Not a CS Member`,
+          400
+        );
+}
 
     let deli_date: Date | undefined = dto.delivery_date;
 
@@ -1544,8 +1553,6 @@ export class MealLineupService {
 
     const promo = await promoCode.findById(trans?.applied_promo)
 
-    const admin = await customer.findById(adminId)
-
     const _lineup = await lineup.create({
       ...dto,
       customer: customer_id,
@@ -1609,6 +1616,14 @@ export class MealLineupService {
     ]);
     await MealLineupService.validateLockedLineupChange(customer_id);
     const admin = await customer.findById(adminId)
+
+    const cs = await csTeam.findOne({team_member: admin?._id})
+    if(!cs){
+        throw createError(
+          ` You can't update this lineup. Not a CS Member`,
+          400
+        );
+}
 
 
     const _lineup = await lineup
