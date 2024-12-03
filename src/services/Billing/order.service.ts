@@ -570,88 +570,88 @@ export class OrderService {
   //   return { totalCount, lineups };
   // }
 
-  async getLineups(
-    roles: string[],
-    // silent = false,
-    filters: IPaginationFilter & {
-      order: "asc" | "desc";
-      sortby: string;
-      status: string;
-      delivery_date?: Date | { $gte?: Date; $lte?: Date };
-    }
-  ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-      PermissionScope.READ,
-      PermissionScope.ALL,
-    ]);
+  // async getLineups(
+  //   roles: string[],
+  //   // silent = false,
+  //   filters: IPaginationFilter & {
+  //     order: "asc" | "desc";
+  //     sortby: string;
+  //     status: string;
+  //     delivery_date?: Date | { $gte?: Date; $lte?: Date };
+  //   }
+  // ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
+  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+  //     PermissionScope.READ,
+  //     PermissionScope.ALL,
+  //   ]);
 
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-      path: day,
-      populate: [
-        { path: "breakfast.mealId" },
-        { path: "breakfast.extraId" },
-        { path: "breakfast.proteinId" },
-        { path: "lunch.mealId" },
-        { path: "lunch.extraId" },
-        { path: "lunch.proteinId" },
-        { path: "dinner.mealId" },
-        { path: "dinner.extraId" },
-        { path: "dinner.proteinId" },
-      ],
-    }));
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //     path: day,
+  //     populate: [
+  //       { path: "breakfast.mealId" },
+  //       { path: "breakfast.extraId" },
+  //       { path: "breakfast.proteinId" },
+  //       { path: "lunch.mealId" },
+  //       { path: "lunch.extraId" },
+  //       { path: "lunch.proteinId" },
+  //       { path: "dinner.mealId" },
+  //       { path: "dinner.extraId" },
+  //       { path: "dinner.proteinId" },
+  //     ],
+  //   }));
 
-    const filter: any = {
-      status: filters.status ?? { $in: ["active", "inactive"] },
-      createdAt: {
-        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
-        $lte: new Date(),
-      },
-    };
+  //   const filter: any = {
+  //     status: filters.status ?? { $in: ["active", "inactive"] },
+  //     createdAt: {
+  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+  //       $lte: new Date(),
+  //     },
+  //   };
 
-    // Add delivery date filter if provided
-    if (filters.delivery_date) {
-      if (typeof filters.delivery_date === "string") {
-        // If a string is provided, convert it to a date
-        filter.delivery_date = {
-          $gte: new Date(filters.delivery_date),
-          $lt: new Date(new Date(filters.delivery_date).setDate(new Date(filters.delivery_date).getDate() + 1)),
-        };
-      } else if (typeof filters.delivery_date === "object") {
-        // If an object with date range is provided, use it directly
-        filter.delivery_date = filters.delivery_date;
-      }
-    }
+  //   // Add delivery date filter if provided
+  //   if (filters.delivery_date) {
+  //     if (typeof filters.delivery_date === "string") {
+  //       // If a string is provided, convert it to a date
+  //       filter.delivery_date = {
+  //         $gte: new Date(filters.delivery_date),
+  //         $lt: new Date(new Date(filters.delivery_date).setDate(new Date(filters.delivery_date).getDate() + 1)),
+  //       };
+  //     } else if (typeof filters.delivery_date === "object") {
+  //       // If an object with date range is provided, use it directly
+  //       filter.delivery_date = filters.delivery_date;
+  //     }
+  //   }
 
-    const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
-    const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
+  //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
+  //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
 
-    // Determine sorting
-    let sortbyy = "createdAt";
-    let defaultOrder: 1 | -1 = -1;
+  //   // Determine sorting
+  //   let sortbyy = "createdAt";
+  //   let defaultOrder: 1 | -1 = -1;
 
-    // Explicitly handle delivery date sorting
-    if (filters?.sortby === "delivery_date") {
-      sortbyy = "delivery_date";
-      defaultOrder = filters?.order === "desc" ? -1 : 1;
-    }
+  //   // Explicitly handle delivery date sorting
+  //   if (filters?.sortby === "delivery_date") {
+  //     sortbyy = "delivery_date";
+  //     defaultOrder = filters?.order === "desc" ? -1 : 1;
+  //   }
 
-    const sortOrder: 1 | -1 = filters?.order === "asc" ? 1 : filters?.order === "desc" ? -1 : defaultOrder;
-    const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
+  //   const sortOrder: 1 | -1 = filters?.order === "asc" ? 1 : filters?.order === "desc" ? -1 : defaultOrder;
+  //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
 
-    const lineups = await lineup
-      .find(filter)
-      .populate(pops)
-      .populate("customer")
-      .sort(sort)
-      .limit(effectiveLimit)
-      .skip((effectivePage - 1) * effectiveLimit)
-      .lean<MealLineup[]>()
-      .exec();
+  //   const lineups = await lineup
+  //     .find(filter)
+  //     .populate(pops)
+  //     .populate("customer")
+  //     .sort(sort)
+  //     .limit(effectiveLimit)
+  //     .skip((effectivePage - 1) * effectiveLimit)
+  //     .lean<MealLineup[]>()
+  //     .exec();
 
-    const totalCount = await lineup.countDocuments(filter);
+  //   const totalCount = await lineup.countDocuments(filter);
 
-    return { totalCount, lineups };
-  }
+  //   return { totalCount, lineups };
+  // }
   // async getOrdr(
   //   roles: string[],
   //   filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
@@ -698,14 +698,113 @@ export class OrderService {
   //   return { totalCount, data };
   // }
 
+  private applyDeliveryDateFilter(filter: any, deliveryDate?: Date | { $gte?: Date; $lte?: Date }): any {
+    if (deliveryDate) {
+      if (typeof deliveryDate === "string") {
+        // If a string is provided, convert it to a date range for a single day
+        filter.delivery_date = {
+          $gte: new Date(deliveryDate),
+          $lt: new Date(new Date(deliveryDate).setDate(new Date(deliveryDate).getDate() + 1)),
+        };
+      } else if (typeof deliveryDate === "object") {
+        // If an object with date range is provided, use it directly
+        filter.delivery_date = deliveryDate;
+      }
+    }
+    return filter;
+  }
+
+  private determineSortOptions(sortby?: string, order?: "asc" | "desc"): { sortField: string; sortOrder: 1 | -1 } {
+    let sortField = "createdAt";
+    let defaultOrder: 1 | -1 = -1;
+
+    if (sortby === "delivery_date") {
+      sortField = "delivery_date";
+      defaultOrder = order === "desc" ? -1 : 1;
+    }
+
+    const sortOrder: 1 | -1 = order === "asc" ? 1 : order === "desc" ? -1 : defaultOrder;
+
+    return { sortField, sortOrder };
+  }
+
+  async getLineups(
+    roles: string[],
+    filters: IPaginationFilter & {
+      order: "asc" | "desc";
+      sortby: string;
+      status: string;
+      delivery_date?: Date | { $gte?: Date; $lte?: Date };
+    }
+  ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
+    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
+      PermissionScope.READ,
+      PermissionScope.ALL,
+    ]);
+
+    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+      path: day,
+      populate: [
+        { path: "breakfast.mealId" },
+        { path: "breakfast.extraId" },
+        { path: "breakfast.proteinId" },
+        { path: "lunch.mealId" },
+        { path: "lunch.extraId" },
+        { path: "lunch.proteinId" },
+        { path: "dinner.mealId" },
+        { path: "dinner.extraId" },
+        { path: "dinner.proteinId" },
+      ],
+    }));
+
+    const filter: any = {
+      status: filters.status ?? { $in: ["active", "inactive"] },
+      createdAt: {
+        $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+        $lte: new Date(),
+      },
+    };
+
+    // Apply delivery date filter
+    const filteredFilter = this.applyDeliveryDateFilter(filter, filters.delivery_date);
+
+    // Determine sorting options
+    const { sortField, sortOrder } = this.determineSortOptions(filters.sortby, filters.order);
+
+    const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
+    const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
+
+    const sort: { [key: string]: 1 | -1 } = { [sortField]: sortOrder };
+
+    const lineups = await lineup
+      .find(filteredFilter)
+      .populate(pops)
+      .populate("customer")
+      .sort(sort)
+      .limit(effectiveLimit)
+      .skip((effectivePage - 1) * effectiveLimit)
+      .lean<MealLineup[]>()
+      .exec();
+
+    const totalCount = await lineup.countDocuments(filteredFilter);
+
+    return { totalCount, lineups };
+  }
+
   async getOrdr(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & { customer: string; order: "asc" | "desc"; sortby: string; status: string; delivery_date: Date }
+    filters: IPaginationFilter & {
+      customer: string;
+      order: "asc" | "desc";
+      sortby: string;
+      status: string;
+      delivery_date?: Date | { $gte?: Date; $lte?: Date };
+    }
   ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
 
-    const query = {
+    const query: any = {
       status: "payment_received",
     };
 
@@ -730,10 +829,18 @@ export class OrderService {
     }
     if (is_admin && !!filters?.customer) {
       Object.assign(query, { customer: filters.customer });
-      // populate.push({ path: "customer" });
     }
 
-    return await paginate("order", query, filters, { populate, sort: { createdAt: -1 } });
+    // Apply delivery date filter
+    const filteredQuery = this.applyDeliveryDateFilter(query, filters.delivery_date);
+
+    // Determine sorting options
+    const { sortField, sortOrder } = this.determineSortOptions(filters.sortby, filters.order);
+
+    return await paginate("order", filteredQuery, filters, {
+      populate,
+      sort: { [sortField]: sortOrder },
+    });
   }
 
   async getOrdersAndLineups(
