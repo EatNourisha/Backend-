@@ -105,7 +105,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       break;
     }
     case "payment_intent.created": {  
-      axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+      axios.post('https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/')
       .then(response => {
         console.log('ZAPIER EVENT FOR SUB - INTENT CREATED', response.data);
       })
@@ -221,7 +221,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         }    
     
         await axios
-          .post("https://hooks.zapier.com/hooks/catch/3666010/2mesl25/")
+          .post("https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/")
           .then((response) => console.log("ZAPIER EVENT", response.data))
           .catch((error) =>
             console.error("There was an error making the request!", error)
@@ -364,7 +364,7 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
   }
 
       
-    axios.post('https://hooks.zapier.com/hooks/catch/3666010/2mesl25/')
+    axios.post('https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/')
     .then(response => {
       console.log('ZAPIER EVENT FOR SUB', response.data);
     })
