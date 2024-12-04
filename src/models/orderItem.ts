@@ -40,11 +40,6 @@ export class Extrs {
   @prop({ type: () => [ExtraDetailDto], _id: false })
   swallowss?: ExtraDetailDto[];
 
-  // @prop({ ref: () => "MealExtras", _id: false })
-  // proteinss?: Ref<MealExtras>[];
-
-  // @prop({ ref: () => "MealExtras", _id: false })
-  // swallowss?: Ref<MealExtras>[];
 }
 
 
