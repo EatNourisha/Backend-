@@ -16,7 +16,7 @@ import { MealService } from "../Meal/meal.service";
 import { sendOrderPlacedEmail } from "../../services/authEmail.service";
 import { sendOrderAlert } from "../../services/Marketing/marketing.service";
 import { NourishaBus } from "../../libs";
-import { ExtraDetailDto } from "models/cartItem";
+import { Extrs } from "models/orderItem";
 // import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
@@ -317,37 +317,23 @@ async getClosedOrdersHistory(
     return {item: i.item, swallows: i.swallows, proteins: i.proteins};  
   });
   
-    
-  // const _extrass = _items.map(i => {
-  //   return {
-  //     item: i.item,
-  //     swallowId: i.swallowss?.map(swallow => ({
-  //       swallowId: swallow.swallowId,
-  //       quantity: swallow.quantity,
-  //     })),
-  //     proteinId: i.proteinss?.map(protein => ({
-  //       proteinId: protein.proteinId,
-  //       quantity: protein.quantity,
-  //     })),
-  //   };
-  // });
-    
-  const _extrass: ExtraDetailDto[] = _items.flatMap(i => {
-    const swallows = i.swallowss?.map(swallow => ({
+  
+  const _extrass: Extrs[] = _items.flatMap((i) => {
+    const swallows = i.swallowss?.map((swallow) => ({
       item: i.item,
-      swallowId: swallow.swallowId, 
-      quantity: swallow.quantity,
+      swallowss: [{ swallowId: swallow.swallowId, quantity: swallow.quantity }],
     })) ?? [];
   
-    const proteins = i.proteinss?.map(protein => ({
+    const proteins = i.proteinss?.map((protein) => ({
       item: i.item,
-      proteinId: protein.proteinId, 
-      quantity: protein.quantity,
+      proteinss: [{ proteinId: protein.proteinId, quantity: protein.quantity }],
     })) ?? [];
   
     return [...swallows, ...proteins];
   });
-    
+  
+
+  console.log('EXTRASSSDSSSSSSSSSSSSSS',_extrass)
     
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,

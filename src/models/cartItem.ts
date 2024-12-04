@@ -18,8 +18,8 @@ export class ExtraDetailDto {
   @prop()
   quantity?: number;
 
-  @prop({ ref: () => "MealPack", _id: false })
-  item: Ref<MealPack>;
+  // @prop({ ref: () => "MealPack", _id: false })
+  // item: Ref<MealPack>;
 }
 
 
@@ -52,10 +52,10 @@ export class CartItem extends BaseEntity {
   @prop()
   session_id: string;
 
-  @prop()
+  @prop({ type: () => [ExtraDetailDto] })
   swallowss?: ExtraDetailDto[];
 
-  @prop()
+  @prop({ type: () => [ExtraDetailDto] })
   proteinss?:ExtraDetailDto[];
 }
 
