@@ -351,6 +351,7 @@ export class OrderService {
       isReturningCustomer: returning,
       orderExtras: _extras,
       MealAndExtras: _extra,
+      MealAndExtrass: _extrass,
     });
 
     const { order: _order, items } = result;
