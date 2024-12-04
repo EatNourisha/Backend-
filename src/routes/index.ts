@@ -112,6 +112,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       .catch(error => {
         console.log('There was an error making the request!', error);
       });
+
+      axios.post('https://hooks.zapier.com/hooks/catch/13525156/2iq701n/')
+      .then(response => {
+        console.log('ZAPIER EVENT FOR SUB2 - INTENT CREATED', response.data);
+      })
+      .catch(error => {
+        console.log('There was an error making the request!', error);
+      });
   
       await BillingHooks.paymentIntentCreated(event);
       break;
@@ -226,6 +234,14 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
           .catch((error) =>
             console.error("There was an error making the request!", error)
           );
+
+          axios.post('https://hooks.zapier.com/hooks/catch/13525156/2iq701n/')
+          .then((response) => console.log("ZAPIER2 EVENT", response.data))
+          .catch(error => {
+            console.log('There was an error making the request!', error);
+          });
+      
+    
     
         await BillingHooks.paymentIntentSucceeded(tx as Transaction, event);
       } catch (error) {
@@ -371,6 +387,16 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
     .catch(error => {
       console.log('There was an error making the request!', error);
     });
+
+    axios.post('https://hooks.zapier.com/hooks/catch/13525156/2iq701n/')
+    .then(response => {
+      console.log('ZAPIER EVENT FOR SUB22', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
+
+
 
       await BillingHooks.customerSubscriptionUpdated(event);
       break;
