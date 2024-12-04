@@ -494,7 +494,7 @@ export class OrderService {
   static mountEventListener() {
     new OrderEventListener();
   }
-
+  
   private applyDeliveryDateFilter(filter: any, deliveryDate?: Date | { $gte?: Date; $lte?: Date }): any {
     if (deliveryDate) {
       if (typeof deliveryDate === "string") {
