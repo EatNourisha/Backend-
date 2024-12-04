@@ -116,20 +116,20 @@ export class OrderService {
     else if (is_admin) populate_order.push("customer");
 
     const [_order, items] = await Promise.all([
-      order
-        .findById(order_id)
-        .populate([
-          { path: "customer" },
-          { path: "orderExtras.item" },
-          { path: "orderExtras.protein" },
-          { path: "orderExtras.swallow" },
-          { path: "MealAndExtras.item" },
-          { path: "MealAndExtras.proteins" },
-          { path: "MealAndExtras.swallows" },
-        ])
-        .lean<Order>()
-        .exec(),
-      paginate<OrderItem[]>("orderItem", query, filters, { populate: "item" }),
+      order.findById(order_id).populate( [
+        {path: "customer"},
+        {path: "orderExtras.item"},
+        {path: "orderExtras.protein"},
+        {path: "orderExtras.swallow"},
+        {path: "MealAndExtras.item"},
+        {path: "MealAndExtras.proteins"},
+        {path: "MealAndExtras.swallows"},
+        {path: "MealAndExtrass.item"},
+        {path: "MealAndExtrass.proteinss.proteinId"},
+        {path: "MealAndExtrass.swallowss.swallowId"},
+ 
+      ]).lean<Order>().exec(),
+      paginate<OrderItem[]>("orderItem", query, filters, { populate: "item"}),
     ]);
 
     return { order: _order, items };
@@ -494,189 +494,6 @@ export class OrderService {
   static mountEventListener() {
     new OrderEventListener();
   }
-
-  // async getLineups(
-  //   roles: string[],
-  //   silent = false,
-  //   limit?: number,
-  //   page?: number
-  // ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-  //     path: day,
-  //     populate: [
-  //       { path: 'breakfast.mealId' },
-  //       { path: 'breakfast.extraId' },
-  //       { path: 'breakfast.proteinId' },
-  //       { path: 'lunch.mealId' },
-  //       { path: 'lunch.extraId' },
-  //       { path: 'lunch.proteinId' },
-  //       { path: 'dinner.mealId' },
-  //       { path: 'dinner.extraId' },
-  //       { path: 'dinner.proteinId' },
-  //     ],
-  //   }));
-
-  //   const filter: any = {
-  //     status: { $in: ['active', 'inactive'] },
-  //     createdAt: {
-  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-  //       $lte: new Date(),
-
-  //       // $gte: new Date(new Date().setDate(new Date().getDate() - 60)),
-  //     },
-  //   };
-
-  //   const effectiveLimit = limit ?? 100;
-  //   const effectivePage = page ?? 1;
-
-  //   const lineups = await lineup.find(filter)
-  //   .populate(pops)
-  //   .populate('customer')
-  //   .sort({ createdAt: -1 })
-  //   .limit(effectiveLimit)
-  //   .skip((effectivePage - 1) * effectiveLimit)
-  //   .lean<MealLineup[]>()
-  //   .exec();
-  //   const totalCount = lineups.length;
-  //   // const totalCount = await lineup.countDocuments(filter);
-
-  //   if (!lineups.length && !silent) throw createError("No lineups found", 404);
-
-  //   return { totalCount, lineups };
-  // }
-
-  // async getLineups(
-  //   roles: string[],
-  //   // silent = false,
-  //   filters: IPaginationFilter & {
-  //     order: "asc" | "desc";
-  //     sortby: string;
-  //     status: string;
-  //     delivery_date?: Date | { $gte?: Date; $lte?: Date };
-  //   }
-  // ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-  //     path: day,
-  //     populate: [
-  //       { path: "breakfast.mealId" },
-  //       { path: "breakfast.extraId" },
-  //       { path: "breakfast.proteinId" },
-  //       { path: "lunch.mealId" },
-  //       { path: "lunch.extraId" },
-  //       { path: "lunch.proteinId" },
-  //       { path: "dinner.mealId" },
-  //       { path: "dinner.extraId" },
-  //       { path: "dinner.proteinId" },
-  //     ],
-  //   }));
-
-  //   const filter: any = {
-  //     status: filters.status ?? { $in: ["active", "inactive"] },
-  //     createdAt: {
-  //       $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
-  //       $lte: new Date(),
-  //     },
-  //   };
-
-  //   // Add delivery date filter if provided
-  //   if (filters.delivery_date) {
-  //     if (typeof filters.delivery_date === "string") {
-  //       // If a string is provided, convert it to a date
-  //       filter.delivery_date = {
-  //         $gte: new Date(filters.delivery_date),
-  //         $lt: new Date(new Date(filters.delivery_date).setDate(new Date(filters.delivery_date).getDate() + 1)),
-  //       };
-  //     } else if (typeof filters.delivery_date === "object") {
-  //       // If an object with date range is provided, use it directly
-  //       filter.delivery_date = filters.delivery_date;
-  //     }
-  //   }
-
-  //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
-  //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
-
-  //   // Determine sorting
-  //   let sortbyy = "createdAt";
-  //   let defaultOrder: 1 | -1 = -1;
-
-  //   // Explicitly handle delivery date sorting
-  //   if (filters?.sortby === "delivery_date") {
-  //     sortbyy = "delivery_date";
-  //     defaultOrder = filters?.order === "desc" ? -1 : 1;
-  //   }
-
-  //   const sortOrder: 1 | -1 = filters?.order === "asc" ? 1 : filters?.order === "desc" ? -1 : defaultOrder;
-  //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-
-  //   const lineups = await lineup
-  //     .find(filter)
-  //     .populate(pops)
-  //     .populate("customer")
-  //     .sort(sort)
-  //     .limit(effectiveLimit)
-  //     .skip((effectivePage - 1) * effectiveLimit)
-  //     .lean<MealLineup[]>()
-  //     .exec();
-
-  //   const totalCount = await lineup.countDocuments(filter);
-
-  //   return { totalCount, lineups };
-  // }
-  // async getOrdr(
-  //   roles: string[],
-  //   filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
-  // ): Promise<{ totalCount: number, data: Order[] }> {
-  //   await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
-  //     PermissionScope.READ,
-  //     PermissionScope.ALL,
-  //   ]);
-
-  //   const filter: any = {
-  //     status:{ $in: ['payment_received'] },
-  //     // delivery_date: filters.delivery_date
-  //   };
-
-  //   const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
-  //   const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
-
-  //   let sortbyy = 'createdAt';
-  //   let defaultOrder: 1 | -1 = -1;
-
-  //   // if (filters?.sortby === 'deliverydate') {
-  //   //   sortbyy = 'delivery_date';
-  //   //   defaultOrder = 1;
-  //   // }
-
-  //   const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
-  //   const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-
-  //   const data = await order
-  //     .find(filter)
-  //     .populate('customer')
-  //     .sort(sort)
-  //     .limit(effectiveLimit)
-  //     .skip((effectivePage - 1) * effectiveLimit)
-  //     .lean<Order[]>()
-  //     .exec();
-
-  //   const totalCount = await lineup.countDocuments(filter);
-
-  //   if (!order.length ) {
-  //     throw createError("No lineups found", 404);
-  //   }
-
-  //   return { totalCount, data };
-  // }
 
   private applyDeliveryDateFilter(filter: any, deliveryDate?: Date | { $gte?: Date; $lte?: Date }): any {
     if (deliveryDate) {
