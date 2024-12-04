@@ -32,7 +32,7 @@ import { MealService } from "../Meal/meal.service";
 import { sendOrderPlacedEmail } from "../../services/authEmail.service";
 import { sendOrderAlert } from "../../services/Marketing/marketing.service";
 import { NourishaBus } from "../../libs";
-// import { ExtraDetailDto } from "models/cartItem";
+import { Extrs } from "models/orderItem";
 // import { GiftStatus } from "../../models/giftPurchase";
 
 export class OrderService {
@@ -317,7 +317,25 @@ export class OrderService {
     const _extra = _items.map((i) => {
       return { item: i.item, swallows: i.swallows, proteins: i.proteins };
     });
+  
+  
+  const _extrass: Extrs[] = _items.flatMap((i) => {
+    const swallows = i.swallowss?.map((swallow) => ({
+      item: i.item,
+      swallowss: [{ swallowId: swallow.swallowId, quantity: swallow.quantity }],
+    })) ?? [];
+  
+    const proteins = i.proteinss?.map((protein) => ({
+      item: i.item,
+      proteinss: [{ proteinId: protein.proteinId, quantity: protein.quantity }],
+    })) ?? [];
+  
+    return [...swallows, ...proteins];
+  });
+  
 
+  console.log('EXTRASSSDSSSSSSSSSSSSSS',_extrass)
+    
     const result = await OrderService.createOrder(customer_id, {
       ref: dto.cart_session_id,
       delivery_address: dto?.delivery_address ?? cus?.address,

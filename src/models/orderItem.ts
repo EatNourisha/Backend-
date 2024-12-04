@@ -6,6 +6,7 @@ import { Customer } from "./customer";
 import { Order } from "./order";
 import { MealPack } from "./mealPack";
 import { MealExtras } from "./mealExtras";
+import { ExtraDetailDto } from "./cartItem";
 
 export class Extras {
   @prop({ ref: () => "MealPack", _id: false })
@@ -27,6 +28,23 @@ export class Extr {
 
   @prop({ ref: () => "MealExtras", _id: false })
   swallows?: Ref<MealExtras>[];
+}
+
+export class Extrs {
+  @prop({ ref: () => "MealPack", _id: false })
+  item: Ref<MealPack>;
+
+  @prop({ type: () => [ExtraDetailDto], _id: false })
+  proteinss?: ExtraDetailDto[];
+
+  @prop({ type: () => [ExtraDetailDto], _id: false })
+  swallowss?: ExtraDetailDto[];
+
+  // @prop({ ref: () => "MealExtras", _id: false })
+  // proteinss?: Ref<MealExtras>[];
+
+  // @prop({ ref: () => "MealExtras", _id: false })
+  // swallowss?: Ref<MealExtras>[];
 }
 
 

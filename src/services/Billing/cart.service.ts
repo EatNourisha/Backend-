@@ -206,6 +206,8 @@ export class CartService {
           swallow: dto?.swallowId,
           proteins: dto?.proteinIds,
           swallows: dto?.swallowIds,
+          proteinss: dto?.proteinIdss,
+          swallowss: dto?.swallowIdss,
           customer: customer_id,
           session_id: cart_session_id,
           $inc: { quantity: shouldNegate(dto.quantity) },
