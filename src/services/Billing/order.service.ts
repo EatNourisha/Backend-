@@ -506,81 +506,114 @@ async getClosedOrdersHistory(
     new OrderEventListener();
   }
   
+  private applyDeliveryDateFilter(filter: any, deliveryDate?: Date | { $gte?: Date; $lte?: Date }): any {
+    if (deliveryDate) {
+      if (typeof deliveryDate === "string") {
+        // If a string is provided, convert it to a date range for a single day
+        filter.delivery_date = {
+          $gte: new Date(deliveryDate),
+          $lt: new Date(new Date(deliveryDate).setDate(new Date(deliveryDate).getDate() + 1)),
+        };
+      } else if (typeof deliveryDate === "object") {
+        // If an object with date range is provided, use it directly
+        filter.delivery_date = deliveryDate;
+      }
+    }
+    return filter;
+  }
+
+  private determineSortOptions(sortby?: string, order?: "asc" | "desc"): { sortField: string; sortOrder: 1 | -1 } {
+    let sortField = "createdAt";
+    let defaultOrder: 1 | -1 = -1;
+
+    if (sortby === "delivery_date") {
+      sortField = "delivery_date";
+      defaultOrder = order === "desc" ? -1 : 1;
+    }
+
+    const sortOrder: 1 | -1 = order === "asc" ? 1 : order === "desc" ? -1 : defaultOrder;
+
+    return { sortField, sortOrder };
+  }
+
   async getLineups(
-    roles: string[], 
-    silent = false, 
-    filters: IPaginationFilter & { order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date }
-  ): Promise<{ totalCount: number, lineups: MealLineup[] }> {
+    roles: string[],
+    filters: IPaginationFilter & {
+      order: "asc" | "desc";
+      sortby: string;
+      status: string;
+      delivery_date?: Date | { $gte?: Date; $lte?: Date };
+    }
+  ): Promise<{ totalCount: number; lineups: MealLineup[] }> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
       PermissionScope.READ,
       PermissionScope.ALL,
     ]);
-  
+
     const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
       path: day,
       populate: [
-        { path: 'breakfast.mealId' },
-        { path: 'breakfast.extraId' },
-        { path: 'breakfast.proteinId' },
-        { path: 'lunch.mealId' },
-        { path: 'lunch.extraId' },
-        { path: 'lunch.proteinId' },
-        { path: 'dinner.mealId' },
-        { path: 'dinner.extraId' },
-        { path: 'dinner.proteinId' },
+        { path: "breakfast.mealId" },
+        { path: "breakfast.extraId" },
+        { path: "breakfast.proteinId" },
+        { path: "lunch.mealId" },
+        { path: "lunch.extraId" },
+        { path: "lunch.proteinId" },
+        { path: "dinner.mealId" },
+        { path: "dinner.extraId" },
+        { path: "dinner.proteinId" },
       ],
     }));
-  
+
     const filter: any = {
-      status: filters.status ?? { $in: ['active', 'inactive'] },
+      status: filters.status ?? { $in: ["active", "inactive"] },
       createdAt: {
         $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
         $lte: new Date(),
       },
     };
-  
+
+    // Apply delivery date filter
+    const filteredFilter = this.applyDeliveryDateFilter(filter, filters.delivery_date);
+
+    // Determine sorting options
+    const { sortField, sortOrder } = this.determineSortOptions(filters.sortby, filters.order);
+
     const effectiveLimit = filters?.limit ? Math.abs(parseInt(filters.limit)) : 100;
     const effectivePage = filters?.page ? Math.abs(parseInt(filters.page)) : 1;
 
-    let sortbyy = 'createdAt';
-    let defaultOrder: 1 | -1 = -1; 
+    const sort: { [key: string]: 1 | -1 } = { [sortField]: sortOrder };
 
-    if (filters?.sortby === 'deliverydate') {
-      sortbyy = 'delivery_date';
-      defaultOrder = 1; 
-    }
-
-    const sortOrder: 1 | -1 = filters?.order === 'asc' ? 1 : filters?.order === 'desc' ? -1 : defaultOrder;
-    const sort: { [key: string]: 1 | -1 } = { [sortbyy]: sortOrder };
-  
     const lineups = await lineup
-      .find(filter)
+      .find(filteredFilter)
       .populate(pops)
-      .populate('customer')
+      .populate("customer")
       .sort(sort)
       .limit(effectiveLimit)
       .skip((effectivePage - 1) * effectiveLimit)
       .lean<MealLineup[]>()
       .exec();
-  
-    const totalCount = await lineup.countDocuments(filter);
-  
-    if (!lineups.length && !silent) {
-      throw createError("No lineups found", 404);
-    }
-  
+
+    const totalCount = await lineup.countDocuments(filteredFilter);
+
     return { totalCount, lineups };
   }
-    
+
   async getOrdr(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string,order: 'asc' | 'desc', sortby: string, status: string, delivery_date: Date}
+    filters: IPaginationFilter & {
+      customer: string;
+      order: "asc" | "desc";
+      sortby: string;
+      status: string;
+      delivery_date?: Date | { $gte?: Date; $lte?: Date };
+    }
   ): Promise<PaginatedDocument<Order[]>> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
-  
-    const query = {
-      status: 'payment_received',
+
+    const query: any = {
+      status: "payment_received",
     };
 
     const populate = [
@@ -592,28 +625,36 @@ async getClosedOrdersHistory(
         },
       },
       {
-        path: "customer", 
-        model: "Customer", 
-      }
-  ];
-  
+        path: "customer",
+        model: "Customer",
+      },
+    ];
+
     const is_admin = await RoleService.isAdmin(roles);
-    
+
     if (!is_admin) {
       Object.assign(query, { customer: customer_id });
     }
     if (is_admin && !!filters?.customer) {
       Object.assign(query, { customer: filters.customer });
-      // populate.push({ path: "customer" });
     }
-  
-    return await paginate("order", query, filters, { populate, sort: { createdAt: -1 } });
+
+    // Apply delivery date filter
+    const filteredQuery = this.applyDeliveryDateFilter(query, filters.delivery_date);
+
+    // Determine sorting options
+    const { sortField, sortOrder } = this.determineSortOptions(filters.sortby, filters.order);
+
+    return await paginate("order", filteredQuery, filters, {
+      populate,
+      sort: { [sortField]: sortOrder },
+    });
   }
-  
-    async getOrdersAndLineups(
+
+  async getOrdersAndLineups(
     customer_id: string,
     roles: string[],
-    filters: IPaginationFilter & {customer: string, order: 'asc' | 'desc', sortby: string, status: string,  delivery_date: Date } 
+    filters: IPaginationFilter & { customer: string; order: "asc" | "desc"; sortby: string; status: string; delivery_date: Date }
   ): Promise<any> {
     await RoleService.hasPermission(roles, AvailableResource.ORDER, [PermissionScope.READ, PermissionScope.ALL]);
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
@@ -621,11 +662,10 @@ async getClosedOrdersHistory(
       PermissionScope.ALL,
     ]);
 
-    const _orders = await this.getOrdr(customer_id, roles, filters)
-    const _lineups = await this.getLineups(roles, false, filters)
+    const _orders = await this.getOrdr(customer_id, roles, filters);
+    const _lineups = await this.getLineups(roles, filters);
 
-    return { _orders, _lineups } ;
-
+    return { _orders, _lineups };
   }
 
   async adminPlaceOrder(adminId: string, customer_id: string, dto: PlaceOrderDto, roles: string[]) {
