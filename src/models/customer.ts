@@ -361,6 +361,12 @@ export class Customer extends BaseEntity {
   CARTEMAILS: cart;
 
   @prop()
+  COURSEEMAILS: course;
+
+  @prop()
+  RETENTIONEMAILS: retention;
+
+  @prop()
   lastPasswordReset: string;
 
   @prop()
