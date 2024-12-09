@@ -1,5 +1,5 @@
 import { IPaginationFilter, PaginatedDocument } from "../../interfaces";
-import { AdminSettings, Cart, CartItem, MealPack, Order, adminSettings, cart, cartItem, order } from "../../models";
+import { AdminSettings, Cart, CartItem, MealPack, Order, adminSettings, cart, cartItem, customer, order } from "../../models";
 import { RoleService } from "../../services/role.service";
 import { createError, getUpdateOptions, validateFields, paginate } from "../../utils";
 import { when } from "../../utils/when";
@@ -221,6 +221,13 @@ export class CartService {
   
     const item = cart_item?.item as MealPack;
     if (!item) throw createError("Cart item not found", 404);
+
+    const cus = await customer.findById(customer_id)
+    if(cus && cus.CARTEMAILS){
+      cus.CARTEMAILS.cart0 = false
+      await cus.save()
+    }
+
   
     return {
       item: cart_item,

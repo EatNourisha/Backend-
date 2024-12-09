@@ -119,6 +119,9 @@ export class postsub {
 
 export class cart {
   @prop({default:false})
+  cart0: boolean;
+
+  @prop({default:false})
   cart1: boolean;
 
   @prop({default:false})

@@ -188,9 +188,9 @@ async getCountriesById(_id: string) {
     else{
       num = `+44${acc.phone}`
     }
-
     
-    
+    // const user = await customer.findById(acc?._id)
+    // if(user?.WELCOMEMAILS)
 
   const newCus =  await registerAddKlaviyo( acc?.first_name, acc?.last_name, acc?.email, num,)
 
