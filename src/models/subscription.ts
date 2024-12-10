@@ -50,7 +50,7 @@ export class Subscription extends BaseEntity {
   @prop()
   returning_client?: boolean;
 
-  @prop()
+  @prop({default: true})
   used_sub?: boolean;
 
   @prop()
