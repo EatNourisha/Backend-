@@ -228,14 +228,7 @@ export class CartService {
       await cus.save()
     }
 
-  
-    const cus = await customer.findById(customer_id)
-    if(cus && cus.CARTEMAILS){
-      cus.CARTEMAILS.cart0 = false
-      await cus.save()
-    }
-
-    return {
+      return {
       item: cart_item,
       subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),
       deliveryFee: Math.max(0, add(deliveryFee, shouldNegate(item?.price?.deliveryFee * dto?.quantity))),
