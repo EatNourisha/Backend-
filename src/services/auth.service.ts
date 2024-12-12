@@ -190,6 +190,12 @@ export class AuthService {
       email: acc.email,
       roles: acc.roles as string[],
       is_verified: acc?.is_email_verified,
+      first_name: acc?.first_name,
+      last_name: acc?.last_name,
+      address: acc?.address,
+      phone: acc?.phone,
+      control: acc?.control,
+      avatar: acc?.avatar,
     };
   }
 }
