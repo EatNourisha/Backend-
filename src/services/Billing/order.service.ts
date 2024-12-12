@@ -362,6 +362,12 @@ async getClosedOrdersHistory(
       .lean<Order>()
       .exec();
 
+      const _cus = await customer.findById(customer_id)
+      if(_cus && _cus.CARTEMAILS){
+        _cus.CARTEMAILS.cart1 = false
+        await _cus.save()
+      }
+  
     const payment_intent = await new BillingService().initializePayment(customer_id, {
       order_id: _order?._id!,
       card_token: dto?.card_token,
