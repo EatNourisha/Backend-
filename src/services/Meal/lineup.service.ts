@@ -1191,38 +1191,105 @@ export class MealLineupService {
     // return { totalCount, lineups } ?? [];
   }
 
-  async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
-    await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  // async importPreviousLineup1(customer_id: string, roles: string[]): Promise<MealLineup> {
+  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
-    const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
+  //     path: day,
+  //     populate: [
+  //       { path: 'breakfast.mealId' },
+  //       { path: 'breakfast.extraId' },
+  //       { path: 'breakfast.proteinId' },
+  //       { path: 'lunch.mealId' },
+  //       { path: 'lunch.extraId' },
+  //       { path: 'lunch.proteinId' },
+  //       { path: 'dinner.mealId' },
+  //       { path: 'dinner.extraId' },
+  //       { path: 'dinner.proteinId' },
+  //     ],
+  //   }));
+  
+  //   // Find the most recently created meal lineup by the customer
+  //   const lastLineup = await lineup
+  //     .findOne({ customer: customer_id })
+  //     .sort({ createdAt: -1 }) 
+  //     .populate(pops)
+  //     .lean<MealLineup>()
+  //     .exec();
+  
+  //   if (!lastLineup) throw createError("Customer has no meal lineups", 404);
+  
+  //   return lastLineup;
+  // }
+
+async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
+  await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+
+  const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
       path: day,
       populate: [
-        { path: 'breakfast.mealId' },
-        { path: 'breakfast.extraId' },
-        { path: 'breakfast.proteinId' },
-        { path: 'lunch.mealId' },
-        { path: 'lunch.extraId' },
-        { path: 'lunch.proteinId' },
-        { path: 'dinner.mealId' },
-        { path: 'dinner.extraId' },
-        { path: 'dinner.proteinId' },
+          { path: 'breakfast.mealId' },
+          { path: 'breakfast.extraId' },
+          { path: 'breakfast.proteinId' },
+          { path: 'lunch.mealId' },
+          { path: 'lunch.extraId' },
+          { path: 'lunch.proteinId' },
+          { path: 'dinner.mealId' },
+          { path: 'dinner.extraId' },
+          { path: 'dinner.proteinId' },
       ],
-    }));
-  
-    // Find the most recently created meal lineup by the customer
-    const lastLineup = await lineup
+  }));
+
+  // Find the most recently created meal lineup by the customer
+  const lastLineup = await lineup
       .findOne({ customer: customer_id })
-      .sort({ createdAt: -1 }) 
+      .sort({ createdAt: -1 })
       .populate(pops)
       .lean<MealLineup>()
       .exec();
-  
-    if (!lastLineup) throw createError("Customer has no meal lineups", 404);
-  
-    return lastLineup;
+
+  if (!lastLineup) throw createError("Customer has no meal lineups", 404);
+
+  // Track meal usage across the lineup
+  const mealUsage: Record<string, number> = {}; // Track usage of each mealId
+
+  const filteredLineup = { ...lastLineup };
+
+  for (const day of Object.keys(filteredLineup)) {
+      if (["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].includes(day)) {
+          const dayData = filteredLineup[day];
+
+          if (dayData) {
+              for (const mealType of ["breakfast", "lunch", "dinner"]) {
+                  if (dayData[mealType]) {
+                      const mealId = dayData[mealType].mealId;
+
+                      if (mealId) {
+                          const meal = await mealPack.findById(mealId).lean().exec();
+
+                          if (!meal || meal.available_quantity === 0) {
+                              dayData[mealType].mealId = null;
+                              dayData[mealType].proteinId = null;
+                              dayData[mealType].extraId = null;
+                          } else {
+                              mealUsage[mealId] = (mealUsage[mealId] || 0) + 1;
+
+                              if (mealUsage[mealId] > meal.available_quantity) {
+                                  dayData[mealType].mealId = null;
+                                  dayData[mealType].proteinId = null;
+                                  dayData[mealType].extraId = null;
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
   }
-  
-  
+
+  return filteredLineup;
+}
+
   async importPreviousLineupById(
     customer_id: string, 
     id: string, 
