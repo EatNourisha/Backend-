@@ -194,7 +194,7 @@ export class CartService {
       .lean<CartItem>()
       .exec();
 
-    if (!!cart_item && dto?.quantity > (cart_item?.quantity ?? 0)) throw createError("Invalid quantity", 400);
+    // if (!!cart_item && dto?.quantity > (cart_item?.quantity ?? 0)) throw createError("Invalid quantity", 400);
     
     cart_item = await cartItem
       .findOneAndUpdate(
@@ -229,6 +229,12 @@ export class CartService {
     }
 
   
+    const cus = await customer.findById(customer_id)
+    if(cus && cus.CARTEMAILS){
+      cus.CARTEMAILS.cart0 = false
+      await cus.save()
+    }
+
     return {
       item: cart_item,
       subtotal: Math.max(0, add(subtotal, shouldNegate(item?.price?.amount * dto?.quantity))),

@@ -4,13 +4,52 @@ import { Order, order } from "../../models";
 // import sgMail from "@sendgrid/mail";
 import axios from "axios";
 
+export async function emailSender(body: string, email:string, subject: string){
+  await mailJetSendMail(body, `${subject}`, [`${email}`]);
+
+    // const url = "https://api.brevo.com/v3/smtp/email";
+  // const apiKey = process.env.BREVO_KEY;
+  // const load = {
+  //   sender: {
+  //     email: "Kitchen@eatnourisha.com",
+  //     name: "Nourisha",
+  //   },
+  //   to: [
+  //     {
+  //       email: email,
+  //     },
+  //   ],
+  //   subject: subject,
+  //   htmlContent: body,
+  // };
+
+  // const headers = {
+  //   "Content-Type": "application/json",
+  //   "api-key": apiKey,
+  // };
+  // const response = await axios.post(url, load, { headers });
+  // return response.data;
+
+  //   await sgMail.send({
+  //   from: {
+  //     name: "Nourisha",
+  //     email: "hello@eatnourisha.com",
+  //   },
+  //   subject,
+  //   to: email,
+  //   html: body,
+  // });
+
+  // await sendSMTPEmail(email, subject, 'hi', body)
+}
+
+
 export async function welcomeEmail1(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Welcome To Nourisha`;
-  
-    const body = 
-    `
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Welcome To Nourisha`;
+
+  const body = `
     <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -232,9 +271,9 @@ export async function welcomeEmail1(email: string, payload: any) {
             <tr>
               <td class="header-section content-block">
                 <img
-                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
                   alt="Nourisha Logo"
-                  width="240"
+                  width="150"
                   style="margin: 0 auto"
                 />
               </td>
@@ -258,12 +297,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                 <h1>Welcome to Nourisha</h1>
                 <p>Your Culinary Gateway to Intercontinental Dishes!</p>
                 <p>
-                  Are you craving rich Intercontinental cuisines? Look no
-                  further! Nourisha brings you a diverse menu of delicious
-                  chef-cooked meals, delivered right to your doorstep. Whether
-                  you're from Africa, Asia or Europe, our flavours knows no
-                  boundaries. Taste convenience with our meal-prep and food
-                  delivery meal plans, available in all UK cities.
+                  Are you craving rich Intercontinental cuisines? Look no further! Nourisha brings you a diverse menu of delicious chef-cooked meals, delivered right to your doorstep. Whether you're from Africa, Asia or Europe, our flavours knows no boundaries. Taste convenience with our meal-prep and food delivery meal plans, available in all UK cities.                  
                 </p>
                 <p>
                   As a thank you for joining our community, use the promo code
@@ -315,7 +349,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                       </ul>
                       <p>
                         Choose from African meal plans from £80/week or
-                        Asian-European delights from £71/week - delivery
+                        Asian-European delights from £70/week - delivery
                         included, of course!
                       </p>
                     </td>
@@ -342,8 +376,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                     <td>
                       <h2>Flexible Options for the Spontaneous Foodie</h2>
                       <p>
-                        Flexible Options for the Spontaneous Foodie Not ready
-                        for a meal plan? No problem! Our pay-as-you-go model
+                        Not ready for a meal plan? No problem! Our pay-as-you-go model
                         lets you order whenever you wish, with deliveries within
                         24-48 hours. Starting at just £6/plate, it's the perfect
                         choice for those spontaneous meal decisions.
@@ -409,7 +442,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                     <img
                       src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/app_store_rko93u"
                       alt="Download on App Store"
-                      width="200"
+                      width="100" height="100"
                     />
                   </a>
                   <a
@@ -419,7 +452,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                     <img
                       src="https://res.cloudinary.com/drivfk4v3/image/upload/f_auto,q_auto/play_store_pud7kw"
                       alt="Get it on Google Play"
-                      width="200"
+                      width="100" height="100"
                     />
                   </a>
                 </div>
@@ -494,50 +527,11 @@ export async function welcomeEmail1(email: string, payload: any) {
   </body>
 </html>
 
-    `
-  ;
-    // await mailJetSendMail(
-    //   body,
-    //   `${subject}`,
-    //   [`${email}`]
-    // );
+    `;
 
-    const url = 'https://api.brevo.com/v3/smtp/email';
-    const apiKey = process.env.BREVO_KEY;  
-    const load = {
-      sender: {
-        email: 'Kitchen@eatnourisha.com', 
-        name: 'Nourisha',
-      },
-      to: [
-        {
-          email: email,
-        },
-      ],
-      subject: subject,
-      htmlContent: body, 
-    };
-  
-    const headers = {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    };
-    const response = await axios.post(url, load, { headers });
-    return response.data;
+    await emailSender(body, email, subject,)
 
-  
-
-    // await sgMail.send({
-    //   from: {
-    //     name: "Nourisha",
-    //     email: "hello@eatnourisha.com",
-    //   },
-    //   subject,
-    //   to: email,
-    //   html: body,
-    // });
-  
-  };
+}
   
   export async function welcomeEmail2(email: string, payload: any) {
     let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
