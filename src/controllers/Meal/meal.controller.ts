@@ -210,5 +210,15 @@ export class MealController {
     }
   }
 
+  async mostOrderedMeals(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { } = req;
+      const data = await service.mostOrderedMeals();
+      sendResponse(res, 200, data);
+    } catch (error) {
+      sendError(error, next);
+    }
+  }
+
 
 }

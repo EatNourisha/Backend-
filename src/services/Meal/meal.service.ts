@@ -10,6 +10,7 @@ import {
 } from "../../interfaces";
 import {
   customer,
+  lineup,
   meal,
   Meal,
   mealextras,
@@ -18,6 +19,7 @@ import {
   MealPack,
   MealPackAnalysis,
   mealPackAnalysis,
+  order,
   PartyMealRequest,
   partyMealRequest,
 } from "../../models";
@@ -27,6 +29,8 @@ import { AvailableResource, PermissionScope } from "../../valueObjects";
 import { when } from "../../utils/when";
 import { OrderType } from "../../models/mealPack";
 import { mealpaginate } from "../../utils/paginate";
+import mongoose from 'mongoose';
+
 
 // import config from "../../config";
 
@@ -480,6 +484,111 @@ export class MealService {
       totalcount: _meal.length,
       meals: _meal,
     };
+  }
+
+async mostOrderedMealsSingleandBulk(): Promise<any> {
+  try {
+      const orders = await order.find({ status: 'payment_received' });
+
+      const mealCountMap: Record<string, number> = {};
+
+      // Count occurrences of each meal
+      orders.forEach(order => {
+          order?.orderExtras?.forEach((extra: { item: string }) => {
+              const mealId = extra.item;
+              if (mealCountMap[mealId]) {
+                  mealCountMap[mealId] += 1;
+              } else {
+                  mealCountMap[mealId] = 1;
+              }
+          });
+      });
+
+      const sortedMeals = Object.entries(mealCountMap)
+          .map(([mealId, count]) => ({ mealId, count }))
+          .sort((a, b) => b.count - a.count);
+
+      const populatedMeals = await Promise.all(
+          sortedMeals.map(async ({ mealId, count }) => {
+              try {
+                  const meal = await mealPack.findById(new mongoose.Types.ObjectId(mealId));
+                  if (!meal) {
+                      console.warn(`Meal not found for ID: ${mealId}`);
+                  }
+                  return { name: meal?.name || "Unknown", count };
+              } catch (err) {
+                  console.error(`Error fetching meal for ID ${mealId}:`, err);
+                  return { name: "Unknown", count };
+              }
+          })
+      );
+
+      // Return meal names and counts, filtering out "Unknown"
+      return populatedMeals.filter(({ name }) => name !== "Unknown");
+  } catch (error) {
+      console.error('Error fetching most ordered meals:', error);
+      throw new Error('Unable to fetch most ordered meals');
+  }
+}
+
+  async mostOrderedMealsLineup(): Promise<any> {
+    try {
+      const mealLineups = await lineup.find().sort({ createdAt: -1 }).populate('monday.lunch.mealId monday.dinner.mealId tuesday.lunch.mealId tuesday.dinner.mealId wednesday.lunch.mealId wednesday.dinner.mealId thursday.lunch.mealId thursday.dinner.mealId friday.lunch.mealId friday.dinner.mealId saturday.lunch.mealId saturday.dinner.mealId sunday.lunch.mealId sunday.dinner.mealId');
+  
+      if (!mealLineups || mealLineups.length === 0) {
+        return [];
+      }
+  
+      const mealCount: { [key: string]: number } = {};
+  
+      mealLineups.forEach((lineup) => {
+        const days = [
+          lineup?.monday,
+          lineup?.tuesday,
+          lineup?.wednesday,
+          lineup?.thursday,
+          lineup?.friday,
+          lineup?.saturday,
+          lineup?.sunday
+        ];
+  
+        days.forEach((dayData, index) => {
+           ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"][index];
+  
+          if (dayData && typeof dayData === "object") {
+            ["lunch", "dinner"].forEach((mealTime) => {
+              const meal = dayData[mealTime];
+  
+              if (meal && meal.mealId) {
+                // Use the populated mealId name if available
+                const mealIdentifier = meal.mealId.name || meal.mealId;
+                mealCount[mealIdentifier] = (mealCount[mealIdentifier] || 0) + 1;
+              }
+            });
+          }
+        });
+      });
+  
+      const sortedMeals = Object.entries(mealCount)
+        .map(([meal, count]) => ({ meal, count }))
+        .sort((a, b) => b.count - a.count);
+  
+      return sortedMeals;
+    } catch (error) {
+      console.error("Error fetching most ordered meals:", error);
+      throw new Error("Could not fetch most ordered meals");
+    }
+  }
+  
+
+  async mostOrderedMeals(
+    // roles: string[],    
+  ): Promise<any> {
+    // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
+  const SingleandBulkMeal =   await this.mostOrderedMealsSingleandBulk()
+  const LineupMeal = await this.mostOrderedMealsLineup()
+
+  return {SingleandBulkMeal, LineupMeal }
   }
 
 }
