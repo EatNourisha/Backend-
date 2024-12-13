@@ -573,26 +573,6 @@ export class MealLineupService {
     ].filter((proteinId) => proteinId != null );
 
 
-  // for (const mealId of mealIds) {
-  //   mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
-  // }
-  // for (const mealId of Object.keys(mealSelectionCount)) {
-  //   const _mealPack = await mealPack.findById(mealId).exec();
-  //   const selectedQuantity = mealSelectionCount[mealId];
-
-  //   if (_mealPack && _mealPack.available_quantity !== undefined) {
-  //     if (selectedQuantity > _mealPack.available_quantity) {
-  //       throw createError(
-  //         `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
-  //         400
-  //       );
-  //     }
-
-  //     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
-  //     await _mealPack.save();
-  //   }
-  // }
-
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
   }
@@ -1190,37 +1170,6 @@ export class MealLineupService {
     return { totalCount, lineups };
     // return { totalCount, lineups } ?? [];
   }
-
-  // async importPreviousLineup1(customer_id: string, roles: string[]): Promise<MealLineup> {
-  //   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
-  
-  //   const pops = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => ({
-  //     path: day,
-  //     populate: [
-  //       { path: 'breakfast.mealId' },
-  //       { path: 'breakfast.extraId' },
-  //       { path: 'breakfast.proteinId' },
-  //       { path: 'lunch.mealId' },
-  //       { path: 'lunch.extraId' },
-  //       { path: 'lunch.proteinId' },
-  //       { path: 'dinner.mealId' },
-  //       { path: 'dinner.extraId' },
-  //       { path: 'dinner.proteinId' },
-  //     ],
-  //   }));
-  
-  //   // Find the most recently created meal lineup by the customer
-  //   const lastLineup = await lineup
-  //     .findOne({ customer: customer_id })
-  //     .sort({ createdAt: -1 }) 
-  //     .populate(pops)
-  //     .lean<MealLineup>()
-  //     .exec();
-  
-  //   if (!lastLineup) throw createError("Customer has no meal lineups", 404);
-  
-  //   return lastLineup;
-  // }
 
 async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLineup> {
   await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);

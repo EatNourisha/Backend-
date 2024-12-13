@@ -36,5 +36,6 @@ router.put("/duplicate/meal/packs", controller.duplicateMealPacks);
 router.delete("/extras/:id", authGuard, controller.deleteMealExtras);
 router.get("/extras", controller.getMealExtras);
 router.post("/pack/search/phrase", controller.searchMeal);
+router.get("/most-ordered-meal", controller.mostOrderedMeals);
 
 export default router;
