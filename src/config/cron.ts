@@ -303,7 +303,7 @@ const initializeEmails = <T extends Record<string, boolean>>(keys: T): T => {
 cron.schedule(
   "* */1 * * *", 
   async () => {
-    console.log("Order Job...");
+    // console.log("Order Job...");
 
     try {
         const orders = await order.find({}).sort({ createdAt: -1 });
@@ -346,7 +346,7 @@ cron.schedule(
                 });
 
                 customerData.CARTEMAILS = initializeEmails<CartEmails>({
-                  cart0: false,
+                  cart0: customerData.CARTEMAILS.cart0,
                   cart1: false,
                   cart2: false,
                   cart3: false,
@@ -392,7 +392,7 @@ cron.schedule(
 cron.schedule(
     "* */1 * * *", 
     async () => {
-      console.log("Lineup Job...");
+      // console.log("Lineup Job...");
   
       try {
           const lineups = await lineup.find({}).sort({ createdAt: -1 });
@@ -435,7 +435,7 @@ cron.schedule(
                   });
   
                   customerData.CARTEMAILS = initializeEmails<CartEmails>({
-                    cart0: false,
+                    cart0: customerData.CARTEMAILS.cart0,
                     cart1: false,
                     cart2: false,
                     cart3: false,
