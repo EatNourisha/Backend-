@@ -314,7 +314,7 @@ export class BillingService {
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
       promotion_code: promo_code,
-    });
+    }); 
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
