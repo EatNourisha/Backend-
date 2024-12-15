@@ -157,6 +157,7 @@ export class BillingService {
       payment_method: dto?.card_token,
       amount: Math.round(amountToPay * 100),
       currency: "gbp",
+      payment_method_types: ["card", "klarna", "afterpay_clearpay"],
       off_session: !!dto?.card_token,
       receipt_email: cus?.email,
       expand: ["invoice"],
@@ -165,6 +166,20 @@ export class BillingService {
       },
       confirm: !!dto?.card_token,
     });
+
+    // const intent = await this.stripe.paymentIntents.create({
+    //   customer: cus_stripe,
+    //   payment_method: dto?.card_token,
+    //   amount: Math.round(amountToPay * 100),
+    //   currency: "gbp",
+    //   off_session: !!dto?.card_token,
+    //   receipt_email: cus?.email,
+    //   expand: ["invoice"],
+    //   metadata: {
+    //     couponCode:_order?.coupon ?? null
+    //   },
+    //   confirm: !!dto?.card_token,
+    // });
 
     const promo = await promoCode.findOne({code: _order?.coupon}).exec();
 
@@ -272,11 +287,34 @@ export class BillingService {
         },
       ],
       payment_behavior: "default_incomplete",
-      payment_settings: { save_default_payment_method: "on_subscription" },
+      payment_settings: { 
+        save_default_payment_method: "on_subscription",
+        payment_method_types: ["card", "klarna", "afterpay_clearpay"] as any, 
+      },
       expand: ["latest_invoice.payment_intent"],
       cancel_at_period_end,
       promotion_code: promo_code,
     });
+
+    // const sub = await this.stripe.subscriptions.create({
+    //   customer: cus_stripe,
+    //   default_payment_method: dto?.card_token,
+    //   collection_method: "charge_automatically",
+    //   items: [
+    //     {
+    //       price: _plan?.price_id,
+    //       quantity: 1,
+    //     },
+    //   ],
+    //   payment_behavior: "default_incomplete",
+    //   payment_settings: { 
+    //     save_default_payment_method: "on_subscription",
+
+    //    },
+    //   expand: ["latest_invoice.payment_intent"],
+    //   cancel_at_period_end,
+    //   promotion_code: promo_code,
+    // });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;

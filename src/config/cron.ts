@@ -346,7 +346,7 @@ cron.schedule(
                 });
 
                 customerData.CARTEMAILS = initializeEmails<CartEmails>({
-                  cart0: false,
+                  cart0: customerData.CARTEMAILS.cart0,
                   cart1: false,
                   cart2: false,
                   cart3: false,
@@ -435,7 +435,7 @@ cron.schedule(
                   });
   
                   customerData.CARTEMAILS = initializeEmails<CartEmails>({
-                    cart0: false,
+                    cart0: customerData.CARTEMAILS.cart0,
                     cart1: false,
                     cart2: false,
                     cart3: false,
