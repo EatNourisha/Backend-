@@ -276,26 +276,6 @@ export class BillingService {
   
     }
 
-    const sub = await this.stripe.subscriptions.create({
-      customer: cus_stripe,
-      default_payment_method: dto?.card_token,
-      collection_method: "charge_automatically",
-      items: [
-        {
-          price: _plan?.price_id,
-          quantity: 1,
-        },
-      ],
-      payment_behavior: "default_incomplete",
-      payment_settings: { 
-        save_default_payment_method: "on_subscription",
-        payment_method_types: ["card", "klarna", "afterpay_clearpay"] as any, 
-      },
-      expand: ["latest_invoice.payment_intent"],
-      cancel_at_period_end,
-      promotion_code: promo_code,
-    });
-
     // const sub = await this.stripe.subscriptions.create({
     //   customer: cus_stripe,
     //   default_payment_method: dto?.card_token,
@@ -309,12 +289,32 @@ export class BillingService {
     //   payment_behavior: "default_incomplete",
     //   payment_settings: { 
     //     save_default_payment_method: "on_subscription",
-
-    //    },
+    //     payment_method_types: ["card", "klarna", "afterpay_clearpay"] as any, 
+    //   },
     //   expand: ["latest_invoice.payment_intent"],
     //   cancel_at_period_end,
     //   promotion_code: promo_code,
     // });
+
+    const sub = await this.stripe.subscriptions.create({
+      customer: cus_stripe,
+      default_payment_method: dto?.card_token,
+      collection_method: "charge_automatically",
+      items: [
+        {
+          price: _plan?.price_id,
+          quantity: 1,
+        },
+      ],
+      payment_behavior: "default_incomplete",
+      payment_settings: { 
+        save_default_payment_method: "on_subscription",
+
+       },
+      expand: ["latest_invoice.payment_intent"],
+      cancel_at_period_end,
+      promotion_code: promo_code,
+    });
 
     const invoice = sub?.latest_invoice as Stripe.Invoice;
     const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
