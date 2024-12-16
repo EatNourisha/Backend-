@@ -196,57 +196,57 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         } 
 
 
-        if(trans?.itemRefPath === 'Subscription'){
-          if (trans?.applied_promo !== null) {
-            const promo = await promoCode.findById(trans?.applied_promo).exec();
+      //   if(trans?.itemRefPath === 'Subscription'){
+      //     if (trans?.applied_promo !== null) {
+      //       const promo = await promoCode.findById(trans?.applied_promo).exec();
         
-            if (promo) {
-            const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-            await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
-          }
-        }
+      //       if (promo) {
+      //       const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+      //       await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
+      //     }
+      //   }
         
-        const _ord = await order.findById(trans.item).exec()
-        if(_ord){
-          _ord.status = OrderStatus.PAID
-          await _ord.save()
-        }
+      //   const _ord = await order.findById(trans.item).exec()
+      //   if(_ord){
+      //     _ord.status = OrderStatus.PAID
+      //     await _ord.save()
+      //   }
         
-        const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
-        const lineupExists = await lineup.exists({ customer: cus?._id });
+      //   const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+      //   const lineupExists = await lineup.exists({ customer: cus?._id });
         
-        let returning = false
+      //   let returning = false
         
-        if (orderExists || lineupExists) {
-          returning = true
-        }
+      //   if (orderExists || lineupExists) {
+      //     returning = true
+      //   }
         
-         await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
-        
-        
-        await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
+      //    await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
         
         
-        if (trans?.applied_promo !== null) {
-         const promo = await promoCode.findById(trans?.applied_promo).exec();
-        
-        if (promo) {
-        await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
-        }
-        }
+      //   await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
         
         
-          if(cus && cus?.newUser === true){
-            cus.activeLineup = false;
-            cus.newUser = false;
-            cus.emailUpdated = false;
-            await cus.save()
+      //   if (trans?.applied_promo !== null) {
+      //    const promo = await promoCode.findById(trans?.applied_promo).exec();
         
-          }
+      //   if (promo) {
+      //   await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
+      //   }
+      //   }
+        
+        
+      //     if(cus && cus?.newUser === true){
+      //       cus.activeLineup = false;
+      //       cus.newUser = false;
+      //       cus.emailUpdated = false;
+      //       await cus.save()
+        
+      //     }
 
-      await BillingHooks.customerSubscriptionUpdated(event);
+      // await BillingHooks.customerSubscriptionUpdated(event);
         
-        }
+      //   }
     
         await axios
           .post("https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/")
@@ -306,121 +306,123 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       await BillingHooks.customerSubscriptionCreated(event);
       break;
     }
-  //   case "customer.subscription.updated": {
-  //     const data = event.data.object as any;
-  //     const customerId = data?.customer;
-  //     const cus = await customer.findOne({ stripe_id: customerId });
 
-  //     const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
+    case "customer.subscription.updated": {
+      const data = event.data.object as any;
+      const customerId = data?.customer;
+      const cus = await customer.findOne({ stripe_id: customerId });
 
-  //     if (trans?.applied_promo !== null) {
-  //       const promo = await promoCode.findById(trans?.applied_promo).exec();
+      const trans = await transaction.findOne({subscription_reference: data?.id, stripe_customer_id: data?.customer}).lean<Transaction>().exec();
 
-  //       if (promo) {
-  //       const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
-  //       await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
-  //     }
-  //   }
+      if (trans?.applied_promo !== null) {
+        const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+        if (promo) {
+        const updatedRedemptions = Math.max((promo.max_redemptions || 0) - 1, 0);
+        await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
+      }
+    }
     
-  //   const _ord = await order.findById(trans.item).exec()
-  //   if(_ord){
-  //     _ord.status = OrderStatus.PAID
-  //     await _ord.save()
+    const _ord = await order.findById(trans.item).exec()
+    if(_ord){
+      _ord.status = OrderStatus.PAID
+      await _ord.save()
+    }
+
+    const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
+    const lineupExists = await lineup.exists({ customer: cus?._id });
+
+    let returning = false
+
+    if (orderExists || lineupExists) {
+      returning = true
+    }
+
+     await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
+
+
+   await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
+
+
+   if (trans?.applied_promo !== null) {
+     const promo = await promoCode.findById(trans?.applied_promo).exec();
+
+   if (promo) {
+   await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
+   }
+   }
+  //  if (trans.itemRefPath === 'Subscription') {
+  //   if (cus) {
+  //     cus.activeLineup = false;
+
+
+  //     // Initialize or update POSTSUBEEMAILS with default values (all false)
+  //     cus.POSTSUBEEMAILS = Object.assign({
+  //       postsub0: false, postsub1: false, postsub2: false, postsub3: false,
+  //       postsub4: false, postsub5: false, postsub6: false,
+  //       postsub7: false, postsub8: false, postsub9: false,
+  //       postsub10: false, postsub11: false,
+  //       postsub12: false, postsub13: false
+  //     }, cus.POSTSUBEEMAILS || {});
+
+  //     // Initialize or update CARTEMAILS with default values (all false)
+  //     cus.CARTEMAILS = Object.assign({
+  //       cart1: false, cart2: false, cart3: false,
+  //       cart4: false, cart5: false, cart6: false,
+  //       cart7: false, cart8: false, cart9: false,
+  //       cart10: false, cart11: false
+  //     }, cus.CARTEMAILS || {});
+
+  //     // Initialize or update REENGAGEEMAILS with default values (all false)
+  //     cus.REENGAGEEMAILS = Object.assign({
+  //       reengage1: false, reengage2: false, reengage3: false,
+  //       reengage4: false, reengage5: false, reengage6: false
+  //     }, cus.REENGAGEEMAILS || {});
+
+  //      cus.newUser = false  
+  //     await cus.save();
   //   }
 
-  //   const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
-  //   const lineupExists = await lineup.exists({ customer: cus?._id });
-
-  //   let returning = false
-
-  //   if (orderExists || lineupExists) {
-  //     returning = true
+  //   if(cus){
+  //     cus.newUser = false
+  //     await cus?.save()
   //   }
 
-  //    await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
-
-
-  //  await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
-
-
-  //  if (trans?.applied_promo !== null) {
-  //    const promo = await promoCode.findById(trans?.applied_promo).exec();
-
-  //  if (promo) {
-  //  await promoCode.updateOne({ $push: { redeemed_by: cus?._id }}).exec();
-  //  }
-  //  }
-  // //  if (trans.itemRefPath === 'Subscription') {
-  // //   if (cus) {
-  // //     cus.activeLineup = false;
-
-
-  // //     // Initialize or update POSTSUBEEMAILS with default values (all false)
-  // //     cus.POSTSUBEEMAILS = Object.assign({
-  // //       postsub0: false, postsub1: false, postsub2: false, postsub3: false,
-  // //       postsub4: false, postsub5: false, postsub6: false,
-  // //       postsub7: false, postsub8: false, postsub9: false,
-  // //       postsub10: false, postsub11: false,
-  // //       postsub12: false, postsub13: false
-  // //     }, cus.POSTSUBEEMAILS || {});
-
-  // //     // Initialize or update CARTEMAILS with default values (all false)
-  // //     cus.CARTEMAILS = Object.assign({
-  // //       cart1: false, cart2: false, cart3: false,
-  // //       cart4: false, cart5: false, cart6: false,
-  // //       cart7: false, cart8: false, cart9: false,
-  // //       cart10: false, cart11: false
-  // //     }, cus.CARTEMAILS || {});
-
-  // //     // Initialize or update REENGAGEEMAILS with default values (all false)
-  // //     cus.REENGAGEEMAILS = Object.assign({
-  // //       reengage1: false, reengage2: false, reengage3: false,
-  // //       reengage4: false, reengage5: false, reengage6: false
-  // //     }, cus.REENGAGEEMAILS || {});
-
-  // //      cus.newUser = false  
-  // //     await cus.save();
-  // //   }
-
-  // //   if(cus){
-  // //     cus.newUser = false
-  // //     await cus?.save()
-  // //   }
-
-
-  // // }
-
-
-  // if(cus && cus?.newUser === true){
-  //   cus.activeLineup = false;
-  //   cus.newUser = false;
-  //   cus.emailUpdated = false;
-  //   await cus.save()
 
   // }
 
+
+  if(cus && cus?.newUser === true){
+    cus.activeLineup = false;
+    cus.newUser = false;
+    cus.emailUpdated = false;
+    await cus.save()
+
+  }
+
       
-  //   axios.post('https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/')
-  //   .then(response => {
-  //     console.log('ZAPIER EVENT FOR SUB', response.data);
-  //   })
-  //   .catch(error => {
-  //     console.log('There was an error making the request!', error);
-  //   });
+    axios.post('https://hooks.zapier.com/hooks/catch/13525156/2igg9lq/')
+    .then(response => {
+      console.log('ZAPIER EVENT FOR SUB', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
 
-  //   axios.post('https://hooks.zapier.com/hooks/catch/13525156/2iq701n/')
-  //   .then(response => {
-  //     console.log('ZAPIER EVENT FOR SUB22', response.data);
-  //   })
-  //   .catch(error => {
-  //     console.log('There was an error making the request!', error);
-  //   });
+    axios.post('https://hooks.zapier.com/hooks/catch/13525156/2iq701n/')
+    .then(response => {
+      console.log('ZAPIER EVENT FOR SUB22', response.data);
+    })
+    .catch(error => {
+      console.log('There was an error making the request!', error);
+    });
 
 
 
-  //     await BillingHooks.customerSubscriptionUpdated(event);
-  //     break;
-  //   }
+      await BillingHooks.customerSubscriptionUpdated(event);
+      break;
+    }
+
     case "customer.subscription.deleted": {
       await BillingHooks.customerSubscriptionDeleted(event);
       break;

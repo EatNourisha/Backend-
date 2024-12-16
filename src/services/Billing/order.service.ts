@@ -352,7 +352,8 @@ export class OrderService {
       orderExtras: _extras,
       MealAndExtras: _extra,
       MealAndExtrass: _extrass,
-    });
+      platform: dto?.platform
+      });
 
     const { order: _order, items } = result;
     await order
