@@ -198,148 +198,103 @@ export class BillingService {
     return { client_secret: intent?.client_secret };
   }
 
-  // This method creates an intent to collect customer's subscription payment details and then store the payment
-  // method so it can be reused later.
-
+    
   async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
-    // Validate required fields
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
-  
-    // Fetch customer and validate
+
     const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
     if (!cus) throw createError("Customer does not exist", 404);
-  
-    // Fetch subscription plan and validate
-    const _plan = await plan.findById(dto.plan_id).lean<Plan>().exec();
+
+    const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
-  
-    // Determine cancellation preferences
-    dto.one_off = dto.one_off ?? true;
-    const cancel_at_period_end = !!dto.one_off || !cus.preference?.auto_renew;
-  
-    // Handle promo codes
-    let procode: string | undefined = dto.promo_code?.toLowerCase();
-  
-    if (procode === 'signupsave5' && cus.newUser === false) {
-      throw createError("Not eligible to use this coupon", 400);
+
+    // dto.one_off = dto?.one_off ?? true;
+    // const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
+
+    let procode: string | undefined = dto?.promo_code?.toLowerCase()
+
+    if (procode === 'signupsave5' && cus?.newUser === false) {
+      throw createError('Not eligible to use this coupon');
     }
-  
-    procode = cus.newUser ? 'signupsave5' : (dto.promo_code?.toLowerCase() === 'signupsave5' ? undefined : dto.promo_code?.toLowerCase());
-  
-    // Fetch promo details
+    
+    if (cus?.newUser) {
+      procode = 'signupsave5';
+    } else {
+      procode = dto.promo_code?.toLowerCase() === 'signupsave5' ? '' : dto.promo_code?.toLowerCase();
+    }
+    
+
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
-    let promo_code: string | undefined;
-  
-    if (promo && promo.active && !promo.no_discount && promo.max_redemptions > 0) {
-      promo_code = promo.stripe_id;
+    let promo_code: string | undefined = undefined;
+    
+    if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
+        promo_code = promo?.stripe_id;
     }
-  
-    if (promo?.code === 'loyaltyreward') {
+
+    if (promo?.code === 'loyaltyreward') {    
       const customerData = await customer.findById(customer_id);
-      const now = new Date();
-      const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
-  
-      if (_plan.subscription_interval === 'month') {
-        throw createError("Coupon is only valid for a weekly plan subscription", 400);
-      }
-  
-      if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
-        throw createError("Not your fifth order in the last 30 days", 400);
-      }
+    const now = new Date();
+    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+
+    if(_plan.subscription_interval === 'month'){
+      throw createError('Coupon is only valid for a weekly plan subscription')
     }
-  
-    // Handle Stripe customer ID
-    let cus_stripe = cus?.stripe_id;
-    const stripeCustomer = await this.stripe.customers.retrieve(cus_stripe);
+    
+    if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
+        throw createError('Not your fifth time order in the last 30days')
+    }
+  }
+
+
+    let cus_stripe = cus?.stripe_id
+    const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
     if (!stripeCustomer || stripeCustomer.deleted) {
-      const cons = await this.attachStripeId(cus.email, `${cus.first_name} ${cus.last_name}`);
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
       cus_stripe = cons.id;
+    
+      await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+      .lean<Customer>()
+      .exec();
   
-      await customer.findByIdAndUpdate(
-        cus._id,
-        { stripe_id: cons.id, last_stripe_check: new Date() },
-        { new: true }
-      ).lean<Customer>().exec();
     }
-  
-    // Step 1: Create PaymentIntent without confirmation
+
+
     const intent = await this.stripe.paymentIntents.create({
       customer: cus_stripe,
+      payment_method: dto?.card_token,
       amount: Math.round(_plan.amount * 100),
       currency: "gbp",
       payment_method_types: ["card", "klarna", "afterpay_clearpay"],
-      receipt_email: cus.email,
+      off_session: !!dto?.card_token,
+      receipt_email: cus?.email,
+      expand: ["invoice"],
       metadata: {
-        couponCode: promo_code ?? null,
+        couponCode: promo_code ?? null
       },
+      confirm: !!dto?.card_token,
     });
-  
-    // Step 2: Attach a payment method (optional, if not already attached)
-    const paymentMethods = await this.stripe.paymentMethods.list({
-      customer: cus_stripe,
-      type: "card",
-    });
-  
-    const paymentMethodId = paymentMethods.data[0]?.id || intent.payment_method as string | null;
-    if (!paymentMethodId) {
-      throw new Error("No payment method available for the customer.");
-    }
-  
-    await this.stripe.paymentMethods.attach(paymentMethodId, {
-      customer: cus_stripe,
-    });
-  
-    // Step 3: Confirm the PaymentIntent explicitly
-    const confirmedIntent = await this.stripe.paymentIntents.confirm(intent.id, {
-      payment_method: paymentMethodId,
-    });
-  
-    console.log(confirmedIntent)
 
-    // Step 4: Create the Subscription
-    const sub = await this.stripe.subscriptions.create({
-      customer: cus_stripe,
-      default_payment_method: paymentMethodId,
-      collection_method: "charge_automatically",
-      items: [{ price: _plan.price_id, quantity: 1 }],
-      payment_behavior: "default_incomplete",
-      payment_settings: { save_default_payment_method: "on_subscription" },
-      expand: ["latest_invoice.payment_intent"],
-      cancel_at_period_end,
-      promotion_code: promo_code ?? undefined,
-    });
-  
-    // Handle subscription and payment intent details
-    const invoice = sub.latest_invoice as Stripe.Invoice;
-    const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
-  
-    // Record transaction
-    await transaction.create({
-      itemRefPath: "Subscription",
-      currency: sub.currency,
-      subscription_reference: sub.id,
-      customer: cus._id,
-      amount: (payment_intent?.amount ?? 0) / 100,
-      reference: invoice.number,
-      reason: TransactionReason.SUBSCRIPTION,
-      stripe_customer_id: sub.customer,
-      applied_promo: promo?._id,
-    });
-  
-    // Update subscription details
-    await subscription.findOneAndUpdate(
-      { customer: customer_id },
-      { subscription_type: _plan.subscription_interval, continent: _plan.continent }
-    ).lean<Subscription>().exec();
-  
-    return {
-      client_secret: payment_intent.client_secret,
-      subscription_id: sub.id,
-      link: sub.metadata,
-    };
+
+    if (!!intent.id) {
+      await transaction.create({
+        itemRefPath: "Subscription",
+        currency: intent.currency,
+        order_reference: intent?.id,
+        customer: cus?._id,
+        amount: (intent.amount ?? 0) / 100,
+        reference: intent?.id,
+        reason: TransactionReason.SUBSCRIPTION,
+        stripe_customer_id: cus?.stripe_id,
+        applied_promo: promo?._id
+      });
+    }
+
+    // console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
+
+    return { client_secret: intent?.client_secret };
   }
-    
+
   // async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
   //   validateFields(dto, ["plan_id"]);
   //   await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
@@ -487,6 +442,22 @@ export class BillingHooks {
     console.log("Payment Intent Created", data);
   }
 
+  // static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
+  //   const data = event.data.object as any;
+  //   console.log("Payment Intent Succeeded", data);
+  //   try {
+  //     switch (tx?.reason) {
+  //       case "order":
+  //         await OrderService.markOrderAsPaid(tx);
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   } catch (error) {
+  //     consola.error(error?.message);
+  //   }
+  // }
+
   static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Payment Intent Succeeded", data);
@@ -495,6 +466,10 @@ export class BillingHooks {
         case "order":
           await OrderService.markOrderAsPaid(tx);
           break;
+        case "subscription":
+          await OrderService.markOrderAsPaid(tx);
+           await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
+          break;
         default:
           break;
       }
@@ -502,6 +477,7 @@ export class BillingHooks {
       consola.error(error?.message);
     }
   }
+
 
   static async paymentMethodAttached(event: Stripe.Event) {
     const data = event.data.object as any;
