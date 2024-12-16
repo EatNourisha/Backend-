@@ -353,7 +353,8 @@ async getClosedOrdersHistory(
       isReturningCustomer: returning,
       orderExtras: _extras,
       MealAndExtras: _extra,
-      MealAndExtrass: _extrass
+      MealAndExtrass: _extrass,
+      platform: dto?.platform
       });
 
     const { order: _order, items } = result;
