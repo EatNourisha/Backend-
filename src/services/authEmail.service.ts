@@ -1,6 +1,71 @@
+import sgMail from "@sendgrid/mail";
+import config from '../config/index';
+// import axios from "axios";
 // import { mailJetSendMail } from "../config/mailjet";
-// import sgMail from "@sendgrid/mail";
-import axios from "axios";
+
+export async function emailSender(body: string, email:string[], subject: string){
+  // await mailJetSendMail(body, `${subject}`, [`${email}`]);
+  // await sendSMTPEmail(email, subject, 'hi', body)
+  sgMail.setApiKey(config.SENDGRID_KEY);
+
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+    subject,
+    to: email,
+    html: body,
+  });
+
+  console.log(`${subject} email sent to ${email}`)
+  // const request = mailjetClient.post('send', { version: 'v3.1' }).request({
+  //   Messages: [
+  //     {
+  //       From: {
+  //         Email: 'hello@eatnourisha.com',
+  //         Name: 'Nourisha',
+  //       },
+  //       To: email.map((email) => ({
+  //         Email: email,
+  //       })),
+  //       Subject: subject,
+  //       HTMLPart: body,
+  //     },
+  //   ],
+  // });
+
+  // // const result = await request;
+  // // console.log(`result: ${JSON.stringify(result.body)}`);
+  // await request;
+
+
+  //   const url = "https://api.brevo.com/v3/smtp/email";
+  // const apiKey = process.env.BREVO_KEY;
+  // const load = {
+  //   sender: {
+  //     email: "Kitchen@eatnourisha.com",
+  //     name: "Nourisha",
+  //   },
+  //   to: [
+  //     {
+  //       email: email,
+  //     },
+  //   ],
+  //   subject: subject,
+  //   htmlContent: body,
+  // };
+
+  // const headers = {
+  //   "Content-Type": "application/json",
+  //   "api-key": apiKey,
+  // };
+  // const response = await axios.post(url, load, { headers });
+  // return response.data;
+
+}
+
 
 export async function sendMobilResetEmail(email: string, payload: any) {
   const subject = `🥺Reset Password`;
@@ -1090,44 +1155,8 @@ export async function sendMobilResetEmail(email: string, payload: any) {
 </body>
 </html>
 `;
-  // await mailJetSendMail(
-  //   body,
-  //   `${subject}`,
-  //   [`${email}`]
-  // );
-
-  // await sgMail.send({
-  //   from: {
-  //     name: "Nourisha",
-  //     email: "hello@eatnourisha.com",
-  //   },
-  //   subject: subject,
-  //   to: email,
-  //   html: body,
-  // });
-      const url = 'https://api.brevo.com/v3/smtp/email';
-    const apiKey = process.env.BREVO_KEY;  
-    const load = {
-      sender: {
-        email: 'Kitchen@eatnourisha.com', 
-        name: 'Nourisha',
-      },
-      to: [
-        {
-          email: email,
-        },
-      ],
-      subject: subject,
-      htmlContent: body, 
-    };
+await emailSender(body, [`${email}`], subject,)
   
-    const headers = {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    };
-    const response = await axios.post(url, load, { headers });
-    return response.data;
-
 
 };
 
@@ -2387,44 +2416,7 @@ export async function sendWelcomeEmail(email: string, payload: any) {
 
 </html>
 `;
-  // await mailJetSendMail(
-  //   body,
-  //   `${subject}`,
-  //   [`${email}`]
-  // );
-
-  // await sgMail.send({
-  //   from: {
-  //     name: "Nourisha",
-  //     email: "hello@eatnourisha.com",
-  //   },
-  //   subject: subject,
-  //   to: email,
-  //   html: body,
-  // });
-      const url = 'https://api.brevo.com/v3/smtp/email';
-    const apiKey = process.env.BREVO_KEY;  
-    const load = {
-      sender: {
-        email: 'Kitchen@eatnourisha.com', 
-        name: 'Nourisha',
-      },
-      to: [
-        {
-          email: email,
-        },
-      ],
-      subject: subject,
-      htmlContent: body, 
-    };
-  
-    const headers = {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    };
-    const response = await axios.post(url, load, { headers });
-    return response.data;
-
+await emailSender(body, [`${email}`], subject,)  
 
 };
 
@@ -3583,45 +3575,7 @@ export async function sendOrderPlacedEmail(email: string, payload: any) {
   </body>
 </html>
 `;
-  // await mailJetSendMail(
-  //   body,
-  //   `${subject}`,
-  //   [`${email}`]
-  // );
-
-  const url = 'https://api.brevo.com/v3/smtp/email';
-  const apiKey = process.env.BREVO_KEY;  
-  const load = {
-    sender: {
-      email: 'Kitchen@eatnourisha.com', 
-      name: 'Nourisha',
-    },
-    to: [
-      {
-        email: email,
-      },
-    ],
-    subject: subject,
-    htmlContent: body, 
-  };
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'api-key': apiKey,
-  };
-  const response = await axios.post(url, load, { headers });
-  return response.data;
-
-
-  // await sgMail.send({
-  //   from: {
-  //     name: "Nourisha",
-  //     email: "hello@eatnourisha.com",
-  //   },
-  //   subject: subject,
-  //   to: email,
-  //   html: body,
-  // });
+await emailSender(body, [`${email}`], subject,)
 
 
 };
