@@ -200,23 +200,12 @@ cron.schedule('*/30 * * * *', async () => {
 
 
 cron.schedule('* */1 * * *', async () => {
-    // console.log("#########777777 New User Job runs every 1 min");
-
     try {
-        const cus = await customer.find({newUser: true}).exec();
+        const subs = await subscription.find({status: 'active', end_date: {$lt: new Date()}}).exec();
 
-        await Promise.all(cus.map(async (c: any) => {
-        const orderExists = await order.exists({ customer: c._id, status: "payment_received"});
-        const lineupExists = await lineup.exists({ customer: c._id });
-
-            let returning = true;
-
-            if (orderExists || lineupExists) {
-            returning = false;
-            }
-            c.newUser = returning
-           await c.save()
-
+        await Promise.all(subs.map(async (sub: any) => {
+         sub.status = 'inactive'
+         await sub.save()
 
         }));
     } catch (error) {
@@ -374,7 +363,7 @@ cron.schedule(
               }
             }
           } catch (err) {
-            console.error(`Error processing order ID ${orde._id}:`, err.message);
+            // console.error(`Error processing order ID ${orde._id}:`, err.message);
           }
         })
       );
@@ -463,7 +452,7 @@ cron.schedule(
                 }
               }
             } catch (err) {
-              console.error(`Error processing order ID ${line._id}:`, err.message);
+              // console.error(`Error processing order ID ${line._id}:`, err.message);
             }
           })
         );
