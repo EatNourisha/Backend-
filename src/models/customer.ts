@@ -345,8 +345,8 @@ export class Customer extends BaseEntity {
   @prop({default: 'Newbie'})
   level: string;
 
-  @prop({default: false})
-  newUser: boolean;
+  @prop()
+  newUser?: boolean;
 
   @prop()
   activeLineup: boolean;
