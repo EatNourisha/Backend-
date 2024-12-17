@@ -40,9 +40,6 @@ export class BillingController {
     try {
       const { body, customer } = req;
       const data = await service.initializeSubscription(customer.sub, body, customer.roles);
-      //I added this now (Hezekiah)
-      // await EmailService.sendEmail("📧 Meal order recieved", customer?.email, Template.ORDERCREATED, customer);
-      //I added this (hezekiah)
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
