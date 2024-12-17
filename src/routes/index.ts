@@ -34,7 +34,7 @@ import { sendResponse } from "../utils";
 import config from "../config";
 import { BillingHooks } from "../services";
 // import { authGuard } from "../middlewares";
-import { Customer, Transaction, customer, giftpurchase, transaction, promoCode, lineup, order, subscription } from "../models";
+import { Customer, Transaction, customer, giftpurchase, transaction, promoCode, lineup } from "../models";
 // import { Customer, Transaction, customer, giftpurchase, transaction, GiftPurchase, promoCode, lineup, order, subscription } from "../models";
 import { TransactionStatus } from "../models/transaction";
 
@@ -43,7 +43,6 @@ import bodyParser from "body-parser";
 import { GiftStatus } from "../models/giftPurchase";
 import {sendGiftBought, sendGiftRecipient, sendGiftSent}  from "../services/giftCardEmail.service";
 import axios from "axios";
-import { OrderStatus } from "../models/order";
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" }); 
 
 const routes = Router();
@@ -189,11 +188,11 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             .exec();
         }
         
-        if(cus && cus?.newUser === true){
-          cus.newUser = false;
-          cus.emailUpdated = false;
-          await cus.save()
-        } 
+        // if(cus && cus?.newUser === true){
+        //   cus.newUser = false;
+        //   cus.emailUpdated = false;
+        //   await cus.save()
+        // } 
 
 
         if(trans?.itemRefPath === 'Subscription'){
@@ -205,27 +204,8 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
             await promoCode.updateOne({ _id: promo?._id },{ $set: { max_redemptions: updatedRedemptions }, $push: { redeemed_by: cus?._id }}).exec();
           }
         }
-        
-        const _ord = await order.findById(trans.item).exec()
-        if(_ord){
-          _ord.status = OrderStatus.PAID
-          await _ord.save()
-        }
-        
-        const orderExists = await order.exists({ customer: cus?._id, status: 'payment_received', delivery_date: {$lte: new Date()}});
-        const lineupExists = await lineup.exists({ customer: cus?._id });
-        
-        let returning = false
-        
-        if (orderExists || lineupExists) {
-          returning = true
-        }
-        
-         await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});
-        
-        
-        await subscription.findOneAndUpdate({customer: cus?._id}, {returning_client: returning, used_sub: false})
-        
+                        
+         await transaction.findOneAndUpdate({subscription_reference: data?.id, stripe_customer_id: data?.customer}, {status: TransactionStatus.SUCCESSFUL});        
         
         if (trans?.applied_promo !== null) {
          const promo = await promoCode.findById(trans?.applied_promo).exec();
@@ -235,15 +215,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
         }
         }
         
-        
-          if(cus && cus?.newUser === true){
-            cus.activeLineup = false;
-            cus.newUser = false;
-            cus.emailUpdated = false;
-            await cus.save()
-        
-          }
-
       await BillingHooks.customerSubscriptionUpdated(event);
         
         }
@@ -291,14 +262,6 @@ routes.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
       const data = event.data.object as any;
       const customerId = data?.customer;
       const cus = await customer.findOne({ stripe_id: customerId });
-      // await transaction
-      //   .findOneAndUpdate(
-      //     { subscription_reference: data?.id, stripe_customer_id: data?.customer },
-      //     { status: TransactionStatus.SUCCESSFUL }
-      //   )
-      //   .lean<Transaction>()
-      //   .exec();
-
       await customer.findOneAndUpdate({ _id: cus?._id }, { lineup: null }).lean<Customer>().exec();
 
       await lineup.updateMany({ customer: cus?._id , week: 1 },{ $set: { status: 'deactivated' } }, { multi: true }).exec();

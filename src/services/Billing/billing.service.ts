@@ -14,7 +14,8 @@ import {
   referral,
   subscription,
   transaction,
-  promoCode
+  promoCode,
+  lineup
 } from "../../models";
 import { RoleService } from "../role.service";
 import { createError, epochToCurrentTime, validateFields } from "../../utils";
@@ -114,38 +115,38 @@ export class BillingService {
     if (_order?.total > 100 && cus?._id) {
       const referrals = await referral.findOne({ invitee: cus._id }).exec();
       if (referrals) {
-          await referrals.updateOne({ is_subscribed: true });
-            const isCustomerReferred = await earnings.exists({ refs: cus._id });
-          if (!isCustomerReferred) {
-              const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
-              if (inviterEarning) {
-                  inviterEarning.balance += 10;
-                  inviterEarning.refs.push(cus._id);
-                  await inviterEarning.save();
-              }
+        await referrals.updateOne({ is_subscribed: true });
+        const isCustomerReferred = await earnings.exists({ refs: cus._id });
+        if (!isCustomerReferred) {
+          const inviterEarning = await earnings.findOne({ customer: referrals.inviter }).exec();
+          if (inviterEarning) {
+            inviterEarning.balance += 10;
+            inviterEarning.refs.push(cus._id);
+            await inviterEarning.save();
           }
+        }
       }
-  }
+    }
 
-  if ((_order?.actual_discounted_amount ?? 0) >= 0) {
-    amountToPay -= _order?.actual_discounted_amount ?? 0;
-  }
+    if ((_order?.actual_discounted_amount ?? 0) >= 0) {
+      amountToPay -= _order?.actual_discounted_amount ?? 0;
+    }
 
-  if(_order?.weekend_delivery === true && _order?.delivery_period === 'weekend' ){
-    amountToPay += 8
-  }
+    if (_order?.weekend_delivery === true && _order?.delivery_period === "weekend") {
+      amountToPay += 8;
+    }
 
-  let cus_stripe = cus?.stripe_id
-  const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
-  if (!stripeCustomer || stripeCustomer.deleted) {
-    const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
-    cus_stripe = cons.id;
-  
-    await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
-    .lean<Customer>()
-    .exec();
+    let cus_stripe = cus?.stripe_id;
+    const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
+    if (!stripeCustomer || stripeCustomer.deleted) {
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(" "));
+      cus_stripe = cons.id;
 
-  }
+      await customer
+        .findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+        .lean<Customer>()
+        .exec();
+    }
 
     const intent = await this.stripe.paymentIntents.create({
       customer: cus_stripe,
@@ -157,14 +158,12 @@ export class BillingService {
       receipt_email: cus?.email,
       expand: ["invoice"],
       metadata: {
-        couponCode:_order?.coupon ?? null
+        couponCode: _order?.coupon ?? null,
       },
       confirm: !!dto?.card_token,
     });
 
-
-    const promo = await promoCode.findOne({code: _order?.coupon}).exec();
-
+    const promo = await promoCode.findOne({ code: _order?.coupon }).exec();
 
     if (!!intent.id) {
       await transaction.create({
@@ -181,19 +180,17 @@ export class BillingService {
       });
     }
 
-    if(_order && _order.weekend_delivery === true){
-      _order.delivery_fee =  _order.delivery_fee + 8
-      _order.total =  _order.total + 8
-      await _order.save()
-      }
-
+    if (_order && _order.weekend_delivery === true) {
+      _order.delivery_fee = _order.delivery_fee + 8;
+      _order.total = _order.total + 8;
+      await _order.save();
+    }
 
     // console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
 
     return { client_secret: intent?.client_secret };
   }
 
-    
   async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
@@ -204,56 +201,56 @@ export class BillingService {
     const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan does not exist", 404);
 
-    // dto.one_off = dto?.one_off ?? true;
-    // const cancel_at_period_end = !!dto?.one_off || !cus?.preference?.auto_renew;
+    let procode: string | undefined = dto?.promo_code?.toLowerCase();
 
-    let procode: string | undefined = dto?.promo_code?.toLowerCase()
-
-    if (procode === 'signupsave5' && cus?.newUser === false) {
-      throw createError('Not eligible to use this coupon');
+    if (procode === "signupsave5" && cus?.newUser === false) {
+      throw createError("Not eligible to use this coupon");
     }
-    
+
     if (cus?.newUser) {
-      procode = 'signupsave5';
+      procode = "signupsave5";
     } else {
-      procode = dto.promo_code?.toLowerCase() === 'signupsave5' ? '' : dto.promo_code?.toLowerCase();
+      procode = dto.promo_code?.toLowerCase() === "signupsave5" ? "" : dto.promo_code?.toLowerCase();
     }
-    
 
     const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
     let promo_code: string | undefined = undefined;
-    
+
     if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
-        promo_code = promo?.stripe_id;
+      promo_code = promo?.stripe_id;
     }
 
-    if (promo?.code === 'loyaltyreward') {    
+    if (promo?.code === "loyaltyreward") {
       const customerData = await customer.findById(customer_id);
-    const now = new Date();
-    const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+      const now = new Date();
+      const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
 
-    if(_plan.subscription_interval === 'month'){
-      throw createError('Coupon is only valid for a weekly plan subscription')
+      if (_plan.subscription_interval === "month") {
+        throw createError("Coupon is only valid for a weekly plan subscription");
+      }
+
+      if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
+        throw createError("Not your fifth time order in the last 30days");
+      }
     }
-    
-    if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
-        throw createError('Not your fifth time order in the last 30days')
-    }
-  }
 
-
-    let cus_stripe = cus?.stripe_id
+    let cus_stripe = cus?.stripe_id;
     const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
     if (!stripeCustomer || stripeCustomer.deleted) {
-      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(" "));
       cus_stripe = cons.id;
-    
-      await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
-      .lean<Customer>()
-      .exec();
-  
+
+      await customer
+        .findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+        .lean<Customer>()
+        .exec();
     }
 
+    // let amountToPay = _plan.amount
+
+    // if(promo){
+    //   amountToPay
+    // }
 
     const intent = await this.stripe.paymentIntents.create({
       customer: cus_stripe,
@@ -269,7 +266,6 @@ export class BillingService {
       },
       confirm: !!dto?.card_token,
     });
-
 
     if (!!intent.id) {
       await transaction.create({
@@ -311,22 +307,21 @@ export class BillingService {
   //   if (procode === 'signupsave5' && cus?.newUser === false) {
   //     throw createError('Not eligible to use this coupon');
   //   }
-    
+
   //   if (cus?.newUser) {
   //     procode = 'signupsave5';
   //   } else {
   //     procode = dto.promo_code?.toLowerCase() === 'signupsave5' ? '' : dto.promo_code?.toLowerCase();
   //   }
-    
 
   //   const promo = await promoCode.findOne({ code: procode }).lean<PromoCode>().exec();
   //   let promo_code: string | undefined = undefined;
-    
+
   //   if (promo && promo?.active === true && !promo.no_discount && promo?.max_redemptions > 0) {
   //       promo_code = promo?.stripe_id;
   //   }
 
-  //   if (promo?.code === 'loyaltyreward') {    
+  //   if (promo?.code === 'loyaltyreward') {
   //     const customerData = await customer.findById(customer_id);
   //   const now = new Date();
   //   const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
@@ -334,25 +329,23 @@ export class BillingService {
   //   if(_plan.subscription_interval === 'month'){
   //     throw createError('Coupon is only valid for a weekly plan subscription')
   //   }
-    
+
   //   if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
   //       throw createError('Not your fifth time order in the last 30days')
   //   }
   // }
-
 
   //   let cus_stripe = cus?.stripe_id
   //   const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
   //   if (!stripeCustomer || stripeCustomer.deleted) {
   //     const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(' '));
   //     cus_stripe = cons.id;
-    
+
   //     await customer.findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
   //     .lean<Customer>()
   //     .exec();
-  
-  //   }
 
+  //   }
 
   //   const sub = await this.stripe.subscriptions.create({
   //     customer: cus_stripe,
@@ -365,14 +358,14 @@ export class BillingService {
   //       },
   //     ],
   //     payment_behavior: "default_incomplete",
-  //     payment_settings: { 
+  //     payment_settings: {
   //       save_default_payment_method: "on_subscription",
 
   //      },
   //     expand: ["latest_invoice.payment_intent"],
   //     cancel_at_period_end,
   //     promotion_code: promo_code,
-  //   }); 
+  //   });
 
   //   const invoice = sub?.latest_invoice as Stripe.Invoice;
   //   const payment_intent = invoice?.payment_intent as Stripe.PaymentIntent;
@@ -397,14 +390,13 @@ export class BillingService {
   //   return { client_secret, subscription_id: sub?.id, link: sub?.metadata };
   // }
 
-  async attachStripeId( email: string, name: string) {
+  async attachStripeId(email: string, name: string) {
     const cons = await this.stripe.customers.create({
       email,
       name,
     });
     return cons;
   }
-
 }
 
 export class BillingHooks {
@@ -461,108 +453,110 @@ export class BillingHooks {
       switch (tx?.reason) {
         case "order":
           await OrderService.markOrderAsPaid(tx);
+          const cus = await customer.findById(tx.customer);
+          if (cus) {
+            cus.newUser = false;
+            cus.emailUpdated = false;
+            await cus.save();
+          }
+
           break;
         case "subscription":
           await OrderService.markOrderAsPaid(tx);
           const _sub = await subscription.findOne({ customer: tx.customer });
 
-          let next_sub_date = new Date(); 
-          
+          let next_sub_date = new Date();
+
           if (!_sub) {
             const cus = await customer.findById(tx.customer);
             const _plan = await plan.findById(tx.plan);
-          
+
             if (cus && _plan) {
-              if (_plan.subscription_interval === 'week') {
+              const orderExists = await order.exists({
+                customer: cus?._id,
+                status: "payment_received",
+                delivery_date: { $lte: new Date() },
+              });
+              const lineupExists = await lineup.exists({ customer: cus?._id });
+
+              let returning = false;
+
+              if (orderExists || lineupExists) {
+                returning = true;
+              }
+
+              if (_plan.subscription_interval === "week") {
                 next_sub_date.setDate(next_sub_date.getDate() + 7);
-              } else if (_plan.subscription_interval === 'month') {
+              } else if (_plan.subscription_interval === "month") {
                 next_sub_date.setMonth(next_sub_date.getMonth() + 1);
               } else {
-                throw new Error('Unsupported subscription interval');
+                throw new Error("Unsupported subscription interval");
               }
-          
-              console.log('Next Subscription Date:', next_sub_date);
-          
+
               await SubscriptionService.createSubscription(cus.stripe_id, {
                 end_date: next_sub_date,
                 start_date: new Date(),
                 next_billing_date: next_sub_date,
                 plan: _plan?._id,
-                country: _plan?.country,
                 status: "active",
                 customer: cus?._id,
-                card: cus?._id,
                 stripe_id: cus?.stripe_id ?? undefined,
-                last_assigned_date: new Date(),
+                continent: _plan?.continent,
                 subscription_type: _plan?.subscription_interval,
+                returning_client: returning,
+                used_sub: false,
               });
-          
-              await BillingHooks.customerSubscriptionCreated(event);
+
+              cus.newUser = false;
+              await cus.save();
             } else {
               console.log("Customer or Plan not found.");
               throw new Error("Customer or Plan data is invalid.");
             }
           } else {
             const _plan = await plan.findById(tx.plan);
-            if (_plan) {
-              if (_plan.subscription_interval === 'week') {
+            const cus = await customer.findById(tx.customer);
+
+            if (cus && _plan) {
+              const orderExists = await order.exists({
+                customer: cus?._id,
+                status: "payment_received",
+                delivery_date: { $lte: new Date() },
+              });
+              const lineupExists = await lineup.exists({ customer: cus?._id });
+
+              let returning = false;
+
+              if (orderExists || lineupExists) {
+                returning = true;
+              }
+
+              if (_plan.subscription_interval === "week") {
                 next_sub_date.setDate(next_sub_date.getDate() + 7);
-              } else if (_plan.subscription_interval === 'month') {
+              } else if (_plan.subscription_interval === "month") {
                 next_sub_date.setMonth(next_sub_date.getMonth() + 1);
               } else {
-                console.log('Unsupported subscription interval');
-              }          
+                console.log("Unsupported subscription interval");
+              }
               await subscription.findOneAndUpdate(
                 { customer: tx.customer },
                 {
-                  status: 'active',
+                  status: "active",
                   used_sub: false,
                   start_date: new Date(),
                   end_date: next_sub_date,
+                  returning_client: returning,
                 }
               );
+
+              cus.newUser = false
+              cus.emailUpdated = false;
+               await cus.save()
             } else {
               console.log("Plan not found while updating subscription.");
             }
           }
-                    
 
-
-      // const _sub = await subscription.findOne({customer: tx.customer})
-      // if(!_sub){
-
-      //   const cus = await customer.findById(tx.customer)
-      //   const _plan = await plan.findById(tx.plan)
-      //   if(cus && _plan){
-      //     let next_sub_date = new Date();
-
-      //     if (_plan.subscription_interval === 'week') {
-      //         next_sub_date.setDate(next_sub_date.getDate() + 7);
-      //     } else if (_plan.subscription_interval === 'month') {
-      //         next_sub_date.setMonth(next_sub_date.getMonth() + 1);
-      //     }
-          
-      //     console.log('Next Subscription Date:', next_sub_date);
-      //       await SubscriptionService.createSubscription(cus.stripe_id, {
-      //           end_date: next_sub_date,
-      //           start_date: new Date(),
-      //           next_billing_date: next_sub_date,
-      //           plan: _plan?._id!,
-      //           country: _plan?.country,
-      //           status: "active",
-      //           customer: cus?._id,
-      //           card: cus?._id!,
-      //           stripe_id: cus?.stripe_id ?? undefined,
-      //           last_assigned_date: new Date(),
-      //           subscription_type: _plan?.subscription_interval,
-      //           // continent: _plan?.continent!,
-      //         });
-      //   }
-        
-      //   await BillingHooks.customerSubscriptionCreated(event);
-      // }else{
-      //   await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
-      // }
           break;
         default:
           break;
@@ -571,7 +565,6 @@ export class BillingHooks {
       consola.error(error?.message);
     }
   }
-
 
   static async paymentMethodAttached(event: Stripe.Event) {
     const data = event.data.object as any;
@@ -592,7 +585,7 @@ export class BillingHooks {
   static async invoicePaid(event: Stripe.Event) {
     const data = event.data.object as any;
     console.log("Invoice Paid", data);
-    
+
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
       // status: TransactionStatus.SUCCESSFUL,
@@ -606,7 +599,7 @@ export class BillingHooks {
     console.log("Invoice Payment Failed!", data);
     await TransactionService.updateTransaction(data?.customer!, {
       reference: data?.number,
-      status: TransactionStatus.DECLINED ?? 'declined',
+      status: TransactionStatus.DECLINED ?? "declined",
       invoice_url: data?.hosted_invoice_url,
       invoice_download_url: data?.invoice_pdf,
     });
@@ -644,11 +637,10 @@ export class BillingHooks {
       customer.updateOne({ _id: cus?._id }, { subscription_status: data?.status }).lean<Customer>().exec(),
     ]);
 
-    const tran = await transaction.findOne({customer: cus._id, reference: data.id })
+    const tran = await transaction.findOne({ customer: cus._id, reference: data.id });
 
-    if(tran && tran.status !== 'successful'){
-      await subscription.findOneAndUpdate({customer: cus?._id}, {status: tran.status})
-      
+    if (tran && tran.status !== "successful") {
+      await subscription.findOneAndUpdate({ customer: cus?._id }, { status: tran.status });
     }
 
     // if (data?.status === "active" && !!cus?._id) {
@@ -663,28 +655,30 @@ export class BillingHooks {
       const isCustomerReferred = await earnings.exists({ refs: cus?._id });
       const referrals = await referral.findOne({ invitee: cus?._id }).exec();
       const inviterEarning = referrals ? await earnings.findOne({ customer: referrals.inviter }).exec() : null;
-  
+
       if (data?.status === "active" && cus?._id) {
-          await Promise.all([
-              _plan?._id && DiscountService.updateInfluencersReward(cus._id, _plan._id, promo),
-  
-              customer.updateOne({ _id: cus._id }, { pending_promo: null }).exec(),
-  
-              !isCustomerReferred && referrals ? referrals.updateOne({ is_subscribed: true }).exec() : null,
-  
-              inviterEarning ? (async () => {
-                  if (!inviterEarning.refs.includes(cus?._id)) {
-                      inviterEarning.balance += 10;
-                      inviterEarning.refs.push(cus?._id);
-                      await inviterEarning.save();
-                  }
-              })() : null,
-          ]);
+        await Promise.all([
+          _plan?._id && DiscountService.updateInfluencersReward(cus._id, _plan._id, promo),
+
+          customer.updateOne({ _id: cus._id }, { pending_promo: null }).exec(),
+
+          !isCustomerReferred && referrals ? referrals.updateOne({ is_subscribed: true }).exec() : null,
+
+          inviterEarning
+            ? (async () => {
+                if (!inviterEarning.refs.includes(cus?._id)) {
+                  inviterEarning.balance += 10;
+                  inviterEarning.refs.push(cus?._id);
+                  await inviterEarning.save();
+                }
+              })()
+            : null,
+        ]);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error:", error);
-  }
-        // console.log("Subscription data", { _plan, _card, sub });
+    }
+    // console.log("Subscription data", { _plan, _card, sub });
     return sub;
   }
 

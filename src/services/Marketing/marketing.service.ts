@@ -144,7 +144,7 @@ const body =
   </html>
          `
 
-         await emailSender(body,[` ${email}`], payload.subject,)
+  await emailSender(body, email, payload.subject,)
 
 
 }
