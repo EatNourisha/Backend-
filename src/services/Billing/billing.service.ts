@@ -51,8 +51,6 @@ export class BillingService {
     return session;
   }
 
-  // This method creates an intent session to collect customer's payment details and then store the payment
-  // method so it can be reused later.
   async createSetupIntentSession(customer_id: string, dto: CreateCheckoutSessionDto, roles: string[]) {
     validateFields(dto, ["price_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
@@ -71,9 +69,6 @@ export class BillingService {
     return session;
   }
 
-  // This method creates an intent to collect customer's payment details and then store the payment
-  // method so it can be reused later.
-  
   async createSetupIntent(customer_id: string, _: CreateCheckoutSessionDto, roles: string[]) {
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
@@ -281,6 +276,7 @@ export class BillingService {
         itemRefPath: "Subscription",
         currency: intent.currency,
         order_reference: intent?.id,
+        plan: _plan._id,
         customer: cus?._id,
         amount: (intent.amount ?? 0) / 100,
         reference: intent?.id,
@@ -442,22 +438,6 @@ export class BillingHooks {
     console.log("Payment Intent Created", data);
   }
 
-  static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
-    const data = event.data.object as any;
-    console.log("Payment Intent Succeeded", data);
-    try {
-      switch (tx?.reason) {
-        case "order":
-          await OrderService.markOrderAsPaid(tx);
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      consola.error(error?.message);
-    }
-  }
-
   // static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
   //   const data = event.data.object as any;
   //   console.log("Payment Intent Succeeded", data);
@@ -466,10 +446,6 @@ export class BillingHooks {
   //       case "order":
   //         await OrderService.markOrderAsPaid(tx);
   //         break;
-  //       case "subscription":
-  //         await OrderService.markOrderAsPaid(tx);
-  //          await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
-  //         break;
   //       default:
   //         break;
   //     }
@@ -477,6 +453,59 @@ export class BillingHooks {
   //     consola.error(error?.message);
   //   }
   // }
+
+  static async paymentIntentSucceeded(tx: Transaction, event: Stripe.Event) {
+    const data = event.data.object as any;
+    console.log("Payment Intent Succeeded", data);
+    try {
+      switch (tx?.reason) {
+        case "order":
+          await OrderService.markOrderAsPaid(tx);
+          break;
+        case "subscription":
+          await OrderService.markOrderAsPaid(tx);
+          const _sub = await subscription.findOne({customer: tx.customer})
+          if(!_sub){
+
+            const cus = await customer.findById(tx.customer)
+            const _plan = await plan.findById(tx.plan)
+            if(cus && _plan){
+              let next_sub_date = new Date();
+
+              if (_plan.subscription_interval === 'week') {
+                  next_sub_date.setDate(next_sub_date.getDate() + 7);
+              } else if (_plan.subscription_interval === 'month') {
+                  next_sub_date.setMonth(next_sub_date.getMonth() + 1);
+              }
+              
+              console.log('Next Subscription Date:', next_sub_date);
+                await SubscriptionService.createSubscription(cus.stripe_id, {
+                    end_date: next_sub_date,
+                    start_date: new Date(),
+                    next_billing_date: next_sub_date,
+                    plan: _plan?._id!,
+                    country: _plan?.country,
+                    status: "active",
+                    customer: cus?._id,
+                    card: cus?._id!,
+                    stripe_id: cus?.stripe_id ?? undefined,
+                    last_assigned_date: new Date(),
+                    subscription_type: _plan?.subscription_interval,
+                    // continent: _plan?.continent!,
+                  });
+            }
+            
+            await BillingHooks.customerSubscriptionCreated(event);
+          }
+           await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      consola.error(error?.message);
+    }
+  }
 
 
   static async paymentMethodAttached(event: Stripe.Event) {
