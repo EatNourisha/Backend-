@@ -191,7 +191,7 @@ export class BillingService {
     return { client_secret: intent?.client_secret };
   }
 
-  async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
+  async initializeSubscription2222222(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
     validateFields(dto, ["plan_id"]);
     await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
 
@@ -286,6 +286,100 @@ export class BillingService {
 
     return { client_secret: intent?.client_secret };
   }
+
+  async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
+    validateFields(dto, ["plan_id"]);
+    await RoleService.hasPermission(roles, AvailableResource.CUSTOMER, [PermissionScope.READ, PermissionScope.ALL]);
+
+    const cus = await customer.findById(customer_id).populate("pending_promo").lean<Customer>().exec();
+    if (!cus) throw createError("Customer does not exist", 404);
+
+    const _plan = await plan.findById(dto?.plan_id).lean<Plan>().exec();
+    if (!_plan) throw createError("Plan does not exist", 404);
+
+    let coup = dto.promo_code?.toLowerCase()
+
+    if (coup === 'signupsave5' && cus?.newUser === false) {
+      throw createError('Not eligible to use this coupon');
+    }
+    
+    if (cus?.newUser) {
+      coup = 'signupsave5';
+    } else {
+      coup = dto.promo_code?.toLowerCase() === 'signupsave5' ? '' : dto.promo_code?.toLowerCase();
+    }
+
+  
+    let { amount_off } = await DiscountService.checkPromoForCustomer(cus?._id!, _plan?.amount, coup!);
+
+    console.log(amount_off, )
+
+const _promo = await promoCode.findOne({code: coup})
+    if (_promo && _promo?.code?.toLowerCase() === "loyaltyreward") {
+      const customerData = await customer.findById(customer_id);
+      const now = new Date();
+      const daysSinceReset = Math.ceil((now.getTime() - new Date(customerData!.lastLineupReset).getTime()) / (1000 * 60 * 60 * 24));
+
+      if (_plan.subscription_interval === "month") {
+        throw createError("Coupon is only valid for a weekly plan subscription");
+      }
+
+      if (daysSinceReset >= 30 && customerData!.lineupCount < 4) {
+        throw createError("Not your fifth time order in the last 30days");
+      }
+    }
+
+    let cus_stripe = cus?.stripe_id;
+    const stripeCustomer = await this.stripe.customers.retrieve(cus?.stripe_id);
+    if (!stripeCustomer || stripeCustomer.deleted) {
+      const cons = await this.attachStripeId(cus?.email, [cus?.first_name, cus?.last_name].join(" "));
+      cus_stripe = cons.id;
+
+      await customer
+        .findByIdAndUpdate(cus?._id, { stripe_id: cons.id, last_stripe_check: new Date() }, { new: true })
+        .lean<Customer>()
+        .exec();
+    }
+
+    let amountToPay = _plan.amount - amount_off
+
+
+    const intent = await this.stripe.paymentIntents.create({
+      customer: cus_stripe,
+      payment_method: dto?.card_token,
+      amount: Math.round(amountToPay * 100),
+      currency: "gbp",
+      payment_method_types: ["card", "klarna", "afterpay_clearpay"],
+      off_session: !!dto?.card_token,
+      receipt_email: cus?.email,
+      expand: ["invoice"],
+      metadata: {
+        couponCode: coup ?? null
+      },
+      confirm: !!dto?.card_token,
+    });
+
+    if (!!intent.id) {
+      await transaction.create({
+        itemRefPath: "Subscription",
+        currency: intent.currency,
+        order_reference: intent?.id,
+        plan: _plan._id,
+        customer: cus?._id,
+        amount: (intent.amount ?? 0) / 100,
+        reference: intent?.id,
+        reason: TransactionReason.SUBSCRIPTION,
+        stripe_customer_id: cus?.stripe_id,
+        applied_promo: _promo?._id
+      });
+    }
+
+    // console.log("[Initialize Payment]", { dto, client_secret: intent?.client_secret });
+
+    return { client_secret: intent?.client_secret };
+  }
+
+
 
   // async initializeSubscription(customer_id: string, dto: InitiateSubscriptionDto, roles: string[]) {
   //   validateFields(dto, ["plan_id"]);
