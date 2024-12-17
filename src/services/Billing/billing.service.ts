@@ -464,40 +464,105 @@ export class BillingHooks {
           break;
         case "subscription":
           await OrderService.markOrderAsPaid(tx);
-          const _sub = await subscription.findOne({customer: tx.customer})
-          if(!_sub){
+          const _sub = await subscription.findOne({ customer: tx.customer });
 
-            const cus = await customer.findById(tx.customer)
-            const _plan = await plan.findById(tx.plan)
-            if(cus && _plan){
-              let next_sub_date = new Date();
-
+          let next_sub_date = new Date(); 
+          
+          if (!_sub) {
+            const cus = await customer.findById(tx.customer);
+            const _plan = await plan.findById(tx.plan);
+          
+            if (cus && _plan) {
               if (_plan.subscription_interval === 'week') {
-                  next_sub_date.setDate(next_sub_date.getDate() + 7);
+                next_sub_date.setDate(next_sub_date.getDate() + 7);
               } else if (_plan.subscription_interval === 'month') {
-                  next_sub_date.setMonth(next_sub_date.getMonth() + 1);
+                next_sub_date.setMonth(next_sub_date.getMonth() + 1);
+              } else {
+                throw new Error('Unsupported subscription interval');
               }
-              
+          
               console.log('Next Subscription Date:', next_sub_date);
-                await SubscriptionService.createSubscription(cus.stripe_id, {
-                    end_date: next_sub_date,
-                    start_date: new Date(),
-                    next_billing_date: next_sub_date,
-                    plan: _plan?._id!,
-                    country: _plan?.country,
-                    status: "active",
-                    customer: cus?._id,
-                    card: cus?._id!,
-                    stripe_id: cus?.stripe_id ?? undefined,
-                    last_assigned_date: new Date(),
-                    subscription_type: _plan?.subscription_interval,
-                    // continent: _plan?.continent!,
-                  });
+          
+              await SubscriptionService.createSubscription(cus.stripe_id, {
+                end_date: next_sub_date,
+                start_date: new Date(),
+                next_billing_date: next_sub_date,
+                plan: _plan?._id,
+                country: _plan?.country,
+                status: "active",
+                customer: cus?._id,
+                card: cus?._id,
+                stripe_id: cus?.stripe_id ?? undefined,
+                last_assigned_date: new Date(),
+                subscription_type: _plan?.subscription_interval,
+              });
+          
+              await BillingHooks.customerSubscriptionCreated(event);
+            } else {
+              console.log("Customer or Plan not found.");
+              throw new Error("Customer or Plan data is invalid.");
             }
-            
-            await BillingHooks.customerSubscriptionCreated(event);
+          } else {
+            const _plan = await plan.findById(tx.plan);
+            if (_plan) {
+              if (_plan.subscription_interval === 'week') {
+                next_sub_date.setDate(next_sub_date.getDate() + 7);
+              } else if (_plan.subscription_interval === 'month') {
+                next_sub_date.setMonth(next_sub_date.getMonth() + 1);
+              } else {
+                console.log('Unsupported subscription interval');
+              }          
+              await subscription.findOneAndUpdate(
+                { customer: tx.customer },
+                {
+                  status: 'active',
+                  used_sub: false,
+                  start_date: new Date(),
+                  end_date: next_sub_date,
+                }
+              );
+            } else {
+              console.log("Plan not found while updating subscription.");
+            }
           }
-           await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
+                    
+
+
+      // const _sub = await subscription.findOne({customer: tx.customer})
+      // if(!_sub){
+
+      //   const cus = await customer.findById(tx.customer)
+      //   const _plan = await plan.findById(tx.plan)
+      //   if(cus && _plan){
+      //     let next_sub_date = new Date();
+
+      //     if (_plan.subscription_interval === 'week') {
+      //         next_sub_date.setDate(next_sub_date.getDate() + 7);
+      //     } else if (_plan.subscription_interval === 'month') {
+      //         next_sub_date.setMonth(next_sub_date.getMonth() + 1);
+      //     }
+          
+      //     console.log('Next Subscription Date:', next_sub_date);
+      //       await SubscriptionService.createSubscription(cus.stripe_id, {
+      //           end_date: next_sub_date,
+      //           start_date: new Date(),
+      //           next_billing_date: next_sub_date,
+      //           plan: _plan?._id!,
+      //           country: _plan?.country,
+      //           status: "active",
+      //           customer: cus?._id,
+      //           card: cus?._id!,
+      //           stripe_id: cus?.stripe_id ?? undefined,
+      //           last_assigned_date: new Date(),
+      //           subscription_type: _plan?.subscription_interval,
+      //           // continent: _plan?.continent!,
+      //         });
+      //   }
+        
+      //   await BillingHooks.customerSubscriptionCreated(event);
+      // }else{
+      //   await subscription.findOneAndUpdate({customer: tx.customer}, {status: 'active', used_sub: false})
+      // }
           break;
         default:
           break;
