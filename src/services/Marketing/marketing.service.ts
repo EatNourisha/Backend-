@@ -3,8 +3,9 @@ import { MailchimpService } from "./mailchimp.service";
 import { SenderService } from "./sender.service";
 import customer, { Address } from "../../models/customer";
 import axios from "axios";
-import { emailSender } from "./bluePrint.service";
-
+// import { emailSender } from "./bluePrint.service";
+import config from '../../config/index';
+import sgMail from "@sendgrid/mail";
 
 enum ChannelType {
   MAILCHIMP = "mailchimp",
@@ -144,7 +145,22 @@ const body =
   </html>
          `
 
-  await emailSender(body, email, payload.subject,)
+  // await emailSender(body, email, payload.subject,)
+
+  sgMail.setApiKey(config.SENDGRID_KEY);
+
+
+  await sgMail.send({
+    from: {
+      name: "Nourisha",
+      email: "hello@eatnourisha.com",
+    },
+   subject: payload.subject,
+    to: email,
+    html: body,
+  });
+
+  console.log(`${payload.subject} email sent to ${email}`)
 
 
 }
