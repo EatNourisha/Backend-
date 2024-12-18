@@ -120,6 +120,8 @@ export class MealService {
     // await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
     let queries: any = {};
+
+  Object.assign(queries, { isHidden: { $ne: true } });
   
     if (!!filters?.is_available && Boolean(filters.is_available)) {
       Object.assign(queries, { is_available: true });

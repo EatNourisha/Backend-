@@ -640,6 +640,8 @@ export class BillingHooks {
                   start_date: new Date(),
                   end_date: next_sub_date,
                   returning_client: returning,
+                  plan: _plan?._id,
+                  subscription_type: _plan?.subscription_interval
                 }
               );
 

@@ -108,6 +108,9 @@ export class MealPack extends BaseEntity {
   @prop({default:false})
   isProtein?: boolean;
 
+  @prop({default:false})
+  isHidden?: boolean;
+
   @prop({ ref: 'MealExtras' })
   expected_proteins?: Ref<MealExtras>[];
 

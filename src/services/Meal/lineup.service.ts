@@ -241,84 +241,6 @@ export class MealLineupService {
     const LastLineup = Math.ceil((now.getTime() - lastLineupDate!.getTime()) / (1000 * 60 * 60 * 24));
 
     
-    // if(daysSinceReset <= 30){
-    //   if (customerData!.lineupCount === 3) {
-    //     await loyaltyreward(customerData?.email!, {customer: customerData?._id})
-    
-    //     if(customerData!.level === 'Newbie' || customerData!.level === null){
-          
-    //       customerData!.level ='Novice'
-    //       await customerData?.save()
-    //       await NoviceEmail(customerData?.email!, {customer: customerData?._id})
-    //     }else
-    //     if(customerData!.level === 'Novice'){
-    //       customerData!.level ='OG'
-    //       await customerData?.save()
-    //       await OGEmail(customerData?.email!, {customer: customerData?._id})
-    //     }else
-    
-    //     if(customerData!.level === 'OG'){
-    //       customerData!.level ='Upgraded'
-    //       await customerData?.save()
-    //       await UpgradedEmail(customerData?.email!, {customer: customerData?._id})
-    //     }
-    //     if(customerData!.level === 'Upgraded'){
-    //       customerData!.level ='Rich'
-    //       await customerData?.save()
-    //       await RichEmail(customerData?.email!, {customer: customerData?._id})
-    //     }else
-    //     if(customerData!.level === 'Rich'){
-    //       customerData!.level ='Insider'
-    //       await customerData?.save()
-    //       await InsiderEmail(customerData?.email!, {customer: customerData?._id})
-    //     }else
-    //     if(customerData!.level === 'Insider'){
-    //       customerData!.level ='Special'
-    //       await customerData?.save()
-    //       await SpecialEmail(customerData?.email!, {customer: customerData?._id})
-    //     }
-    //     if(customerData!.level === 'Special'){
-    //       customerData!.level ='Hero'
-    //       await customerData?.save()
-    //       await HeroEmail(customerData?.email!, {customer: customerData?._id})
-    
-    //     }else
-    //     if(customerData!.level === 'Hero'){
-    //       customerData!.level ='Ambassador'
-    //       await customerData?.save()
-    //       await AmbassadorEmail(customerData?.email!, {customer: customerData?._id})
-    //     }
-    //     await customerData?.save()
-    
-    //   } 
-      
-    //   if(customerData!.lineupCount === 4){
-    //     customerData!.lineupCount = 0;
-    //     customerData!.lastLineupReset = now;
-    //     await customerData!.save();
-  
-    // }  else if(customerData!.lineupCount <= 3){
-    //     customerData!.lineupCount +=1;
-    //     await customerData!.save();
-    //   }
-    //   else{
-    //     console.log('conditions skipped')
-    //   }
-
-    // } 
-
-    // if(daysSinceReset > 30){
-    //   if(LastLineup <= 7 && customerData!.lineupCount === 4){
-    //     customerData!.lineupCount = 0;
-    //     customerData!.lastLineupReset = now;
-    //     await customerData!.save();
-    //   }else{
-    //     customerData!.lineupCount =1;
-    //     customerData!.lastLineupReset = now;
-    //     await customerData!.save();
-
-    //   }
-    // }
 
     if(daysSinceReset <= 30){
       if (customerData && customerData.lineupCount === 3) {
@@ -432,6 +354,7 @@ export class MealLineupService {
 
       const __sub = await subscription.findOne({ customer: customer_id });
       if (__sub) {
+        __sub.status = 'inactive';
         __sub.used_sub = true;
         await __sub.save();
       }
@@ -488,12 +411,10 @@ export class MealLineupService {
 
         const currentDay = new Date().getDay();
 
-        // Orders placed Wednesday to Saturday will be delivered next Tuesday
         if (currentDay >= 3 && currentDay <= 6) {
           deli_date = asianDels?.wed_sat;
         }
 
-        // Orders placed on Sunday to Tuesday are delivered the following Tuesday
         else {
           deli_date = asianDels?.sun_tue;
         }
@@ -837,6 +758,7 @@ export class MealLineupService {
 
       const __sub = await subscription.findOne({ customer: customer_id });
       if (__sub) {
+        __sub.status = 'inactive';
         __sub.used_sub = true;
         await __sub.save();
       }
@@ -1382,26 +1304,6 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
     ].filter((proteinId) => proteinId != null );
 
 
-  // for (const mealId of mealIds) {
-  //   mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
-  // }
-  // for (const mealId of Object.keys(mealSelectionCount)) {
-  //   const _mealPack = await mealPack.findById(mealId).exec();
-  //   const selectedQuantity = mealSelectionCount[mealId];
-
-  //   if (_mealPack && _mealPack.available_quantity !== undefined) {
-  //     if (selectedQuantity > _mealPack.available_quantity) {
-  //       throw createError(
-  //         `${_mealPack.name} is selected more than availabe quantity, try selecting ${_mealPack.available_quantity} only.`,
-  //         400
-  //       );
-  //     }
-
-  //     _mealPack.available_quantity = Math.max(0, _mealPack.available_quantity - selectedQuantity);
-  //     await _mealPack.save();
-  //   }
-  // }
-
   for (const mealId of mealIds) {
     mealSelectionCount[mealId.toString()] = (mealSelectionCount[mealId.toString()] || 0) + 1;
   }
@@ -1585,6 +1487,7 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
 
       const __sub = await subscription.findOne({ customer: customer_id });
       if (__sub) {
+        __sub.status = 'inactive';
         __sub.used_sub = true;
         await __sub.save();
       }

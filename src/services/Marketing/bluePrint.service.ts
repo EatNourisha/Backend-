@@ -5,7 +5,7 @@ import sgMail from "@sendgrid/mail";
 // import { Order, order } from "../../models";
 // import axios from "axios";
 
-export async function emailSender(body: string, email:string[], subject: string){
+export async function emailSender(body: string, email:string, subject: string){
   sgMail.setApiKey(config.SENDGRID_KEY);
 
 
@@ -555,7 +555,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
     `;
 
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
 }
         
@@ -994,7 +994,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -1432,7 +1432,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -1869,7 +1869,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -2305,7 +2305,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -2739,7 +2739,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -3166,7 +3166,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   export async function HeroEmail(email: string, payload: any) {
@@ -3605,7 +3605,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -4041,7 +4041,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
     
@@ -4474,7 +4474,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
@@ -4841,7 +4841,7 @@ export async function welcomeEmail1(email: string, payload: any) {
 
 </html>    `
     ;
-    await emailSender(body,[` ${email}`], subject,)
+    await emailSender(body, email, subject,)
 
   };
   
