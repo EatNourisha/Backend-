@@ -1,13 +1,64 @@
 import customer, { Customer } from "../../models/customer";
-import config from '../../config/index';
+import config from "../../config/index";
 import sgMail from "@sendgrid/mail";
+import { IPaginationFilter } from "interfaces";
+import { PipelineStage } from "mongoose";
 // import { mailJetSendMail } from "../../config/mailjet";
 // import { Order, order } from "../../models";
 // import axios from "axios";
 
-export async function emailSender(body: string, email:string, subject: string){
-  sgMail.setApiKey(config.SENDGRID_KEY);
+export async function getCustomersByRank(filter?: IPaginationFilter): Promise<any[]> {
+  const rankOrder = ["Ambassador", "Hero", "Special", "Insider", "Rich", "Upgraded", "OG", "Novice"];
 
+  if (!filter) {
+    filter = {};
+  }
+
+  if (!filter.page) {
+    filter.page = "1";
+  }
+
+  if (!filter.limit) {
+    filter.limit = "10";
+  }
+
+  // Define the aggregation pipeline with explicit types for each stage
+  const aggregationPipeline: PipelineStage[] = [
+    {
+      $match: {
+        level: { $ne: "Newbie", $exists: true },
+      },
+    },
+    {
+      $addFields: {
+        rankIndex: {
+          $switch: {
+            branches: rankOrder.map((rank, index) => ({
+              case: { $eq: ["$level", rank] },
+              then: index,
+            })),
+            default: rankOrder.length,
+          },
+        },
+      },
+    },
+    { $sort: { rankIndex: 1, createdAt: -1 } },
+    {
+      $project: {
+        rankIndex: 0,
+      },
+    },
+    { $skip: (Math.abs(parseInt(filter?.page!)) - 1) * Math.abs(parseInt(filter?.limit!)) }, // Skip documents based on page and limit
+    { $limit: Math.abs(parseInt(filter?.limit!)) },
+  ];
+
+  // Execute the aggregation pipeline
+  const customers = await customer.aggregate(aggregationPipeline).exec();
+  return customers;
+}
+
+export async function emailSender(body: string, email: string, subject: string) {
+  sgMail.setApiKey(config.SENDGRID_KEY);
 
   await sgMail.send({
     from: {
@@ -19,7 +70,7 @@ export async function emailSender(body: string, email:string, subject: string){
     html: body,
   });
 
-  console.log(`${subject} email sent to ${email}`)
+  console.log(`${subject} email sent to ${email}`);
   // await mailJetSendMail(body, `${subject}`, [`${email}`]);
   // await sendSMTPEmail(email, subject, 'hi', body)
 
@@ -43,7 +94,6 @@ export async function emailSender(body: string, email:string, subject: string){
   // // console.log(`result: ${JSON.stringify(result.body)}`);
   // await request;
 
-
   //   const url = "https://api.brevo.com/v3/smtp/email";
   // const apiKey = process.env.BREVO_KEY;
   // const load = {
@@ -66,9 +116,7 @@ export async function emailSender(body: string, email:string, subject: string){
   // };
   // const response = await axios.post(url, load, { headers });
   // return response.data;
-
 }
-
 
 export async function welcomeEmail1(email: string, payload: any) {
   let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
@@ -555,17 +603,16 @@ export async function welcomeEmail1(email: string, payload: any) {
 
     `;
 
-    await emailSender(body, email, subject,)
-
+  await emailSender(body, email, subject);
 }
-        
-  export async function NoviceEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Hey Rising Star! Level Up & Earn Rewards!`;
-  
-    const body = 
-    `
+
+export async function NoviceEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+  const subject = `Hey Rising Star! Level Up & Earn Rewards!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -842,62 +889,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -922,7 +948,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center">
                                         <a class="ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Level up now
+                                            href="https://www.eatnourisha.com">Level up now
                                         </a>
                                     </td>
                                 </tr>
@@ -997,19 +1023,18 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function OGEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `${cus?.first_name}, You've Levelled Up! Earn Rewards with Your First Nourisha Order`;
-  
-    const body = 
-    `
+export async function OGEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+
+  const subject = `${cus?.first_name}, You've Levelled Up! Earn Rewards with Your First Nourisha Order`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -1286,62 +1311,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBAIDAT</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBAIDAT</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -1363,7 +1367,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Continue Exploring
+                                            href="https://www.eatnourisha.com">Continue Exploring
                                         </a>
                                     </td>
                                 </tr>
@@ -1440,19 +1444,17 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function UpgradedEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Closer than ever to an Ambassador!`;
-  
-    const body = 
-    `
+export async function UpgradedEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+  const subject = `Closer than ever to an Ambassador!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -1729,62 +1731,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -1806,7 +1787,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Continue Exploring
+                                            href="https://www.eatnourisha.com">Continue Exploring
                                         </a>
                                     </td>
                                 </tr>
@@ -1882,20 +1863,17 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
- 
- export async function RichEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Few steps to an Ambassador!`;
-  
-    const body = 
-    `
+export async function RichEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+  const subject = `Few steps to an Ambassador!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -2162,7 +2140,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column" width="60%">
                                         <p><strong>Hello ${cus.first_name}!</strong></p>
-                                        <p>Officially a Rich sta, every bite, you're closer to earning more star points
+                                        <p>Officially a Rich star, every bite, you're closer to earning more star points
                                             and stand a chance to win amazing offers.
                                         </p>
                                     </td>
@@ -2170,62 +2148,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -2247,7 +2204,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Continue Exploring
+                                            href="https://www.eatnourisha.com">Continue Exploring
                                         </a>
                                     </td>
                                 </tr>
@@ -2323,19 +2280,17 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function InsiderEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+export async function InsiderEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
 
-   const subject = `Hey Foodie Adventurer! Earn Rewards with Every Bite!`;
-  
-    const body = 
-    `
+  const subject = `Hey Foodie Adventurer! Earn Rewards with Every Bite!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -2611,62 +2566,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -2687,7 +2621,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Continue Exploring
+                                            href="https://www.eatnourisha.com">Continue Exploring
                                         </a>
                                     </td>
                                 </tr>
@@ -2762,19 +2696,17 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function SpecialEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Roll out the Red Carpet For Our Top Trail Blazer! You!`;
-  
-    const body = 
-    `
+export async function SpecialEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+  const subject = `Roll out the Red Carpet For Our Top Trail Blazer! You!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -3050,62 +2982,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -3117,7 +3028,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Continue Exploring
+                                            href="https://www.eatnourisha.com">Continue Exploring
                                         </a>
                                     </td>
                                 </tr>
@@ -3194,18 +3105,16 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
+export async function HeroEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
 
-  };
-  export async function HeroEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Don’t Miss Your Shot FirstName! Exclusive Rewards Are Waiting!`;
-  
-    const body = 
-    `
+  const subject = `Don’t Miss Your Shot FirstName! Exclusive Rewards Are Waiting!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -3483,62 +3392,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -3561,7 +3449,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton" style="background: #DEF54C; color: black;" aria-label=""
-                                            href="#">Order Now
+                                            href="https://www.eatnourisha.com">Order Now
                                         </a>
                                     </td>
                                 </tr>
@@ -3638,19 +3526,17 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function AmbassadorEmail(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Way to Go, ${cus?.first_name}! You’ve Earned The Culinary Jackpot!🎉`;
-  
-    const body = 
-    `
+export async function AmbassadorEmail(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const ranks = await getCustomersByRank();
+
+  const subject = `Way to Go, ${cus?.first_name}! You’ve Earned The Culinary Jackpot!🎉`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -3924,62 +3810,41 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 <tr>
                                     <td class="stack-column"
                                         style="background-color: black; color: #fff;padding: 18px; border-radius: 10px;">
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                            border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
-                                            <tr>
-                                                <td style="vertical-align: middle; display: inline-block; width: 20px">
-                                                    <span
-                                                        style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">1</span>
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
-                                                    <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
-                                                        style="display: inline-block;" alt="">
-                                                </td>
-                                                <td
-                                                    style="vertical-align: middle; display: inline-block; margin-left: 10px;">
-                                                    <table role="presentation" width="100%" cellspacing="0"
-                                                        cellpadding="0" border="0">
-                                                        <tr>
-                                                            <td style="vertical-align: middle;">ZUBY</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td
-                                                                style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
-                                                                AMBASSADOR</td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        ${ranks
+                                          .map(
+                                            (rank, i) =>
+                                              `<table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                                border="0" style="border-bottom: 1px solid #FFFFFF1A; padding: 10px;">
+                                                <tr>
+                                                    <td style="vertical-align: middle; display: inline-block; width: 20px">
+                                                        <span
+                                                            style="display: inline-block; background: linear-gradient(90.53deg, #AE8625 0.57%, #F7EF8A 40.8%, #D2AC47 76.69%, #EDC967 109.32%); border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px;">${
+                                                              i + 1
+                                                            }</span>
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; width: 45px; height: 45px;">
+                                                        <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730294542/email_template/gqhotyi8twa6odi2rkr7.png"
+                                                            style="display: inline-block;" alt="">
+                                                    </td>
+                                                    <td
+                                                        style="vertical-align: middle; display: inline-block; margin-left: 10px;">
+                                                        <table role="presentation" width="100%" cellspacing="0"
+                                                            cellpadding="0" border="0">
+                                                            <tr>
+                                                                <td style="vertical-align: middle;">${rank.first_name.toUpperCase()}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td
+                                                                    style="vertical-align: middle; color: #FFFFFFB2; font-weight: 500">
+                                                                    ${rank.level.toUpperCase()}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>`
+                                          )
+                                          .join("")}
                                     </td>
                                 </tr>
                             </table>
@@ -4000,7 +3865,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton"
                                             style="background: #DEF54C; color: black; margin-right: 10px;" aria-label=""
-                                            href="#">Click Here Ambassador
+                                            href="https://www.eatnourisha.com">Click Here Ambassador
                                         </a>
                                         <a class="ctaButton" style="background: #fff; color: #125309;"
                                             aria-label="Chat on WhatsApp" href="https://wa.me/4407931621298">Go
@@ -4079,19 +3944,15 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-    
-  export async function Referral1(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `You’re a Nourisha MVP! Thank You for Your Referrals!!`;
-  
-    const body = 
-    `
+export async function Referral1(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+  const subject = `You’re a Nourisha MVP! Thank You for Your Referrals!!`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -4442,7 +4303,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                     <td align="center" style="display: block; margin-bottom: 32px;">
                                         <a class=" ctaButton"
                                             style="background: #DEF54C; color: black; margin-right: 10px;" aria-label=""
-                                            href="#">Level up now
+                                            href="https://www.eatnourisha.com">Level up now
                                         </a>
                                     </td>
                                 </tr>
@@ -4517,19 +4378,16 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
+</html>    `;
+  await emailSender(body, email, subject);
+}
 
-  };
-  
-  export async function loyaltyreward(email: string, payload: any) {
-    let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
-  
-    const subject = `Loyalty Bonus Unlocked! 99% Off Your 5th Meal Box`;
-  
-    const body = 
-    `
+export async function loyaltyreward(email: string, payload: any) {
+  let cus = await customer.findById(payload?.customer).lean<Customer>().exec();
+
+  const subject = `Loyalty Bonus Unlocked! 99% Off Your 5th Meal Box`;
+
+  const body = `
 <html lang="en">
 
 <head>
@@ -4889,9 +4747,6 @@ export async function welcomeEmail1(email: string, payload: any) {
     </table>
 </body>
 
-</html>    `
-    ;
-    await emailSender(body, email, subject,)
-
-  };
-  
+</html>    `;
+  await emailSender(body, email, subject);
+}
