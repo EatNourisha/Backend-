@@ -1521,7 +1521,7 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
 
     await sendOrderAlert( emails, payload)
 
-    console.log('Kitchen Email Sent to Admins - Web Email', ` Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`)
+    console.log('Kitchen Email Sent to Admins - Admin Dashboard', ` Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`)
 
 
     return _lineup;
