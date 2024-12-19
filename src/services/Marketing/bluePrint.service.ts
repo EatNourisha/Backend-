@@ -48,7 +48,7 @@ export async function emailSender(body: string, email:string, subject: string){
   // const apiKey = process.env.BREVO_KEY;
   // const load = {
   //   sender: {
-  //     email: "Kitchen@eatnourisha.com",
+  //     email: "hello@eatnourisha.com",
   //     name: "Nourisha",
   //   },
   //   to: [
@@ -495,8 +495,8 @@ export async function welcomeEmail1(email: string, payload: any) {
                   Contact Us<br />
                   House of Nourisha | 71-75 Shelton Street | London<br />
                   <a href="tel:07867059890">07867059890</a> |
-                  <a href="mailto:kitchen@eatnourisha.com"
-                    >kitchen@eatnourisha.com</a
+                  <a href="mailto:hello@eatnourisha.com"
+                    >hello@eatnourisha.com</a
                   >
                   |
                   <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
@@ -813,12 +813,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -958,7 +963,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -1252,12 +1257,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -1396,7 +1406,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -1690,12 +1700,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -1833,7 +1848,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -2128,12 +2143,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -2269,7 +2289,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -2563,12 +2583,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -2703,7 +2728,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -2997,12 +3022,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -3130,7 +3160,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -3423,12 +3453,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -3569,7 +3604,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -3863,12 +3898,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -4005,7 +4045,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -4299,12 +4339,17 @@ export async function welcomeEmail1(email: string, payload: any) {
         <tr>
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -4438,7 +4483,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>
@@ -4731,12 +4776,17 @@ export async function welcomeEmail1(email: string, payload: any) {
             <td>
                 <table role="presentation" class="container" cellspacing="0" cellpadding="0" border="0" align="center">
                     <!-- Header Section -->
-                    <tr>
-                        <td class="header-section content-block">
-                            <img src="https://res.cloudinary.com/drivfk4v3/image/upload/v1730286587/email_template/omwjfahneposqvue4nc2.png"
-                                alt="Nourisha Logo" width="240" style="margin: 0 auto;">
-                        </td>
-                    </tr>
+            <tr>
+              <td class="header-section content-block">
+                <img
+                  src="https://res.cloudinary.com/drivfk4v3/image/upload/v1732199867/xeb2vue12lxgmgmxza7x.png"
+                  alt="Nourisha Logo"
+                  width="150"
+                  style="margin: 0 auto"
+                />
+              </td>
+            </tr>
+
 
                     <!-- Welcome Content -->
                     <tr>
@@ -4805,7 +4855,7 @@ export async function welcomeEmail1(email: string, payload: any) {
                                 Contact Us<br>
                                 House of Nourisha | 71-75 Shelton Street | London<br>
                                 <a href="tel:+4407867059890">07867059890</a> |
-                                <a href="mailto:kitchen@eatnourisha.com">kitchen@eatnourisha.com</a> |
+                                <a href="mailto:hello@eatnourisha.com">hello@eatnourisha.com</a> |
                                 <a href="https://www.eatnourisha.com">www.eatnourisha.com</a>
                             </p>
                             <p>Follow Us</p>

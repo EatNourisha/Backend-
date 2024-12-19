@@ -245,6 +245,9 @@ export class MealLineupService {
     if(daysSinceReset <= 30){
       if (customerData && customerData.lineupCount === 3) {
         await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+          } 
+      if (customerData && customerData.lineupCount === 4) {
+        // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
           
@@ -647,7 +650,11 @@ export class MealLineupService {
 
     if(daysSinceReset <= 30){
       if (customerData && customerData.lineupCount === 3) {
-        await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+        await loyaltyreward(customerData?.email!, {customer: customerData?._id})    
+      } 
+      
+      if (customerData && customerData.lineupCount === 4) {
+        // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
           
@@ -1382,6 +1389,9 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
     if(daysSinceReset <= 30){
       if (customerData && customerData.lineupCount === 3) {
         await loyaltyreward(customerData?.email!, {customer: customerData?._id})
+          } 
+      if (customerData && customerData.lineupCount === 4) {
+        // await loyaltyreward(customerData?.email!, {customer: customerData?._id})
     
         if(customerData!.level === 'Newbie' || customerData!.level === null){
           
