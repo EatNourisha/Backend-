@@ -1,5 +1,5 @@
 import { CreateLineupDto } from "../../interfaces";
-import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras, transaction, promoCode, plan} from "../../models";
+import { adminSettings, customer, DayMeals, lineup, MealLineup, mealPack, MealPack, MealPackAnalysis, order, subscription, mealextras, transaction, promoCode, plan, csteam} from "../../models";
 import { createError, validateFields } from "../../utils";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
@@ -1240,7 +1240,6 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
         }
       return deli_date 
   }
-  
 
   async adminCreateLineup(adminId: string, customer_id: string, dto: CreateLineupDto, roles: string[]): Promise<MealLineup> {
     await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
@@ -1527,7 +1526,6 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
     return _lineup;
   }
 
-
   async adminUpdateLineup(
     adminId: string,
     customer_id: string,
@@ -1543,7 +1541,7 @@ async importPreviousLineup(customer_id: string, roles: string[]): Promise<MealLi
     await MealLineupService.validateLockedLineupChange(customer_id);
     const admin = await customer.findById(adminId)
 
-    const cs = await csTeam.findOne({team_member: admin?._id})
+    const cs = await csteam.findOne({team_member: admin?._id})
     if(!cs){
         throw createError(
           ` You can't update this lineup. Not a CS Member`,
