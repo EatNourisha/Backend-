@@ -343,6 +343,8 @@ async getCountriesById(_id: string) {
       RoleService.isAdmin(roles),
       new DeliveryService().getDeliveryInfo(id, roles, true),
     ];
+
+    throw createError("We are in maintenance mode. Please try again later", 404)
     const [_, __, isAdminResult] = await Promise.allSettled(toRun);
 
     console.log("Is Admin", isAdminResult);
