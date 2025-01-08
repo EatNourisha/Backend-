@@ -8,6 +8,7 @@ export * from "./authVerification.service";
 
 export * from "./Meal/meal.service";
 export * from "./Meal/lineup.service";
+export * from "./Meal/lineupSelection.service";
 export * from "./Meal/delivery.service";
 
 export * from "./Billing/plan.service";

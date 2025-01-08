@@ -1,5 +1,5 @@
 import _Emittery from "emittery";
-import { Customer, MealLineup, Order, Subscription } from "../models";
+import { Customer, LineupSelection, MealLineup, Order, Subscription } from "../models";
 import {
   CreateLineupDto,
   SendResetPasswordEmailMobileDto,
@@ -8,6 +8,7 @@ import {
   SendWelcomeEmailDto,
   SendPromoEmailDto,
   GiftCardEmailDto,
+  LineupSelectionDto
 } from "../interfaces";
 
 _Emittery.isDebugEnabled = false;
@@ -40,6 +41,10 @@ export type NourishaEventTypes = {
   "lineup:created": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
   "lineup:updated": { owner: Customer | string; lineup: MealLineup; dto: CreateLineupDto };
   "lineup:reminder": { owner: Customer | string; };
+
+  "lineupselection:created": { owner: Customer | string; lineup: LineupSelection; dto: LineupSelectionDto };
+  "lineupselection:updated": { owner: Customer | string; lineup: LineupSelection; dto: LineupSelectionDto };
+  "lineupselection:reminder": { owner: Customer | string; };
 
   "referral:created": { owner: Customer | string };
 

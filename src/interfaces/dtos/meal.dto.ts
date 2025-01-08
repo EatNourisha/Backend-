@@ -1,4 +1,4 @@
-import { Meal, MealLineup, MealPack, MealExtras, PartyMealRequest, Category } from "../../models";
+import { Meal, MealLineup, MealPack, MealExtras, PartyMealRequest, Category, LineupSelection } from "../../models";
 
 export interface CreateMealDto extends Omit<Meal, "_id" | "created_at" | "updated_at"> {}
 export interface CreateMealPackDto extends Omit<MealPack, "_id" | "created_at" | "updated_at"> {}
@@ -6,5 +6,7 @@ export interface CreateCategoryDto extends Omit<Category, "_id" | "created_at" |
 export interface CreateExtrasDto extends Omit<MealExtras, "_id" | "created_at" | "updated_at"> {}
 
 export interface CreateLineupDto extends Omit<MealLineup, "_id" | "created_at" | "updated_at"> {}
+
+export interface LineupSelectionDto extends Omit<LineupSelection, "_id" | "created_at" | "updated_at"> {}
 
 export interface RequestPartyMealDto extends Omit<PartyMealRequest, "_id" | "createdAt" | "updatedAt"> {}
