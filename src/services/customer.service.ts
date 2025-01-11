@@ -188,9 +188,9 @@ async getCountriesById(_id: string) {
     else{
       num = `+44${acc.phone}`
     }
-
     
-    
+    // const user = await customer.findById(acc?._id)
+    // if(user?.WELCOMEMAILS)
 
   const newCus =  await registerAddKlaviyo( acc?.first_name, acc?.last_name, acc?.email, num,)
 
@@ -344,7 +344,7 @@ async getCountriesById(_id: string) {
       new DeliveryService().getDeliveryInfo(id, roles, true),
     ];
 
-    throw createError("We are in maintenance mode. Please try again later", 503)
+    // throw createError("We are in maintenance mode. Please try again later", 503)
     const [_, __, isAdminResult] = await Promise.allSettled(toRun);
 
     console.log("Is Admin", isAdminResult);
