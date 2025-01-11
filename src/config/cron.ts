@@ -1,5 +1,5 @@
 import {  sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, giftpurchase, customer, Customer, subscription, order, mealPack, } from "../models"; 
+import { lineup, selectLineup, giftpurchase, customer, Customer, subscription, order, mealPack, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
@@ -8,6 +8,38 @@ import {CustomerService} from "../services/customer.service"
 // import { addDays } from 'date-fns';
 
 
+
+cron.schedule('* */1 * * *', async () => {
+  // console.log("#########777777 deactivate Job runs every 1 min");
+
+  try {
+      const _lineup = await selectLineup.find({ 
+          status: 'active',
+          sub_end_date: {
+              $lt: new Date()
+          }
+      });
+
+      await Promise.all(_lineup.map(async (line: any) => {
+          await line.updateOne({ status: 'inactive' });
+          const sub = await subscription.findOne({customer: line.customer}).exec()
+          const cus = await customer.findOne({_id: line.customer}).exec()
+          if(sub){
+              sub.status = 'inactive'
+              await sub.save()
+          }
+          if(cus){
+              cus.activeLineup = false
+              await cus.save()
+          }
+          
+      }));
+  } catch (error) {
+  }
+}, {
+  scheduled: true,
+  timezone: "Europe/London"
+});
 
 cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
@@ -32,6 +64,33 @@ cron.schedule('* */1 * * *', async () => {
                 cus.activeLineup = false
                 await cus.save()
             }
+            
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('* */1 * * *', async () => {
+    // console.log("#########777777 deactivate Job runs every 1 min");
+
+    try {
+        const _lineup = await selectLineup.find({
+            status: 'inactive',
+            sub_end_date: {
+                $lt: new Date(new Date().setMonth(new Date().getMonth() - 2))
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            await line.updateOne({ status: 'deactivated' });
+            // const sub = await subscription.findOne({customer: line.customer}).exec()
+            // if(sub){
+            //     sub.status = 'inactive'
+            //     await sub.save()
+            // }
             
         }));
     } catch (error) {
@@ -116,6 +175,25 @@ cron.schedule('0 12 * * 0', async () => {
     timezone: "Europe/London"
 });
 
+cron.schedule('0 12 * * 0', async () => {
+    // console.log("#########777777 line up reminder runs every sunday 12 pm");
+
+    try {
+        const _subscription = await subscription.find({
+            status: 'active',
+            subscription_type: 'month'
+        });
+
+        await Promise.all(_subscription.map(async (sub: any) => {
+            await NourishaBus.emit("lineupselection:reminder", { owner: sub?.customer });
+        }));
+    } catch (error) {
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
 cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
 
@@ -147,6 +225,36 @@ cron.schedule('0 0 * * 0', async () => {
         console.log(`Found and saved ${inactiveCustomers.length} inactive customers.`);
     } catch (error) {
         console.error("Error running findInactiveCustomers job:", error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/London"
+});
+
+cron.schedule('*/30 * * * *', async () => {    
+    // console.log("#########777777 deactivate Job runs every 30 mins");
+
+    try {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const _lineup = await selectLineup.find({
+            status: 'deactivated',
+            sub_end_date: {
+                $gte: startOfMonth, // Start of the current month
+                $lt: new Date()            
+            }
+        });
+
+        await Promise.all(_lineup.map(async (line: any) => {
+            const sub = await subscription.findOne({customer: line.customer}).exec()
+            if (sub) {
+                if (sub.status !== 'active') {
+                    sub.status = 'inactive';
+                    await sub.save();
+                }
+            }            
+        }));
+    } catch (error) {
     }
 }, {
     scheduled: true,
@@ -377,6 +485,94 @@ cron.schedule(
   }
 );
 
+
+cron.schedule(
+    "* */1 * * *", 
+    async () => {
+      // console.log("Lineup Job...");
+  
+      try {
+          const lineups = await selectLineup.find({}).sort({ createdAt: -1 });
+  
+        await Promise.all(
+          lineups.map(async (line: any) => {
+            try {
+              const lastLineup = await selectLineup
+                .find({ customer: line.customer })
+                .sort({ createdAt: -1 })
+                .limit(1);
+  
+              if (
+                lastLineup.length > 0 &&
+                lastLineup[0].status === "active"
+              ) {
+                const customerData = await customer.findById(line.customer);
+  
+                if (customerData && customerData.emailUpdated === undefined) {
+                  customerData.emailUpdated = false; 
+                  await customerData.save();
+                }
+                
+                if (customerData && customerData?.emailUpdated === false) {
+                  customerData.POSTSUBEEMAILS = initializeEmails<PostEmails>({
+                    postsub0: false,
+                    postsub1: false,
+                    postsub2: false,
+                    postsub3: false,
+                    postsub4: false,
+                    postsub5: false,
+                    postsub6: false,
+                    postsub7: false,
+                    postsub8: false,
+                    postsub9: false,
+                    postsub10: false,
+                    postsub11: false,
+                    postsub12: false,
+                    postsub13: false,
+                  });
+  
+                  customerData.CARTEMAILS = initializeEmails<CartEmails>({
+                    cart0: customerData.CARTEMAILS.cart0,
+                    cart1: false,
+                    cart2: false,
+                    cart3: false,
+                    cart4: false,
+                    cart5: false,
+                    cart6: false,
+                    cart7: false,
+                    cart8: false,
+                    cart9: false,
+                    cart10: false,
+                    cart11: false,
+                  });
+  
+                  customerData.REENGAGEEMAILS = initializeEmails<ReengageEmails>({
+                    reengage1: false,
+                    reengage2: false,
+                    reengage3: false,
+                    reengage4: false,
+                    reengage5: false,
+                    reengage6: false,
+                  });
+  
+                  customerData.emailUpdated = true; 
+                  await customerData.save();
+                }
+              }
+            } catch (err) {
+              // console.error(`Error processing order ID ${line._id}:`, err.message);
+            }
+          })
+        );
+      } catch (error) {
+        console.error("Error in New User Job:", error.message);
+      }
+    },
+    {
+      scheduled: true,
+      timezone: "Europe/London",
+    }
+  );
 
 cron.schedule(
     "* */1 * * *", 
