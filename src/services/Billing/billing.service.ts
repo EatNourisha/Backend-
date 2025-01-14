@@ -341,7 +341,7 @@ const _promo = await promoCode.findOne({code: coup})
         .exec();
     }
 
-    let amountToPay = _plan.amount - amount_off
+    let amountToPay = dto?.amountToPay ?? _plan.amount - amount_off
 
 
     const intent = await this.stripe.paymentIntents.create({

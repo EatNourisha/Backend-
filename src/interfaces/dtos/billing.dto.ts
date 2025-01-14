@@ -15,6 +15,7 @@ export interface InitiateSubscriptionDto {
   promo_code?: string;
   os?: string;
   version?: string;
+  amountToPay?: number;
 }
 
 export interface InitializePaymentDto {
