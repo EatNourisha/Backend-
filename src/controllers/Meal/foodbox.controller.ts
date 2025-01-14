@@ -1,28 +1,28 @@
 import { NextFunction, Request, Response } from "express";
-import { LineupSelectionService } from "../../services";
+import { FoodBoxService } from "../../services";
 import { sendError, sendResponse } from "../../utils";
 
-const service = new LineupSelectionService();
+const service = new FoodBoxService();
 
-export class LineupSelectionController {
-  async createLineup(req: Request, res: Response, next: NextFunction) {
+export class FoodBoxController {
+  async createFoodBox(req: Request, res: Response, next: NextFunction) {
     try {
       const { body, customer, query } = req;
       const { week } = query;
       const newBody = { ...body, week };
-      const data = await service.createLineup(customer.sub, newBody, customer.roles);
+      const data = await service.createFoodBox(customer.sub, newBody, customer.roles);
       sendResponse(res, 201, data);
     } catch (error) {
       sendError(error, next);
     }
   } 
   
-    async createLineupWeb(req: Request, res: Response, next: NextFunction) {
+    async createFoodBoxWeb(req: Request, res: Response, next: NextFunction) {
       try {
         const { body, customer, query } = req;
         const { week } = query;
         const newBody = { ...body, week };
-        const data = await service.createLineupWeb(customer.sub, newBody, customer.roles);
+        const data = await service.createFoodBoxWeb(customer.sub, newBody, customer.roles);
         sendResponse(res, 201, data);
       } catch (error) {
         sendError(error, next);
@@ -30,12 +30,12 @@ export class LineupSelectionController {
     }
   
   
-    async getCurrentCustomersLineup(req: Request, res: Response, next: NextFunction) {
+    async getCurrentCustomersFoodBox(req: Request, res: Response, next: NextFunction) {
       try {
         const { customer, query } = req;
         const weekParam = query.week;
         const week = typeof weekParam === 'string' ? parseInt(weekParam, 10) : undefined;      
-        const data = await service.getCurrentCustomersLineup(customer.sub, customer.roles, week);
+        const data = await service.getCurrentCustomersFoodBox(customer.sub, customer.roles, week);
         sendResponse(res, 200, data);
       } catch (error) {
         sendError(error, next);
@@ -43,27 +43,26 @@ export class LineupSelectionController {
     }
     
       // Admin
-      async getLineupById(req: Request, res: Response, next: NextFunction) {
+      async getFoodBoxById(req: Request, res: Response, next: NextFunction) {
         try {
           const { customer, params, query } = req;
-          console.log("getLineup", query);
-          const data = await service.getLineupById(params.id, customer.roles, !!query?.silent);
+          const data = await service.getFoodBoxById(params.id, customer.roles, !!query?.silent);
           sendResponse(res, 200, data);
         } catch (error) {
           sendError(error, next);
         }
       }
-      async getLineupByLineId(req: Request, res: Response, next: NextFunction) {
+      async getFoodBoxByFoodBoxId(req: Request, res: Response, next: NextFunction) {
         try {
           const { customer, params, query } = req;
-          const data = await service.getLineupByLineupId(params.lineupId, customer.roles, !!query?.silent);
+          const data = await service.getFoodBoxByFoodBoxId(params.foodboxId, customer.roles, !!query?.silent);
           sendResponse(res, 200, data);
         } catch (error) {
           sendError(error, next);
         }
       }
     
-      async getLineups(req: Request, res: Response, next: NextFunction) {
+      async getFoodBoxes(req: Request, res: Response, next: NextFunction) {
         try {
           const { customer, query } = req;
       
@@ -72,7 +71,7 @@ export class LineupSelectionController {
           const limit = query.limit ? parseInt(query.limit as string, 10) : undefined;
           const page = query.page ? parseInt(query.page as string, 10) : undefined;
       
-          const data = await service.getLineups(customer.roles, !!query?.silent, status, week, limit, page);
+          const data = await service.getFoodBoxes(customer.roles, !!query?.silent, status, week, limit, page);
           sendResponse(res, 200, data);
         } catch (error) {
           sendError(error, next);
@@ -117,21 +116,21 @@ export class LineupSelectionController {
         }
       }
     
-        async adminCreateLineup(req: Request, res: Response, next: NextFunction) {
+        async adminCreateFoodBox(req: Request, res: Response, next: NextFunction) {
           try {
             const { customer, params, query, body } = req;
             console.log("getLineup", query);
-            const data = await service.adminCreateLineup(customer.sub, params.id, body, customer.roles);
+            const data = await service.adminCreateFoodBox(customer.sub, params.id, body, customer.roles);
             sendResponse(res, 200, data);
           } catch (error) {
             sendError(error, next);
           }
         }
     
-        async adminUpdateLineup(req: Request, res: Response, next: NextFunction) {
+        async adminUpdateFoodBox(req: Request, res: Response, next: NextFunction) {
           try {
             const { body, customer, params } = req;
-            const data = await service.adminUpdateLineup(customer.sub, params.customerId, params.id, body, customer.roles, Boolean(params?.dryRun));
+            const data = await service.adminUpdateFoodBox(customer.sub, params.customerId, params.id, body, customer.roles, Boolean(params?.dryRun));
             sendResponse(res, 200, data);
           } catch (error) {
             sendError(error, next);

@@ -12,7 +12,7 @@ export { default as review, Review } from "./review";
 export { default as mealPack, MealPack } from "./mealPack";
 export { default as fcmToken, FCMToken } from "./fcmToken";
 export { default as lineup, MealLineup, DayMeals} from "./mealLineup";
-export { default as selectLineup, LineupSelection} from "./lineupSelection";
+export { default as foodbox, FoodBox} from "./foodbox";
 export { default as mealPackAnalysis, MealPackAnalysis } from "./mealPackAnalysis";
 export { default as partyMealRequest, PartyMealRequest } from "./partyMealRequest";
 

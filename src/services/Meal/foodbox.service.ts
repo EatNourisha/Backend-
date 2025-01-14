@@ -1,6 +1,6 @@
 import { createError } from "../../utils";
-import { LineupSelectionDto } from "../../interfaces";
-import { adminSettings, customer, selectLineup, LineupSelection, mealPack, order, promoCode, subscription, transaction, MealPackAnalysis, csteam } from "../../models";
+import { FoodBoxDto } from "../../interfaces";
+import { adminSettings, customer, foodbox, FoodBox, mealPack, order, promoCode, subscription, transaction, MealPackAnalysis, csteam } from "../../models";
 import { RoleService } from "../role.service";
 import { AvailableResource, AvailableRole, PermissionScope } from "../../valueObjects";
 import { AmbassadorEmail, HeroEmail, InsiderEmail, loyaltyreward, NoviceEmail, OGEmail, RichEmail, SpecialEmail, UpgradedEmail } from "../Marketing/bluePrint.service";
@@ -12,8 +12,8 @@ import omit from "lodash/omit";
 
 
 
-export class LineupSelectionService {
-  async createLineup(customer_id: string, dto: LineupSelectionDto, roles: string[]): Promise<LineupSelection> {
+export class FoodBoxService {
+  async createFoodBox(customer_id: string, dto: FoodBoxDto, roles: string[]): Promise<FoodBox> {
       
       await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
@@ -88,7 +88,7 @@ export class LineupSelectionService {
 
       
       const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
-      const lineupExists = await selectLineup.exists({ customer: customer_id });
+      const lineupExists = await foodbox.exists({ customer: customer_id });
   
       let returning = false;
   
@@ -100,7 +100,7 @@ export class LineupSelectionService {
       // This is to handle the 5th time order customer coupon code
       // This is to handle the 5th time order customer coupon code
       //****************************************************** */
-      const _cusLineup = await selectLineup.findOne({ customer: customer_id }).sort({ createdAt: -1 });
+      const _cusLineup = await foodbox.findOne({ customer: customer_id }).sort({ createdAt: -1 });
       const customerData = await customer.findById(customer_id);
       const now = new Date();
   
@@ -202,7 +202,7 @@ export class LineupSelectionService {
   
       const promo = await promoCode.findById(trans?.applied_promo)
   
-      const _lineup = await selectLineup.create({
+      const _lineup = await foodbox.create({
         ...dto,
         customer: customer_id,
         sub_end_date: endDate,
@@ -230,15 +230,14 @@ export class LineupSelectionService {
           await __sub.save();
         }
   
-      await LineupSelectionService.lockLineupChange(customer_id);
+      await FoodBoxService.lockLineupChange(customer_id);
   
       // Emit event
-      await NourishaBus.emit("lineupselection:created", { owner: customer_id, lineup: _lineup, dto });
+      await NourishaBus.emit("foodbox:created", { owner: customer_id, lineup: _lineup, dto });
   
       const emails = [
-        // 'nourishahelen@gmail.com',
-        // 'Victorianourisha@gmail.com',
-        // 'nourishaorders@gmail.com',
+        'Victorianourisha@gmail.com',
+        'nourishaorders@gmail.com',
         'shukazuby@gmail.com',
   
       ]
@@ -256,7 +255,7 @@ export class LineupSelectionService {
       return _lineup;
     }
 
-  async createLineupWeb(customer_id: string, dto: LineupSelectionDto, roles: string[]): Promise<LineupSelection> {
+  async createFoodBoxWeb(customer_id: string, dto: FoodBoxDto, roles: string[]): Promise<FoodBox> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
 
     const subscriptionCheck = await subscription.findOne({ customer: customer_id });
@@ -319,7 +318,7 @@ export class LineupSelectionService {
     }
   
     const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
-    const lineupExists = await selectLineup.exists({ customer: customer_id });
+    const lineupExists = await foodbox.exists({ customer: customer_id });
 
     let returning = false;
 
@@ -331,7 +330,7 @@ export class LineupSelectionService {
     // This is to handle the 5th time order customer coupon code
     // This is to handle the 5th time order customer coupon code
     //****************************************************** */
-    const _cusLineup = await selectLineup.findOne({ customer: customer_id }).sort({ createdAt: -1 });
+    const _cusLineup = await foodbox.findOne({ customer: customer_id }).sort({ createdAt: -1 });
     const customerData = await customer.findById(customer_id);
     const now = new Date();
 
@@ -433,7 +432,7 @@ export class LineupSelectionService {
 
     const promo = await promoCode.findById(trans?.applied_promo)
 
-    const _lineup = await selectLineup.create({
+    const _lineup = await foodbox.create({
       ...dto,
       customer: customer_id,
       sub_end_date: endDate,
@@ -461,18 +460,18 @@ export class LineupSelectionService {
         __sub.used_sub = true;
         await __sub.save();
       }
-  await LineupSelectionService.lockLineupChange(customer_id);
+  await FoodBoxService.lockLineupChange(customer_id);
 
     // Emit event
-    await NourishaBus.emit("lineupselection:created", { owner: customer_id, lineup: _lineup, dto });
+    await NourishaBus.emit("foodbox:created", { owner: customer_id, lineup: _lineup, dto });
     const emails = [
-      'nourishahelen@gmail.com',
       'Victorianourisha@gmail.com',
       'nourishaorders@gmail.com',
       'shukazuby@gmail.com',
 
     ]
-    const payload = {
+
+  const payload = {
       deliveryDate: _lineup.delivery_date,
       subject: ` New Order: Lineup Added by ${customerData?.first_name} ${customerData?.last_name}`,
       customer: customerData?._id
@@ -486,7 +485,7 @@ export class LineupSelectionService {
     return _lineup;
   }
     
-  async getCurrentCustomersLineup(customer_id: string, roles: string[], week: number | undefined): Promise<LineupSelection> {
+  async getCurrentCustomersFoodBox(customer_id: string, roles: string[], week: number | undefined): Promise<FoodBox> {
     await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
   
     const pops = ["selections"].map((select) => ({
@@ -496,17 +495,17 @@ export class LineupSelectionService {
       ],
     }));
   
-    const _lineup = await selectLineup.findOne({ customer: customer_id, week: week || 1 })
+    const _lineup = await foodbox.findOne({ customer: customer_id, week: week || 1 })
     .populate(pops)
     .sort({ createdAt: -1 })
-    .lean<LineupSelection>()
+    .lean<FoodBox>()
     .exec();    
     if (!_lineup) throw createError("Customer's weekly lineup does not exist", 404);
     return _lineup;
   }
 
     // Admin
-    async getLineupById(customer_id: string, roles: string[], silent = false): Promise<LineupSelection | null> {
+    async getFoodBoxById(customer_id: string, roles: string[], silent = false): Promise<FoodBox | null> {
       await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
         PermissionScope.READ,
         PermissionScope.ALL,
@@ -520,16 +519,16 @@ export class LineupSelectionService {
       }));
         console.log("Silent", silent);
   
-      const _lineup = await selectLineup.findOne({ customer: customer_id })
+      const _lineup = await foodbox.findOne({ customer: customer_id })
       .populate(pops)
       .populate(['customer', 'createdBy', 'editedBy'])
       .sort({createdAt: -1})
-      .lean<LineupSelection>().exec();
+      .lean<FoodBox>().exec();
       if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
       return _lineup ?? {};
     }
   
-    static async createLineupAnalysis(customer_id: string, dto: LineupSelectionDto) {
+    static async createLineupAnalysis(customer_id: string, dto: FoodBoxDto) {
       const day_keys = Object.keys(dto).filter((k) => k !== "delivery_date");
   
       const analysis_doc: MealPackAnalysis[] = [];
@@ -552,7 +551,7 @@ export class LineupSelectionService {
       return analysis_doc;
     }
   
-    static async decreaseAvailableMealpackQuantities(dto: LineupSelectionDto) {
+    static async decreaseAvailableMealpackQuantities(dto: FoodBoxDto) {
       const day_keys = Object.keys(dto).filter((k) => !["delivery_date", "customer"].includes(k));
       const mealpacks_and_quantities: { meal_id: string; quantity: number }[] = [];
   
@@ -575,7 +574,7 @@ export class LineupSelectionService {
       return await MealService.decreaseAvailableMealpackQuantities(mealpacks_and_quantities);
     }
   
-    async getLineupByLineupId(lineupId: string, roles: string[], silent = false): Promise<LineupSelection | null> {
+    async getFoodBoxByFoodBoxId(lineupId: string, roles: string[], silent = false): Promise<FoodBox | null> {
       await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
         PermissionScope.READ,
         PermissionScope.ALL,
@@ -590,19 +589,19 @@ export class LineupSelectionService {
     
       console.log("Silent", silent);
   
-      const _lineup = await selectLineup.findOne({ _id: lineupId }).populate(pops).populate(['plan', 'createdBy', 'editedBy']).sort({ createdAt: -1 }).lean<LineupSelection>().exec();
+      const _lineup = await foodbox.findOne({ _id: lineupId }).populate(pops).populate(['plan', 'createdBy', 'editedBy']).sort({ createdAt: -1 }).lean<FoodBox>().exec();
       if (!_lineup && !silent) throw createError("Customer's weekly lineup does not exist", 404);
       return _lineup ?? {};
     }
   
-    async getLineups(
+    async getFoodBoxes(
       roles: string[], 
       silent = false, 
       status?: string, 
       week?: string, 
       limit?: number, 
       page?: number
-    ): Promise<{ totalCount: number, lineups: LineupSelection[] }> {
+    ): Promise<{ totalCount: number, lineups: FoodBox[] }> {
       await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
         PermissionScope.READ,
         PermissionScope.ALL,
@@ -619,17 +618,17 @@ export class LineupSelectionService {
       if (status) filter.status = status;
       if (week) filter.week = week;
     
-      const totalCount = await selectLineup.countDocuments(filter);
+      const totalCount = await foodbox.countDocuments(filter);
     
       const effectiveLimit = limit ?? 10;
       const effectivePage = page ?? 1;
     
-      const lineups = await selectLineup.find(filter)
+      const lineups = await foodbox.find(filter)
         .populate(pops)
         .sort({ createdAt: -1 })
         .limit(effectiveLimit)
         .skip((effectivePage - 1) * effectiveLimit)
-        .lean<LineupSelection[]>()
+        .lean<FoodBox[]>()
         .exec();
     
       if (!lineups.length && !silent) throw createError("No lineups", 404);
@@ -638,7 +637,7 @@ export class LineupSelectionService {
       // return { totalCount, lineups } ?? [];
     }
   
-    async importPreviousLineup(customer_id: string, roles: string[]): Promise<LineupSelection> {
+    async importPreviousLineup(customer_id: string, roles: string[]): Promise<FoodBox> {
       await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     
       const pops = [
@@ -648,18 +647,18 @@ export class LineupSelectionService {
         },
       ];
     
-      const lastLineup = await selectLineup
+      const lastLineup = await foodbox
         .findOne({ customer: customer_id })
         .sort({ createdAt: -1 })
         .populate(pops)
-        .lean<LineupSelection>()
+        .lean<FoodBox>()
         .exec();
     
       if (!lastLineup) throw createError("Customer has no meal lineups", 404);
     
       const mealUsage: Record<string, number> = {};
     
-      const filteredLineup: LineupSelection = { ...lastLineup, selections: [] };
+      const filteredLineup: FoodBox = { ...lastLineup, selections: [] };
     
       if (lastLineup.selections) {
         for (const selection of lastLineup.selections) {
@@ -691,7 +690,7 @@ export class LineupSelectionService {
       customer_id: string,
       id: string,
       roles: string[]
-    ): Promise<LineupSelection> {
+    ): Promise<FoodBox> {
       await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     
       const pops = [
@@ -701,10 +700,10 @@ export class LineupSelectionService {
         },
       ];
     
-      const lastLineup = await selectLineup
+      const lastLineup = await foodbox
         .findOne({ _id: id, customer: customer_id })
         .populate(pops)
-        .lean<LineupSelection>()
+        .lean<FoodBox>()
         .exec();
     
       if (!lastLineup) throw createError("Customer has no meal lineups", 404);
@@ -713,7 +712,7 @@ export class LineupSelectionService {
     }
     
 
-    async customerPreviousLineups(customer_id: string, roles: string[]): Promise<LineupSelection> {
+    async customerPreviousLineups(customer_id: string, roles: string[]): Promise<FoodBox> {
       await RoleService.hasPermission(roles, AvailableResource.MEAL, [PermissionScope.READ, PermissionScope.ALL]);
     
       const pops = [
@@ -724,12 +723,12 @@ export class LineupSelectionService {
       ];
       
       // Find the most recently created meal lineup by the customer
-      const lastLineup = await selectLineup
+      const lastLineup = await foodbox
         .find({ customer: customer_id })
         .sort({ createdAt: -1 }) 
         .populate(pops)
         .populate('plan')
-        .lean<LineupSelection>()
+        .lean<FoodBox>()
         .exec();
     
       if (!lastLineup) throw createError("Customer has no meal lineups", 404);
@@ -753,7 +752,7 @@ export class LineupSelectionService {
         return deli_date 
     }
   
-    async adminCreateLineup(adminId: string, customer_id: string, dto: LineupSelectionDto, roles: string[]): Promise<LineupSelection> {
+    async adminCreateFoodBox(adminId: string, customer_id: string, dto: FoodBoxDto, roles: string[]): Promise<FoodBox> {
       await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.MEAL, [
         PermissionScope.READ,
         PermissionScope.ALL,
@@ -807,7 +806,7 @@ export class LineupSelectionService {
       }
   
       const orderExists = await order.exists({ customer: customer_id, status: "payment_received", delivery_date: { $lte: new Date() } });
-      const lineupExists = await selectLineup.exists({ customer: customer_id });
+      const lineupExists = await foodbox.exists({ customer: customer_id });
   
       let returning = false;
   
@@ -819,7 +818,7 @@ export class LineupSelectionService {
       // This is to handle the 5th time order customer coupon code
       // This is to handle the 5th time order customer coupon code
       //****************************************************** */
-      const _cusLineup = await selectLineup.findOne({ customer: customer_id }).sort({ createdAt: -1 });
+      const _cusLineup = await foodbox.findOne({ customer: customer_id }).sort({ createdAt: -1 });
       const customerData = await customer.findById(customer_id);
       const now = new Date();
   
@@ -920,7 +919,7 @@ export class LineupSelectionService {
   
       const promo = await promoCode.findById(trans?.applied_promo)
   
-      const _lineup = await selectLineup.create({
+      const _lineup = await foodbox.create({
         ...dto,
         customer: customer_id,
         week: dto?.week || 1,
@@ -940,17 +939,17 @@ export class LineupSelectionService {
           __sub.used_sub = true;
           await __sub.save();
         }
-    await LineupSelectionService.lockLineupChange(customer_id);
+    await FoodBoxService.lockLineupChange(customer_id);
   
       // Emit event
-      await NourishaBus.emit("lineupselection:created", { owner: customer_id, lineup: _lineup, dto });
+      await NourishaBus.emit("foodbox:created", { owner: customer_id, lineup: _lineup, dto });
       const emails = [
-        'nourishahelen@gmail.com',
         'Victorianourisha@gmail.com',
         'nourishaorders@gmail.com',
         'shukazuby@gmail.com',
   
       ]
+  
   
       const payload = {
         deliveryDate: _lineup.delivery_date,
@@ -966,11 +965,11 @@ export class LineupSelectionService {
       return _lineup;
     }
   
-    async adminUpdateLineup(
+    async adminUpdateFoodBox(
       adminId: string,
       customer_id: string,
       lineup_id: string,
-      dto: Partial<LineupSelection>,
+      dto: Partial<FoodBox>,
       roles: string[],
       dryRun = false
     ): Promise<any> {
@@ -978,7 +977,7 @@ export class LineupSelectionService {
         PermissionScope.READ,
         PermissionScope.ALL,
       ]);
-      await LineupSelectionService.validateLockedLineupChange(customer_id);
+      await FoodBoxService.validateLockedLineupChange(customer_id);
       const admin = await customer.findById(adminId)
   
       const cs = await csteam.findOne({team_member: admin?._id})
@@ -990,14 +989,14 @@ export class LineupSelectionService {
   }
   
   
-    const _lineup = await selectLineup
+    const _lineup = await foodbox
       .findOneAndUpdate({ _id: lineup_id, customer: customer_id }, { ...omit(dto, ["customer"]) }, { new: true })
-      .lean<LineupSelection>()
+      .lean<FoodBox>()
       .exec();
     if (!_lineup && !dryRun) throw createError("Customer's weekly lineup does not exist", 404);
     await customer.updateOne({ _id: customer_id }, { lineup: _lineup?._id, delivery_date: dto?.delivery_date, editedBy: admin?._id }).exec();
 
-  await LineupSelectionService.lockLineupChange(customer_id);
+  await FoodBoxService.lockLineupChange(customer_id);
 
   return _lineup;
   }
@@ -1027,7 +1026,7 @@ export class LineupSelectionService {
           .lean()
           .exec();
     
-        const lineups = await selectLineup
+        const lineups = await foodbox
           .find(lineupFilter)
           .populate('customer')
           .lean()
