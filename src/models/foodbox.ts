@@ -23,7 +23,7 @@ export class SelectObj {
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
-export class LineupSelection extends BaseEntity {
+export class FoodBox extends BaseEntity {
   @prop({ ref: () => "Customer" })
   customer: Ref<Customer>;
 
@@ -72,4 +72,4 @@ export class LineupSelection extends BaseEntity {
 
 }
 
-export default getModelForClass(LineupSelection);
+export default getModelForClass(FoodBox);

@@ -1,5 +1,5 @@
 import {  sendGiftRecipient, sendGiftSent } from "../services";
-import { lineup, selectLineup, giftpurchase, customer, Customer, subscription, order, mealPack, } from "../models"; 
+import { lineup, foodbox, giftpurchase, customer, Customer, subscription, order, mealPack, } from "../models"; 
 import cron from "node-cron";
 import { createError } from "../utils";
 import { NourishaBus } from "../libs";
@@ -13,7 +13,7 @@ cron.schedule('* */1 * * *', async () => {
   // console.log("#########777777 deactivate Job runs every 1 min");
 
   try {
-      const _lineup = await selectLineup.find({ 
+      const _lineup = await foodbox.find({ 
           status: 'active',
           sub_end_date: {
               $lt: new Date()
@@ -77,7 +77,7 @@ cron.schedule('* */1 * * *', async () => {
     // console.log("#########777777 deactivate Job runs every 1 min");
 
     try {
-        const _lineup = await selectLineup.find({
+        const _lineup = await foodbox.find({
             status: 'inactive',
             sub_end_date: {
                 $lt: new Date(new Date().setMonth(new Date().getMonth() - 2))
@@ -185,7 +185,7 @@ cron.schedule('0 12 * * 0', async () => {
         });
 
         await Promise.all(_subscription.map(async (sub: any) => {
-            await NourishaBus.emit("lineupselection:reminder", { owner: sub?.customer });
+            await NourishaBus.emit("foodbox:reminder", { owner: sub?.customer });
         }));
     } catch (error) {
     }
@@ -237,7 +237,7 @@ cron.schedule('*/30 * * * *', async () => {
     try {
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const _lineup = await selectLineup.find({
+        const _lineup = await foodbox.find({
             status: 'deactivated',
             sub_end_date: {
                 $gte: startOfMonth, // Start of the current month
@@ -492,12 +492,12 @@ cron.schedule(
       // console.log("Lineup Job...");
   
       try {
-          const lineups = await selectLineup.find({}).sort({ createdAt: -1 });
+          const lineups = await foodbox.find({}).sort({ createdAt: -1 });
   
         await Promise.all(
           lineups.map(async (line: any) => {
             try {
-              const lastLineup = await selectLineup
+              const lastLineup = await foodbox
                 .find({ customer: line.customer })
                 .sort({ createdAt: -1 })
                 .limit(1);

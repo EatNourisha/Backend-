@@ -39,7 +39,7 @@ export default class LineupEventListener {
     for (const lysis of analysis) LineupQueue.add("create_mealpack_analysis_data", lysis);
   }
 
-  @addEvent("lineupselection:created")
+  @addEvent("foodbox:created")
   static async OnSelectLineupCreated({ owner, dto }: NourishaEventTypes["lineup:updated"]) {
     const customer_id = getCustomerId(owner);
 
@@ -100,7 +100,7 @@ export default class LineupEventListener {
     const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
     for (const lysis of analysis) LineupQueue.add("create_mealpack_analysis_data", lysis);
   }
-  @addEvent("lineupselection:updated")
+  @addEvent("foodbox:updated")
   static async OnSelectLineupUpdated({ owner, dto }: NourishaEventTypes["lineup:updated"]) {
     const customer_id = getCustomerId(owner);
 
@@ -160,7 +160,7 @@ export default class LineupEventListener {
     // const analysis = await MealLineupService.createLineupAnalysis(customer_id, dto);
     // for (const lysis of analysis) LineupQueue.add("create_mealpack_analysis_data", lysis);
   }
-  @addEvent("lineupselection:reminder")
+  @addEvent("foodbox:reminder")
   static async onSelectLineupReminder({ owner }: NourishaEventTypes["lineup:reminder"]) {
     const customer_id = getCustomerId(owner);
 
