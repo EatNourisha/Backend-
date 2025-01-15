@@ -49,8 +49,9 @@ export class PlanController {
 
   async getPlanById(req: Request, res: Response, next: NextFunction) {
     try {
-      const { customer, params } = req;
-      const data = await service.getPlanById(params.id, customer.roles);
+      const {params } = req;
+      // const { customer, params } = req;
+      const data = await service.getPlanById(params.id);
       sendResponse(res, 200, data);
     } catch (error) {
       sendError(error, next);

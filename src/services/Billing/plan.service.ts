@@ -82,8 +82,8 @@ export class PlanService {
     return _plan;
   }
 
-  async getPlanById(id: string, roles: string[]): Promise<Plan> {
-    await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.ALL]);
+  async getPlanById(id: string): Promise<Plan> {
+    // await RoleService.requiresPermission([AvailableRole.SUPERADMIN], roles, AvailableResource.PLAN, [PermissionScope.ALL]);
 
     const _plan = await plan.findById(id).lean<Plan>().exec();
     if (!_plan) throw createError("Plan not found", 404);
