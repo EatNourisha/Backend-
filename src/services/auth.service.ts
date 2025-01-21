@@ -28,7 +28,7 @@ export class AuthService {
     for (const item of data.ILocalCartItem) {
       await this.cartService.addItemToCart(
         acc?._id,  
-        {
+        { 
           itemId: item.itemId,  
           quantity: item.quantity,  
           proteinId: item?.proteinId,  
