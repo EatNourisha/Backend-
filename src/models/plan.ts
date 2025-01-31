@@ -62,6 +62,9 @@ export class Plan extends BaseEntity {
   @prop()
   amount_permeal?: number;
 
+  @prop()
+  planDays?: number;
+
 }
 
 export default getModelForClass(Plan);
