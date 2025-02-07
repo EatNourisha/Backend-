@@ -65,6 +65,9 @@ export class Plan extends BaseEntity {
   @prop()
   planDays?: number;
 
+  @prop()
+  savePercentage?: number;
+
 }
 
 export default getModelForClass(Plan);
