@@ -16,7 +16,7 @@ export class AuthService {
   async login(data: loginDto, device_id: string, admin = false): Promise<Auth> {
     // validateFields(data);
     console.log("DEVICE ID", device_id);
-    throw createError("We are on maintenance mode. Please try again later", 503)
+    // throw createError("We are on maintenance mode. Please try again later", 503)
 
 
     const acc = await this.customerService.findByLogin(data.email, data.password, admin);
